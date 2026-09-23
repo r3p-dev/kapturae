@@ -13,7 +13,7 @@
 
 <section
 	id="start"
-	class="relative flex flex-col items-center gap-11 bg-background px-6 pt-20 pb-20 text-center text-foreground sm:px-20 lg:pt-28 lg:pb-25"
+	class="relative flex flex-col items-center gap-11 bg-background px-6 pt-20 pb-20 text-center text-foreground tablet:px-20 rail:pt-28 rail:pb-25"
 >
 	<Corners inset="clamp(12px, 2.25vw, 32px)" size="clamp(24px, 3vw, 40px)" class="text-ink" />
 
@@ -21,7 +21,7 @@
 		frame={6}
 		label={m['landing.cta.label']()}
 		title={[m['landing.cta.title_1'](), m['landing.cta.title_2']()]}
-		titleClass="leading-[0.9] lg:text-[96px]"
+		titleClass="leading-[0.9] rail:text-[96px]"
 	/>
 
 	<Button
@@ -37,7 +37,7 @@
 		</span>
 	</Button>
 
-	<dl class="grid w-full max-w-225 gap-8 sm:grid-cols-3 sm:gap-12">
+	<dl class="grid w-full max-w-225 gap-8 tablet:grid-cols-3 tablet:gap-12">
 		{#each facts as fact, i (i)}
 			<div class="flex flex-col gap-1.5">
 				<dt class="font-mono text-xs tracking-[0.16em] text-muted-foreground uppercase">

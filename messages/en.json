@@ -43,19 +43,23 @@
 			"steps": {
 				"frame": {
 					"title": "Pick a frame",
-					"body": "Classic strip, 2×2 grid, polaroid, and a few more."
+					"body": "Classic strip, 2×2 grid, polaroid, and a few more.",
+					"short": "Strip, grid, polaroid."
 				},
 				"shoot": {
 					"title": "Shoot",
-					"body": "Camera on, 3·2·1, snap. One shot per slot."
+					"body": "Camera on, 3·2·1, snap. One shot per slot.",
+					"short": "3·2·1, one shot per slot."
 				},
 				"edit": {
 					"title": "Edit",
-					"body": "Filters, stickers, text, doodles. Don't like one? Retake just that one."
+					"body": "Filters, stickers, text, doodles. Don't like one? Retake just that one.",
+					"short": "Full editor, with retakes."
 				},
 				"download": {
 					"title": "Download",
-					"body": "Save it as a photo or a GIF. No watermark."
+					"body": "Save it as a photo or a GIF. No watermark.",
+					"short": "Photo or GIF."
 				}
 			}
 		},
@@ -94,6 +98,7 @@
 			"photo": "PHOTO {n}",
 			"your_text": "KAPTURAE",
 			"retake": "Retake slot 3",
+			"retake_short": "Retake",
 			"retake_hint": "Camera comes back on,\nother slots stay as they are",
 			"adjustments": "Adjustments",
 			"brightness": "Brightness",

@@ -43,19 +43,23 @@
 			"steps": {
 				"frame": {
 					"title": "Pilih frame",
-					"body": "Strip klasik, grid 2×2, polaroid, dan beberapa lainnya."
+					"body": "Strip klasik, grid 2×2, polaroid, dan beberapa lainnya.",
+					"short": "Strip, grid, polaroid."
 				},
 				"shoot": {
 					"title": "Foto",
-					"body": "Kamera nyala, 3·2·1, jepret. Satu foto per slot."
+					"body": "Kamera nyala, 3·2·1, jepret. Satu foto per slot.",
+					"short": "3·2·1, jepret tiap slot."
 				},
 				"edit": {
 					"title": "Edit",
-					"body": "Filter, stiker, teks, coretan. Ada yang kurang pas? Foto ulang yang itu saja."
+					"body": "Filter, stiker, teks, coretan. Ada yang kurang pas? Foto ulang yang itu saja.",
+					"short": "Lengkap, bisa retake."
 				},
 				"download": {
 					"title": "Download",
-					"body": "Simpan sebagai foto atau GIF. Tanpa watermark."
+					"body": "Simpan sebagai foto atau GIF. Tanpa watermark.",
+					"short": "Foto atau GIF."
 				}
 			}
 		},
@@ -94,6 +98,7 @@
 			"photo": "FOTO {n}",
 			"your_text": "KAPTURAE",
 			"retake": "Foto ulang slot 3",
+			"retake_short": "Foto ulang",
 			"retake_hint": "Kamera nyala lagi,\nslot lain tetap seperti semula",
 			"adjustments": "Penyesuaian",
 			"brightness": "Kecerahan",

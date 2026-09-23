@@ -7,7 +7,7 @@
 </script>
 
 <footer
-	class="dark flex flex-col items-center justify-center gap-4 bg-background px-6 py-12 text-center text-foreground sm:px-20 lg:h-65"
+	class="dark flex flex-col items-center justify-center gap-4 bg-background px-6 py-12 text-center text-foreground tablet:px-20 rail:h-65"
 >
 	<Logo class="size-16 text-paper" />
 

@@ -9,7 +9,8 @@
 		node.scrollLeft = (node.scrollWidth - node.clientWidth) / 2
 	}
 
-	const sprockets = 'h-3 shrink-0 bg-[repeating-linear-gradient(90deg,var(--ink)_0_16px,transparent_16px_32px)] mx-2'
+	const sprockets =
+		'h-3 shrink-0 bg-[repeating-linear-gradient(90deg,var(--ink)_0_16px,transparent_16px_32px)] mx-2'
 </script>
 
 {#snippet slots(count: number, cls: string)}
@@ -18,7 +19,7 @@
 
 <section
 	id="frames"
-	class="dark flex flex-col items-center gap-12 overflow-hidden bg-background pt-20 pb-20 text-center text-foreground lg:pt-28 lg:pb-25"
+	class="dark flex flex-col items-center gap-12 overflow-hidden bg-background pt-20 pb-20 text-center text-foreground rail:pt-28 rail:pb-25"
 >
 	<SectionHeading
 		frame={3}
@@ -26,6 +27,7 @@
 		title={m['landing.frames.title']()}
 		description={m['landing.frames.description']()}
 		class="px-6"
+		titleClass="mobile:text-[44px]"
 	/>
 
 	<div
@@ -97,7 +99,7 @@
 	</div>
 
 	<p
-		class="inline-flex min-h-11 items-center px-6 font-mono text-[13px] tracking-[0.16em] text-foreground uppercase md:hidden"
+		class="inline-flex min-h-11 items-center px-6 font-mono text-[13px] tracking-[0.16em] text-foreground uppercase tablet:hidden"
 	>
 		<RiArrowDropLeftLine class="size-7" />
 		{m['landing.frames.scroll']()}
@@ -106,5 +108,6 @@
 </section>
 
 {#snippet caption(code: string, name: string)}
-	<span class="font-mono text-xs tracking-[0.12em] text-[#d99a3e] uppercase">▸ {code} · {name}</span>
+	<span class="font-mono text-xs tracking-[0.12em] text-[#d99a3e] uppercase">▸ {code} · {name}</span
+	>
 {/snippet}

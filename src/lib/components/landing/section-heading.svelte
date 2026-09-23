@@ -31,7 +31,7 @@
 
 	<h2
 		class={cn(
-			'm-0 font-display text-5xl leading-[0.92] font-black text-balance uppercase font-stretch-118% sm:text-6xl lg:text-[80px]',
+			'm-0 font-display text-5xl leading-[0.92] font-black text-balance uppercase font-stretch-118% tablet:text-6xl rail:text-[80px]',
 			titleClass
 		)}
 	>

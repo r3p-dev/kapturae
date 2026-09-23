@@ -68,7 +68,7 @@
 </svelte:head>
 
 <div
-	class="dark relative isolate flex min-h-svh flex-col overflow-hidden bg-background px-6 pt-10 pb-9 text-foreground sm:px-16 lg:min-h-screen lg:px-30 lg:pt-13"
+	class="dark relative isolate flex min-h-svh flex-col overflow-hidden bg-background px-6 pt-10 pb-9 text-foreground tablet:px-16 rail:min-h-screen rail:px-30 rail:pt-13"
 >
 	<div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10">
 		<span class="absolute inset-y-0 left-1/3 w-px bg-foreground/8"></span>
@@ -79,7 +79,7 @@
 
 	<Corners inset="clamp(12px, 2.25vw, 32px)" size="clamp(28px, 4vw, 56px)" class="-z-10 text-foreground" />
 
-	<header class="flex h-18 shrink-0 items-center justify-center px-6 sm:px-16">
+	<header class="flex h-18 shrink-0 items-center justify-center px-6 tablet:px-16">
 		<a href={home} class="flex items-center gap-2.5 text-foreground no-underline">
 			<Logo class="size-8.5 text-paper" />
 			<span class="font-display text-lg font-extrabold tracking-[0.04em] uppercase font-stretch-118%">

@@ -72,6 +72,37 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+	--breakpoint-*: initial;
+}
+
+@custom-variant mobile {
+	@media not all and (orientation: portrait) and (min-width: 700px) {
+		@media not all and (orientation: landscape) and (min-width: 720px) and (min-height: 500px) {
+			@slot;
+		}
+	}
+}
+
+@custom-variant tablet {
+	@media (orientation: portrait) and (min-width: 700px),
+		(orientation: landscape) and (min-width: 720px) and (min-height: 500px) {
+		@slot;
+	}
+}
+
+@custom-variant rail {
+	@media (orientation: landscape) and (min-width: 720px) and (min-height: 500px) {
+		@slot;
+	}
+}
+
+@custom-variant desktop {
+	@media (orientation: landscape) and (min-width: 1280px) and (min-height: 500px) {
+		@slot;
+	}
+}
+
 @theme inline {
 	--font-sans: 'IBM Plex Sans Variable', 'Helvetica Neue', Helvetica, sans-serif;
 	--font-mono: 'IBM Plex Mono', ui-monospace, monospace;

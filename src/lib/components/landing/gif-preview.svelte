@@ -21,7 +21,7 @@
 
 <section
 	id="gif"
-	class="dark flex flex-col items-center gap-12 bg-background px-6 pt-20 pb-20 text-center text-foreground sm:px-20 lg:pt-28 lg:pb-25"
+	class="dark flex flex-col items-center gap-12 bg-background px-6 pt-20 pb-20 text-center text-foreground tablet:px-20 rail:pt-28 rail:pb-25"
 >
 	<SectionHeading
 		frame={5}
