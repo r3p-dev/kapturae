@@ -26,11 +26,11 @@
 	onDestroy(() => timers.forEach(clearTimeout))
 
 	const dial = [
-		{ href: '#flow', stop: '-2', label: m.nav_flow },
-		{ href: '#frames', stop: '-1', label: m.nav_frames },
+		{ href: '#flow', stop: '-2', label: m['common.nav.flow'] },
+		{ href: '#frames', stop: '-1', label: m['common.nav.frames'] },
 		null,
-		{ href: '#editor', stop: '+1', label: m.nav_editor },
-		{ href: '#gif', stop: '+2', label: m.nav_gif }
+		{ href: '#editor', stop: '+1', label: m['common.nav.editor'] },
+		{ href: '#gif', stop: '+2', label: m['common.nav.gif'] }
 	]
 </script>
 
@@ -43,28 +43,22 @@
 		<span class="absolute inset-x-0 top-1/3 h-px bg-foreground/8"></span>
 		<span class="absolute inset-x-0 top-2/3 h-px bg-foreground/8"></span>
 	</div>
-	<Corners
-		inset="clamp(12px, 2.25vw, 32px)"
-		size="clamp(28px, 4vw, 56px)"
-		class="-z-10 text-foreground"
-	/>
+	<Corners inset="clamp(12px, 2.25vw, 32px)" size="clamp(28px, 4vw, 56px)" class="-z-10 text-foreground" />
 
-	<header
-		class="relative flex items-center justify-between gap-4 font-mono text-xs tracking-[0.14em] sm:text-[13px]"
-	>
+	<header class="relative flex items-center justify-between gap-4 font-mono text-xs tracking-[0.14em] sm:text-[13px]">
 		<span class="flex items-center gap-2.5">
 			<span class="size-2.5 rounded-full bg-primary"></span>
 			REC 00:00:24
 		</span>
 
 		<span class="absolute left-1/2 -translate-x-1/2 uppercase max-md:hidden">
-			{m.brand()}
+			{m['common.brand']()}
 		</span>
 
 		<span class="flex items-center gap-3.5">
 			<span class="max-lg:hidden">ISO 100 · f/5.6</span>
 
-			<span role="group" aria-label={m.lang_label()} class="flex items-center">
+			<span role="group" aria-label={m['common.lang_label']()} class="flex items-center">
 				<span class="mr-2 text-[11px] text-muted-foreground">LANG</span>
 
 				{#each languages as locale (locale)}
@@ -99,32 +93,30 @@
 	<div class="flex flex-1 flex-col items-center justify-center gap-4.5 py-10 text-center lg:py-6">
 		<div class="relative flex size-28 items-center justify-center">
 			<Corners size="18px" weight="2px" class="text-primary" />
-			<Logo label={m.logo_label()} class="size-18 text-paper" />
+			<Logo label={m['common.logo_label']()} class="size-18 text-paper" />
 		</div>
-		<span class="-mt-3 font-mono text-xs tracking-[0.2em] text-primary">{m.hero_af()}</span>
+		<span class="-mt-3 font-mono text-xs tracking-[0.2em] text-primary">{m['landing.hero.af']()}</span>
 		<h1
 			class="m-0 font-display text-[clamp(3rem,11vw,6.5rem)] leading-[0.88] font-black tracking-[-0.01em] uppercase font-stretch-118%"
 		>
-			{m.hero_title_1()}<br />{m.hero_title_2()}<br />
-			<span class="text-primary">{m.hero_title_3()}</span>
+			{m['landing.hero.title_1']()}<br />{m['landing.hero.title_2']()}<br />
+			<span class="text-primary">{m['landing.hero.title_3']()}</span>
 		</h1>
 		<p class="m-0 max-w-140 text-lg leading-[1.55] text-body sm:text-[19px]">
-			{m.hero_sub()}
+			{m['landing.hero.sub']()}
 		</p>
 		<div class="flex flex-col items-center gap-3">
 			<Button
 				onclick={shoot}
-				aria-label={m.hero_shutter_aria()}
+				aria-label={m['landing.hero.shutter_aria']()}
 				aria-disabled={phase !== null}
 				variant="ghost"
 				class="size-22 rounded-full border-3 border-foreground p-0 hover:bg-transparent"
 			>
-				<span
-					class="block size-16 rounded-full bg-primary transition-transform group-active/button:scale-90"
-				></span>
+				<span class="block size-16 rounded-full bg-primary transition-transform group-active/button:scale-90"></span>
 			</Button>
 			<span aria-live="polite" class="font-mono text-xs tracking-[0.16em] text-muted-foreground">
-				{phase === null ? m.hero_shutter_idle() : m.hero_shutter_busy()}
+				{phase === null ? m['landing.hero.shutter_idle']() : m['landing.hero.shutter_busy']()}
 			</span>
 		</div>
 	</div>
@@ -132,8 +124,8 @@
 	<footer
 		class="grid grid-cols-1 items-end gap-4 font-mono text-xs tracking-[0.14em] text-muted-foreground lg:grid-cols-[1fr_minmax(0,720px)_1fr]"
 	>
-		<span class="pb-5.5 max-lg:hidden">{m.hero_free()}</span>
-		<nav aria-label={m.nav_aria()} class="flex w-full flex-col items-stretch gap-1.5">
+		<span class="pb-5.5 max-lg:hidden">{m['landing.hero.free']()}</span>
+		<nav aria-label={m['common.nav.aria']()} class="flex w-full flex-col items-stretch gap-1.5">
 			<div class="grid grid-cols-5 items-end uppercase">
 				{#each dial as stop, i (i)}
 					{#if stop}
@@ -184,10 +176,8 @@
 			aria-hidden="true"
 			class="pointer-events-none absolute inset-0 z-20 flex animate-shutter-flash items-center justify-center bg-white text-ink motion-reduce:animate-none motion-reduce:opacity-90"
 		>
-			<span
-				class="font-display text-[clamp(6rem,14vw,12.5rem)] leading-none font-black font-stretch-125%"
-			>
-				{m.hero_click()}
+			<span class="font-display text-[clamp(6rem,14vw,12.5rem)] leading-none font-black font-stretch-125%">
+				{m['landing.hero.click']()}
 			</span>
 		</div>
 	{/if}
