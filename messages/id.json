@@ -29,6 +29,7 @@
 			"title_2": "pegang",
 			"title_3": "remote.",
 			"sub": "Photobooth yang jalan langsung di browser. Pilih frame, pasang pose, lalu download hasilnya jadi strip foto atau GIF.",
+			"keep": "Hasil disimpan 24 jam · Buka lagi via QR · Lalu dihapus",
 			"shutter_aria": "Coba jepret",
 			"shutter_idle": "TEKAN UNTUK MENCOBA",
 			"shutter_busy": "MEMOTRET…",
@@ -58,8 +59,8 @@
 				},
 				"download": {
 					"title": "Download",
-					"body": "Simpan sebagai foto atau GIF. Tanpa watermark.",
-					"short": "Foto atau GIF."
+					"body": "Simpan sebagai foto atau GIF, atau scan QR untuk membukanya lagi. Link aktif 24 jam, lalu dihapus.",
+					"short": "Foto, GIF, atau QR."
 				}
 			}
 		},
@@ -131,6 +132,44 @@
 			"gif": "GIF",
 			"speed": "Kecepatan · 0.5 dtk / frame"
 		},
+		"data": {
+			"label": "Data & privasi",
+			"title": "Disimpan 24 jam.",
+			"title_accent": "Lalu hilang.",
+			"description": "Hasil sesimu kami simpan sementara di server supaya bisa kamu buka lagi lewat QR. Begitu 24 jam lewat, semua file dihapus permanen.",
+			"timeline_label": "Siklus file hasil sesi",
+			"uploaded": {
+				"time": "00:00 · Sesi selesai",
+				"title": "Hasil diunggah",
+				"body": "Foto dan GIF disimpan, lalu QR dan link khusus sesimu dibuat."
+			},
+			"active": {
+				"time": "00:00 – 24:00 · Link aktif",
+				"title": "Buka lagi lewat QR",
+				"body": "Scan QR atau buka link dari perangkat mana pun untuk melihat dan mengunduh ulang hasilmu.",
+				"example_before": "Contoh: tersedia",
+				"example_after": "lagi"
+			},
+			"deleted": {
+				"time": "24:00 · Dihapus",
+				"title": "Hilang permanen",
+				"body": "File dihapus dari server dan link kedaluwarsa. Tidak bisa dipulihkan."
+			},
+			"tips": {
+				"early": {
+					"title": "Hapus lebih cepat",
+					"body": "Tidak mau menunggu? Tekan Hapus sekarang di halaman hasil."
+				},
+				"save": {
+					"title": "Unduh sebelum habis",
+					"body": "Setelah 24 jam tidak ada salinan tersisa. Simpan dulu yang ingin kamu pertahankan."
+				},
+				"qr": {
+					"title": "Jaga QR-mu",
+					"body": "Siapa pun yang memegang QR atau link bisa membuka hasilmu selama masih aktif."
+				}
+			}
+		},
 		"cta": {
 			"label": "Mulai",
 			"title_1": "Gratis.",
@@ -142,7 +181,9 @@
 			"needs": "Butuh",
 			"needs_value": "Kamera dan browser. Itu saja.",
 			"output": "Hasil",
-			"output_value": "PNG & GIF"
+			"output_value": "PNG & GIF",
+			"stored": "Tersimpan",
+			"stored_value": "24 jam · via QR"
 		}
 	},
 	"error": {

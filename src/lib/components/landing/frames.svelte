@@ -9,8 +9,7 @@
 		node.scrollLeft = (node.scrollWidth - node.clientWidth) / 2
 	}
 
-	const sprockets =
-		'h-3 shrink-0 bg-[repeating-linear-gradient(90deg,var(--ink)_0_16px,transparent_16px_32px)] mx-2'
+	const sprockets = 'h-3 shrink-0 bg-[repeating-linear-gradient(90deg,var(--ink)_0_16px,transparent_16px_32px)] mx-2'
 </script>
 
 {#snippet slots(count: number, cls: string)}
@@ -108,6 +107,5 @@
 </section>
 
 {#snippet caption(code: string, name: string)}
-	<span class="font-mono text-xs tracking-[0.12em] text-[#d99a3e] uppercase">▸ {code} · {name}</span
-	>
+	<span class="font-mono text-xs tracking-[0.12em] text-[#d99a3e] uppercase">▸ {code} · {name}</span>
 {/snippet}

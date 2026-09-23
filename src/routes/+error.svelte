@@ -13,7 +13,7 @@
 
 	const home = localizeHref('/').replace(/(.)\/$/, '$1')
 	const start = `${home}#start`
-	const privacy = `${home}#start`
+	const privacy = `${home}#data`
 	const contact = 'https://instagram.com'
 
 	const bars = ['#6e6c67', '#c9962e', '#2e7d7a', '#2f6b3a', '#7a4a86', '#8e1b12', '#1b2e55']

@@ -29,6 +29,7 @@
 			"title_2": "the",
 			"title_3": "remote.",
 			"sub": "A photobooth that runs in your browser. Pick a frame, strike a few poses, and download a strip or a GIF.",
+			"keep": "Results kept 24 hours · Reopen via QR · Then deleted",
 			"shutter_aria": "Try the shutter",
 			"shutter_idle": "PRESS TO TRY",
 			"shutter_busy": "SHOOTING…",
@@ -58,8 +59,8 @@
 				},
 				"download": {
 					"title": "Download",
-					"body": "Save it as a photo or a GIF. No watermark.",
-					"short": "Photo or GIF."
+					"body": "Save it as a photo or GIF, or scan the QR to open it again. The link lasts 24 hours, then it's deleted.",
+					"short": "Photo, GIF or QR."
 				}
 			}
 		},
@@ -131,6 +132,44 @@
 			"gif": "GIF",
 			"speed": "Speed · 0.5 sec / frame"
 		},
+		"data": {
+			"label": "Data & privacy",
+			"title": "Kept for 24 hours.",
+			"title_accent": "Then gone.",
+			"description": "We store your session results on our server for a while so you can reopen them with a QR code. Once 24 hours pass, every file is permanently deleted.",
+			"timeline_label": "Lifecycle of your session files",
+			"uploaded": {
+				"time": "00:00 · Session done",
+				"title": "Results uploaded",
+				"body": "Your photos and GIF are stored, and a QR code and private link are made for your session."
+			},
+			"active": {
+				"time": "00:00 – 24:00 · Link active",
+				"title": "Reopen via QR",
+				"body": "Scan the QR or open the link on any device to view and download your results again.",
+				"example_before": "Example:",
+				"example_after": "left"
+			},
+			"deleted": {
+				"time": "24:00 · Deleted",
+				"title": "Gone for good",
+				"body": "Files are deleted from the server and the link expires. They can't be recovered."
+			},
+			"tips": {
+				"early": {
+					"title": "Delete sooner",
+					"body": "Don't want to wait? Press Delete now on the results page."
+				},
+				"save": {
+					"title": "Download before it ends",
+					"body": "After 24 hours no copy is left. Save anything you want to keep first."
+				},
+				"qr": {
+					"title": "Keep your QR safe",
+					"body": "Anyone with the QR or link can open your results while it's active."
+				}
+			}
+		},
 		"cta": {
 			"label": "Start",
 			"title_1": "Free.",
@@ -142,7 +181,9 @@
 			"needs": "You need",
 			"needs_value": "A camera and a browser. That's it.",
 			"output": "Output",
-			"output_value": "PNG & GIF"
+			"output_value": "PNG & GIF",
+			"stored": "Stored",
+			"stored_value": "24 hours · via QR"
 		}
 	},
 	"error": {

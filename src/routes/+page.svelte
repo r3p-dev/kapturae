@@ -1,4 +1,5 @@
 <script lang="ts">
+	import DataPrivacy from '$lib/components/landing/data-privacy.svelte'
 	import EditorPreview from '$lib/components/landing/editor-preview.svelte'
 	import Flow from '$lib/components/landing/flow.svelte'
 	import Frames from '$lib/components/landing/frames.svelte'
@@ -20,6 +21,7 @@
 	<Frames />
 	<EditorPreview />
 	<GifPreview />
+	<DataPrivacy />
 	<Start />
 </main>
 <SiteFooter />

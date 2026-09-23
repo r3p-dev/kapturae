@@ -1,3 +1,8 @@
+<script lang="ts" module>
+	/** Number of landing sections, shown as "FRAME nn / 07". */
+	export const FRAME_COUNT = 7
+</script>
+
 <script lang="ts">
 	import { cn } from '$lib/utils'
 
@@ -25,7 +30,7 @@
 <div class={cn('flex flex-col items-center gap-4.5 text-center', className)}>
 	<p class="flex items-center gap-3 font-mono text-[13px] tracking-[0.16em] uppercase">
 		<span aria-hidden="true" class="h-4 w-2 border-2 border-r-0 border-current"></span>
-		FRAME {String(frame).padStart(2, '0')} / 06 · {label}
+		FRAME {String(frame).padStart(2, '0')} / {String(FRAME_COUNT).padStart(2, '0')} · {label}
 		<span aria-hidden="true" class="h-4 w-2 border-2 border-l-0 border-current"></span>
 	</p>
 

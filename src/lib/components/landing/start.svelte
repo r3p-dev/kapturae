@@ -7,7 +7,8 @@
 	const facts = [
 		{ term: m['landing.cta.cost'], value: m['landing.cta.cost_value'] },
 		{ term: m['landing.cta.needs'], value: m['landing.cta.needs_value'] },
-		{ term: m['landing.cta.output'], value: m['landing.cta.output_value'] }
+		{ term: m['landing.cta.output'], value: m['landing.cta.output_value'] },
+		{ term: m['landing.cta.stored'], value: m['landing.cta.stored_value'] }
 	]
 </script>
 
@@ -18,7 +19,7 @@
 	<Corners inset="clamp(12px, 2.25vw, 32px)" size="clamp(24px, 3vw, 40px)" class="text-ink" />
 
 	<SectionHeading
-		frame={6}
+		frame={7}
 		label={m['landing.cta.label']()}
 		title={[m['landing.cta.title_1'](), m['landing.cta.title_2']()]}
 		titleClass="leading-[0.9] rail:text-[96px]"
@@ -37,7 +38,7 @@
 		</span>
 	</Button>
 
-	<dl class="grid w-full max-w-225 gap-8 tablet:grid-cols-3 tablet:gap-12">
+	<dl class="grid w-full max-w-280 gap-8 tablet:grid-cols-2 tablet:gap-12 rail:grid-cols-4">
 		{#each facts as fact, i (i)}
 			<div class="flex flex-col gap-1.5">
 				<dt class="font-mono text-xs tracking-[0.16em] text-muted-foreground uppercase">

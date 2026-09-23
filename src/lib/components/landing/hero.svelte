@@ -8,6 +8,7 @@
 	import { getLocale, localizeHref, type Locale } from '$lib/paraglide/runtime'
 	import { cn } from '$lib/utils'
 	import Corners from './corners.svelte'
+	import { FRAME_COUNT } from './section-heading.svelte'
 
 	type Phase = 3 | 2 | 1 | 'flash' | null
 
@@ -112,6 +113,17 @@
 			{m['landing.hero.sub']()}
 		</p>
 
+		<a
+			href="#data"
+			class="inline-flex min-h-11 items-center gap-2.5 border-[1.5px] border-[#5a5853] px-4.5 py-2 font-mono text-xs tracking-[0.12em] text-foreground uppercase no-underline hover:border-foreground"
+		>
+			<span
+				aria-hidden="true"
+				class="size-2 shrink-0 animate-rec-blink rounded-full bg-primary motion-reduce:animate-none"
+			></span>
+			{m['landing.hero.keep']()}
+		</a>
+
 		<div class="flex flex-col items-center gap-3">
 			<Button
 				onclick={shoot}
@@ -168,7 +180,7 @@
 			></div>
 		</nav>
 
-		<span class="hidden pb-5.5 text-right rail:block">FRAME 01 / 06</span>
+		<span class="hidden pb-5.5 text-right rail:block">FRAME 01 / {String(FRAME_COUNT).padStart(2, '0')}</span>
 	</footer>
 
 	{#if typeof phase === 'number'}
