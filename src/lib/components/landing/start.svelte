@@ -1,0 +1,52 @@
+<script lang="ts">
+	import { Button } from '$lib/components/ui/button'
+	import { m } from '$lib/paraglide/messages'
+	import Corners from './corners.svelte'
+	import SectionHeading from './section-heading.svelte'
+
+	const facts = [
+		{ term: m.cta_cost, value: m.cta_cost_value },
+		{ term: m.cta_needs, value: m.cta_needs_value },
+		{ term: m.cta_output, value: m.cta_output_value }
+	]
+</script>
+
+<section
+	id="start"
+	class="relative flex flex-col items-center gap-11 bg-background px-6 pt-20 pb-20 text-center text-foreground sm:px-20 lg:pt-28 lg:pb-25"
+>
+	<Corners inset="clamp(12px, 2.25vw, 32px)" size="clamp(24px, 3vw, 40px)" class="text-ink" />
+
+	<SectionHeading
+		frame={6}
+		label={m.cta_label()}
+		title={[m.cta_title_1(), m.cta_title_2()]}
+		titleClass="leading-[0.9] lg:text-[96px]"
+	/>
+
+	<Button
+		href="#start"
+		variant="ghost"
+		aria-label={m.cta_aria()}
+		class="size-55 rounded-full border-4 border-ink p-0 hover:bg-transparent"
+	>
+		<span
+			class="flex size-44 items-center justify-center rounded-full bg-primary font-display text-[26px] font-black tracking-[0.06em] text-primary-foreground uppercase font-stretch-118% transition-transform group-hover/button:scale-95"
+		>
+			{m.cta_button()}
+		</span>
+	</Button>
+
+	<dl class="grid w-full max-w-225 gap-8 sm:grid-cols-3 sm:gap-12">
+		{#each facts as fact, i (i)}
+			<div class="flex flex-col gap-1.5">
+				<dt class="font-mono text-xs tracking-[0.16em] text-muted-foreground uppercase">
+					{fact.term()}
+				</dt>
+				<dd class="m-0 font-display text-[22px] font-extrabold font-stretch-112%">
+					{fact.value()}
+				</dd>
+			</div>
+		{/each}
+	</dl>
+</section>
