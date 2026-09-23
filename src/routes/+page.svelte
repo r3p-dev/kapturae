@@ -10,8 +10,8 @@
 </script>
 
 <svelte:head>
-	<title>{m.meta_title()}</title>
-	<meta name="description" content={m.meta_description()} />
+	<title>{m['landing.meta.title']()}</title>
+	<meta name="description" content={m['landing.meta.description']()} />
 </svelte:head>
 
 <main>

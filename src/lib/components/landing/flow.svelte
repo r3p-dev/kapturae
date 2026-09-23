@@ -9,10 +9,14 @@
 	import SectionHeading from './section-heading.svelte'
 
 	const steps = [
-		{ icon: RiLayoutRowLine, title: m.step_frame_title, body: m.step_frame_body },
-		{ icon: RiCameraLine, title: m.step_shoot_title, body: m.step_shoot_body },
-		{ icon: RiEqualizerLine, title: m.step_edit_title, body: m.step_edit_body },
-		{ icon: RiDownload2Line, title: m.step_download_title, body: m.step_download_body }
+		{ icon: RiLayoutRowLine, title: m['landing.flow.steps.frame.title'], body: m['landing.flow.steps.frame.body'] },
+		{ icon: RiCameraLine, title: m['landing.flow.steps.shoot.title'], body: m['landing.flow.steps.shoot.body'] },
+		{ icon: RiEqualizerLine, title: m['landing.flow.steps.edit.title'], body: m['landing.flow.steps.edit.body'] },
+		{
+			icon: RiDownload2Line,
+			title: m['landing.flow.steps.download.title'],
+			body: m['landing.flow.steps.download.body']
+		}
 	]
 </script>
 
@@ -22,10 +26,10 @@
 >
 	<SectionHeading
 		frame={2}
-		label={m.flow_label()}
-		title={m.flow_title()}
-		accent={m.flow_title_accent()}
-		description={m.flow_description()}
+		label={m['landing.flow.label']()}
+		title={m['landing.flow.title']()}
+		accent={m['landing.flow.title_accent']()}
+		description={m['landing.flow.description']()}
 	/>
 
 	<ol class="flex flex-col items-center gap-5 lg:flex-row">
@@ -33,10 +37,7 @@
 			{@const last = i === steps.length - 1}
 			<li class="flex items-center gap-5 max-lg:flex-col">
 				{#if i > 0}
-					<span
-						aria-hidden="true"
-						class="flex -space-x-5 text-[28px] text-primary max-lg:rotate-90"
-					>
+					<span aria-hidden="true" class="flex -space-x-5 text-[28px] text-primary max-lg:rotate-90">
 						<RiArrowDropRightLine class="size-7" />
 						<RiArrowDropRightLine class="size-7" />
 						<RiArrowDropRightLine class="size-7" />
@@ -48,12 +49,7 @@
 						last ? 'dark bg-background text-foreground' : 'border-2 border-ink'
 					)}
 				>
-					<span
-						class={cn(
-							'absolute top-3.5 left-4 font-mono text-xs tracking-[0.12em]',
-							last && 'text-primary'
-						)}
-					>
+					<span class={cn('absolute top-3.5 left-4 font-mono text-xs tracking-[0.12em]', last && 'text-primary')}>
 						{String(i + 1).padStart(2, '0')}
 					</span>
 					<step.icon aria-hidden="true" class="size-11" />

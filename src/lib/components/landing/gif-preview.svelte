@@ -25,10 +25,10 @@
 >
 	<SectionHeading
 		frame={5}
-		label={m.gif_label()}
-		title={m.gif_title()}
-		accent={m.gif_title_accent()}
-		description={m.gif_description()}
+		label={m['landing.gif.label']()}
+		title={m['landing.gif.title']()}
+		accent={m['landing.gif.title_accent']()}
+		description={m['landing.gif.description']()}
 	/>
 
 	<div class="relative my-4.5 aspect-340/420 w-[calc(100%-36px)] max-w-85 shrink-0">
@@ -43,7 +43,7 @@
 				)}
 				style:animation-delay={pose.delay}
 			>
-				<span class="font-mono text-xs">{m.gif_pose({ n: i + 1 })}</span>
+				<span class="font-mono text-xs">{m['landing.gif.pose']({ n: i + 1 })}</span>
 				<span class="absolute right-4 bottom-3.5 font-mono text-xs">{i + 1}/{poses.length}</span>
 			</div>
 		{/each}
@@ -51,24 +51,22 @@
 			<span
 				class="absolute top-3.5 left-4 flex items-center gap-2 bg-background px-2 py-1 font-mono text-xs tracking-[0.12em] text-foreground uppercase"
 			>
-				<span class="size-2 rounded-full bg-primary"></span>{m.gif_loop()}
+				<span class="size-2 rounded-full bg-primary"></span>{m['landing.gif.loop']()}
 			</span>
 		{/if}
 	</div>
 
-	<div
-		class="flex flex-wrap items-center justify-center gap-3 font-mono text-[13px] tracking-widest"
-	>
+	<div class="flex flex-wrap items-center justify-center gap-3 font-mono text-[13px] tracking-widest">
 		<ToggleGroup.Root
 			type="single"
 			variant="outline"
-			aria-label={m.gif_format()}
+			aria-label={m['landing.gif.format']()}
 			bind:value={() => format, (next) => next && (format = next)}
 			class="border-[1.5px] border-foreground"
 		>
-			<ToggleGroup.Item value="photo" class={item}>{m.gif_photo()}</ToggleGroup.Item>
-			<ToggleGroup.Item value="gif" class={item}>{m.gif_gif()}</ToggleGroup.Item>
+			<ToggleGroup.Item value="photo" class={item}>{m['landing.gif.photo']()}</ToggleGroup.Item>
+			<ToggleGroup.Item value="gif" class={item}>{m['landing.gif.gif']()}</ToggleGroup.Item>
 		</ToggleGroup.Root>
-		<span class="text-muted-foreground uppercase">{m.gif_speed()}</span>
+		<span class="text-muted-foreground uppercase">{m['landing.gif.speed']()}</span>
 	</div>
 </section>

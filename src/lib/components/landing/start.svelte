@@ -5,9 +5,9 @@
 	import SectionHeading from './section-heading.svelte'
 
 	const facts = [
-		{ term: m.cta_cost, value: m.cta_cost_value },
-		{ term: m.cta_needs, value: m.cta_needs_value },
-		{ term: m.cta_output, value: m.cta_output_value }
+		{ term: m['landing.cta.cost'], value: m['landing.cta.cost_value'] },
+		{ term: m['landing.cta.needs'], value: m['landing.cta.needs_value'] },
+		{ term: m['landing.cta.output'], value: m['landing.cta.output_value'] }
 	]
 </script>
 
@@ -19,21 +19,21 @@
 
 	<SectionHeading
 		frame={6}
-		label={m.cta_label()}
-		title={[m.cta_title_1(), m.cta_title_2()]}
+		label={m['landing.cta.label']()}
+		title={[m['landing.cta.title_1'](), m['landing.cta.title_2']()]}
 		titleClass="leading-[0.9] lg:text-[96px]"
 	/>
 
 	<Button
 		href="#start"
 		variant="ghost"
-		aria-label={m.cta_aria()}
+		aria-label={m['landing.cta.aria']()}
 		class="size-55 rounded-full border-4 border-ink p-0 hover:bg-transparent"
 	>
 		<span
 			class="flex size-44 items-center justify-center rounded-full bg-primary font-display text-[26px] font-black tracking-[0.06em] text-primary-foreground uppercase font-stretch-118% transition-transform group-hover/button:scale-95"
 		>
-			{m.cta_button()}
+			{m['landing.cta.button']()}
 		</span>
 	</Button>
 

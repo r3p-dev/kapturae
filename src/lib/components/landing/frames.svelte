@@ -23,9 +23,9 @@
 >
 	<SectionHeading
 		frame={3}
-		label={m.frames_label()}
-		title={m.frames_title()}
-		description={m.frames_description()}
+		label={m['landing.frames.label']()}
+		title={m['landing.frames.title']()}
+		description={m['landing.frames.description']()}
 		class="px-6"
 	/>
 
@@ -43,7 +43,7 @@
 							<div class="h-3.5"></div>
 						</div>
 					</div>
-					{@render caption('01A', m.frames_strip_4())}
+					{@render caption('01A', m['landing.frames.strip_4']())}
 				</li>
 				<li class="flex flex-col items-start gap-2">
 					<div class="flex h-57.5 w-65 items-center justify-center bg-muted">
@@ -51,7 +51,7 @@
 							{@render slots(4, 'bg-[#5e5c57]')}
 						</div>
 					</div>
-					{@render caption('02A', m.frames_grid())}
+					{@render caption('02A', m['landing.frames.grid']())}
 				</li>
 				<li class="flex flex-col items-start gap-2">
 					<div
@@ -63,10 +63,10 @@
 						<Badge
 							class="absolute top-2.5 right-2.5 bg-primary px-2 py-1 font-mono text-[11px] font-normal tracking-widest text-primary-foreground"
 						>
-							{m.frames_selected()}
+							{m['landing.frames.selected']()}
 						</Badge>
 					</div>
-					{@render caption('03A', m.frames_polaroid())}
+					{@render caption('03A', m['landing.frames.polaroid']())}
 				</li>
 				<li class="flex flex-col items-start gap-2">
 					<div class="flex h-57.5 w-65 items-center justify-center bg-muted">
@@ -75,15 +75,15 @@
 							<div class="h-4"></div>
 						</div>
 					</div>
-					{@render caption('04A', m.frames_strip_color())}
+					{@render caption('04A', m['landing.frames.strip_color']())}
 				</li>
 				<li class="flex flex-col items-start gap-2">
 					<div
 						class="flex h-57.5 w-65 items-center justify-center border-2 border-dashed border-[#5e5c57] font-display text-lg font-extrabold uppercase font-stretch-112%"
 					>
-						{m.frames_theme_placeholder()}
+						{m['landing.frames.theme_placeholder']()}
 					</div>
-					{@render caption('05A', m.frames_seasonal())}
+					{@render caption('05A', m['landing.frames.seasonal']())}
 				</li>
 			</ul>
 			<div aria-hidden="true" class={sprockets}></div>
@@ -94,7 +94,7 @@
 		class="inline-flex min-h-11 items-center px-6 font-mono text-[13px] tracking-[0.16em] text-foreground uppercase md:hidden"
 	>
 		<RiArrowDropLeftLine class="size-7" />
-		{m.frames_scroll()}
+		{m['landing.frames.scroll']()}
 		<RiArrowDropRightLine class="size-7" />
 	</p>
 </section>
