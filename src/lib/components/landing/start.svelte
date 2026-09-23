@@ -43,6 +43,7 @@
 				<dt class="font-mono text-xs tracking-[0.16em] text-muted-foreground uppercase">
 					{fact.term()}
 				</dt>
+
 				<dd class="m-0 font-display text-[22px] font-extrabold font-stretch-112%">
 					{fact.value()}
 				</dd>

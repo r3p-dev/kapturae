@@ -29,6 +29,7 @@
 				primary: { label: m['error.not_found.primary'](), href: home },
 				secondary: { label: m['error.not_found.secondary'](), href: start }
 			}
+
 		if (status === 410)
 			return {
 				hud: m['error.gone.hud'](),
@@ -37,6 +38,7 @@
 				primary: { label: m['error.gone.primary'](), href: start },
 				secondary: { label: m['error.gone.secondary'](), href: privacy }
 			}
+
 		return {
 			hud: m['error.server.hud'](),
 			title: m['error.server.title'](),
@@ -48,14 +50,10 @@
 
 	let time = $state<string>()
 	onMount(() => {
-		time = new Intl.DateTimeFormat(getLocale(), { dateStyle: 'medium', timeStyle: 'short' }).format(
-			new Date()
-		)
+		time = new Intl.DateTimeFormat(getLocale(), { dateStyle: 'medium', timeStyle: 'short' }).format(new Date())
 	})
 
-	const meta = $derived(
-		[m['error.code']({ status }), time, page.error?.id].filter(Boolean).join(' · ')
-	)
+	const meta = $derived([m['error.code']({ status }), time, page.error?.id].filter(Boolean).join(' · '))
 
 	const nav = [
 		{ href: contact, label: m['common.footer.instagram'] },
@@ -78,18 +76,13 @@
 		<span class="absolute inset-x-0 top-1/3 h-px bg-foreground/8"></span>
 		<span class="absolute inset-x-0 top-2/3 h-px bg-foreground/8"></span>
 	</div>
-	<Corners
-		inset="clamp(12px, 2.25vw, 32px)"
-		size="clamp(28px, 4vw, 56px)"
-		class="-z-10 text-foreground"
-	/>
+
+	<Corners inset="clamp(12px, 2.25vw, 32px)" size="clamp(28px, 4vw, 56px)" class="-z-10 text-foreground" />
 
 	<header class="flex h-18 shrink-0 items-center justify-center px-6 sm:px-16">
 		<a href={home} class="flex items-center gap-2.5 text-foreground no-underline">
 			<Logo class="size-8.5 text-paper" />
-			<span
-				class="font-display text-lg font-extrabold tracking-[0.04em] uppercase font-stretch-118%"
-			>
+			<span class="font-display text-lg font-extrabold tracking-[0.04em] uppercase font-stretch-118%">
 				{m['common.brand']()}
 			</span>
 		</a>
@@ -102,6 +95,7 @@
 					<span style:background={bar}></span>
 				{/each}
 			</div>
+
 			<div
 				aria-hidden="true"
 				class="absolute inset-0 bg-[repeating-linear-gradient(0deg,rgb(14_14_13/0.55)_0_2px,transparent_2px_5px)]"
@@ -116,11 +110,9 @@
 			</div>
 
 			<span
-				class="absolute top-3 left-3.5 flex items-center gap-2 bg-ink px-2 py-1 font-mono text-[11px] tracking-[0.12em]"
+				class="absolute top-3 left-3 flex items-center gap-2 bg-ink px-2 py-1 font-mono text-[11px] tracking-[0.12em]"
 			>
-				<span
-					aria-hidden="true"
-					class="size-1.75 animate-rec-blink rounded-full bg-primary motion-reduce:animate-none"
+				<span aria-hidden="true" class="size-1.75 animate-rec-blink rounded-full bg-primary motion-reduce:animate-none"
 				></span>
 				ERR {status} · {variant.hud}
 			</span>
@@ -143,6 +135,7 @@
 				{variant.primary.label}
 				<RiArrowRightLine aria-hidden="true" class="size-4.5" />
 			</Button>
+
 			<Button
 				href={variant.secondary.href}
 				variant="outline"
@@ -152,17 +145,12 @@
 			</Button>
 		</div>
 
-		<span class="font-mono text-[11px] tracking-[0.14em] text-muted-foreground uppercase"
-			>{meta}</span
-		>
+		<span class="font-mono text-[11px] tracking-[0.14em] text-muted-foreground uppercase">{meta}</span>
 	</main>
 
 	<nav class="flex justify-center gap-5 pb-8 font-mono text-[11px] tracking-widest uppercase">
 		{#each nav as link (link.href)}
-			<a
-				href={link.href}
-				class="inline-flex min-h-11 items-center text-muted-foreground hover:text-foreground"
-			>
+			<a href={link.href} class="inline-flex min-h-11 items-center text-muted-foreground hover:text-foreground">
 				{link.label()}
 			</a>
 		{/each}

@@ -43,9 +43,16 @@
 		<span class="absolute inset-x-0 top-1/3 h-px bg-foreground/8"></span>
 		<span class="absolute inset-x-0 top-2/3 h-px bg-foreground/8"></span>
 	</div>
-	<Corners inset="clamp(12px, 2.25vw, 32px)" size="clamp(28px, 4vw, 56px)" class="-z-10 text-foreground" />
 
-	<header class="relative flex items-center justify-between gap-4 font-mono text-xs tracking-[0.14em] sm:text-[13px]">
+	<Corners
+		inset="clamp(12px, 2.25vw, 32px)"
+		size="clamp(28px, 4vw, 56px)"
+		class="-z-10 text-foreground"
+	/>
+
+	<header
+		class="relative flex items-center justify-between gap-4 font-mono text-xs tracking-[0.14em] sm:text-[13px]"
+	>
 		<span class="flex items-center gap-2.5">
 			<span class="size-2.5 rounded-full bg-primary"></span>
 			REC 00:00:24
@@ -95,16 +102,22 @@
 			<Corners size="18px" weight="2px" class="text-primary" />
 			<Logo label={m['common.logo_label']()} class="size-18 text-paper" />
 		</div>
-		<span class="-mt-3 font-mono text-xs tracking-[0.2em] text-primary">{m['landing.hero.af']()}</span>
+
+		<span class="-mt-3 font-mono text-xs tracking-[0.2em] text-primary"
+			>{m['landing.hero.af']()}
+		</span>
+
 		<h1
 			class="m-0 font-display text-[clamp(3rem,11vw,6.5rem)] leading-[0.88] font-black tracking-[-0.01em] uppercase font-stretch-118%"
 		>
 			{m['landing.hero.title_1']()}<br />{m['landing.hero.title_2']()}<br />
 			<span class="text-primary">{m['landing.hero.title_3']()}</span>
 		</h1>
+
 		<p class="m-0 max-w-140 text-lg leading-[1.55] text-body sm:text-[19px]">
 			{m['landing.hero.sub']()}
 		</p>
+
 		<div class="flex flex-col items-center gap-3">
 			<Button
 				onclick={shoot}
@@ -113,8 +126,11 @@
 				variant="ghost"
 				class="size-22 rounded-full border-3 border-foreground p-0 hover:bg-transparent"
 			>
-				<span class="block size-16 rounded-full bg-primary transition-transform group-active/button:scale-90"></span>
+				<span
+					class="block size-16 rounded-full bg-primary transition-transform group-active/button:scale-90"
+				></span>
 			</Button>
+
 			<span aria-live="polite" class="font-mono text-xs tracking-[0.16em] text-muted-foreground">
 				{phase === null ? m['landing.hero.shutter_idle']() : m['landing.hero.shutter_busy']()}
 			</span>
@@ -125,6 +141,7 @@
 		class="grid grid-cols-1 items-end gap-4 font-mono text-xs tracking-[0.14em] text-muted-foreground lg:grid-cols-[1fr_minmax(0,720px)_1fr]"
 	>
 		<span class="pb-5.5 max-lg:hidden">{m['landing.hero.free']()}</span>
+
 		<nav aria-label={m['common.nav.aria']()} class="flex w-full flex-col items-stretch gap-1.5">
 			<div class="grid grid-cols-5 items-end uppercase">
 				{#each dial as stop, i (i)}
@@ -152,11 +169,13 @@
 				aria-hidden="true"
 				class="h-2 bg-[linear-gradient(90deg,transparent_5.5px,var(--foreground)_5.5px_6.5px,transparent_6.5px)] bg-size-[12px_100%] bg-center bg-repeat-x opacity-55"
 			></div>
+
 			<div
 				aria-hidden="true"
 				class="size-0 self-center border-x-7 border-b-9 border-x-transparent border-b-primary"
 			></div>
 		</nav>
+
 		<span class="pb-5.5 text-right max-lg:hidden">FRAME 01 / 06</span>
 	</footer>
 
@@ -176,7 +195,9 @@
 			aria-hidden="true"
 			class="pointer-events-none absolute inset-0 z-20 flex animate-shutter-flash items-center justify-center bg-white text-ink motion-reduce:animate-none motion-reduce:opacity-90"
 		>
-			<span class="font-display text-[clamp(6rem,14vw,12.5rem)] leading-none font-black font-stretch-125%">
+			<span
+				class="font-display text-[clamp(6rem,14vw,12.5rem)] leading-none font-black font-stretch-125%"
+			>
 				{m['landing.hero.click']()}
 			</span>
 		</div>

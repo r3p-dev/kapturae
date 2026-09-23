@@ -3,7 +3,6 @@
 
 	let { label, ...restProps }: SVGAttributes<SVGSVGElement> & { label?: string } = $props()
 
-	// The mark is drawn as a mask, so each instance needs its own id.
 	const uid = $props.id()
 	const maskId = `logo-mask-${uid}`
 </script>

@@ -9,9 +9,21 @@
 	import SectionHeading from './section-heading.svelte'
 
 	const steps = [
-		{ icon: RiLayoutRowLine, title: m['landing.flow.steps.frame.title'], body: m['landing.flow.steps.frame.body'] },
-		{ icon: RiCameraLine, title: m['landing.flow.steps.shoot.title'], body: m['landing.flow.steps.shoot.body'] },
-		{ icon: RiEqualizerLine, title: m['landing.flow.steps.edit.title'], body: m['landing.flow.steps.edit.body'] },
+		{
+			icon: RiLayoutRowLine,
+			title: m['landing.flow.steps.frame.title'],
+			body: m['landing.flow.steps.frame.body']
+		},
+		{
+			icon: RiCameraLine,
+			title: m['landing.flow.steps.shoot.title'],
+			body: m['landing.flow.steps.shoot.body']
+		},
+		{
+			icon: RiEqualizerLine,
+			title: m['landing.flow.steps.edit.title'],
+			body: m['landing.flow.steps.edit.body']
+		},
 		{
 			icon: RiDownload2Line,
 			title: m['landing.flow.steps.download.title'],
@@ -43,6 +55,7 @@
 						<RiArrowDropRightLine class="size-7" />
 					</span>
 				{/if}
+
 				<div
 					class={cn(
 						'relative flex h-72 w-62.5 flex-col items-center justify-center gap-3.5 p-6',
@@ -52,10 +65,13 @@
 					<span class={cn('absolute top-3.5 left-4 font-mono text-xs tracking-[0.12em]', last && 'text-primary')}>
 						{String(i + 1).padStart(2, '0')}
 					</span>
+
 					<step.icon aria-hidden="true" class="size-11" />
+
 					<h3 class="m-0 font-display text-2xl font-extrabold uppercase font-stretch-112%">
 						{step.title()}
 					</h3>
+
 					<p class="m-0 text-[15px] leading-[1.55] text-body">{step.body()}</p>
 				</div>
 			</li>

@@ -7,16 +7,11 @@
 		value = $bindable(),
 		orientation = 'horizontal',
 		class: className,
-		// the thumb carries role="slider", so it is the element that needs the label
 		'aria-label': ariaLabel,
 		...restProps
 	}: WithoutChildrenOrChild<SliderPrimitive.RootProps> = $props()
 </script>
 
-<!--
-Discriminated Unions + Destructing (required for bindable) do not
-get along, so we shut typescript up by casting `value` to `never`.
--->
 <SliderPrimitive.Root
 	bind:ref
 	bind:value={value as never}
@@ -33,7 +28,7 @@ get along, so we shut typescript up by casting `value` to `never`.
 			data-slot="slider-track"
 			data-orientation={orientation}
 			class={cn(
-				'relative grow overflow-hidden bg-input/50 data-horizontal:h-0.5 data-horizontal:w-full data-horizontal:w-full data-vertical:h-full data-vertical:h-full data-vertical:w-0.5'
+				'relative grow overflow-hidden bg-input/50 data-horizontal:h-0.5 data-horizontal:w-full data-vertical:h-full data-vertical:w-0.5'
 			)}
 		>
 			<SliderPrimitive.Range

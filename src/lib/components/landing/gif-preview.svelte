@@ -47,6 +47,7 @@
 				<span class="absolute right-4 bottom-3.5 font-mono text-xs">{i + 1}/{poses.length}</span>
 			</div>
 		{/each}
+
 		{#if animated}
 			<span
 				class="absolute top-3.5 left-4 flex items-center gap-2 bg-background px-2 py-1 font-mono text-xs tracking-[0.12em] text-foreground uppercase"
@@ -65,8 +66,10 @@
 			class="border-[1.5px] border-foreground"
 		>
 			<ToggleGroup.Item value="photo" class={item}>{m['landing.gif.photo']()}</ToggleGroup.Item>
+
 			<ToggleGroup.Item value="gif" class={item}>{m['landing.gif.gif']()}</ToggleGroup.Item>
 		</ToggleGroup.Root>
+
 		<span class="text-muted-foreground uppercase">{m['landing.gif.speed']()}</span>
 	</div>
 </section>

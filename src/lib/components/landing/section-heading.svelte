@@ -28,6 +28,7 @@
 		FRAME {String(frame).padStart(2, '0')} / 06 · {label}
 		<span aria-hidden="true" class="h-4 w-2 border-2 border-l-0 border-current"></span>
 	</p>
+
 	<h2
 		class={cn(
 			'm-0 font-display text-5xl leading-[0.92] font-black text-balance uppercase font-stretch-118% sm:text-6xl lg:text-[80px]',
@@ -37,6 +38,7 @@
 		{#each lines as line, i (i)}{#if i > 0}<br />{/if}{line}{/each}
 		{#if accent}<span class="text-primary">{accent}</span>{/if}
 	</h2>
+
 	{#if description}
 		<p class="m-0 max-w-2xl text-lg leading-normal text-body">{description}</p>
 	{/if}

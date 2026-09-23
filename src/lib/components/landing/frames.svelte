@@ -9,8 +9,7 @@
 		node.scrollLeft = (node.scrollWidth - node.clientWidth) / 2
 	}
 
-	const sprockets =
-		'h-3 shrink-0 bg-[repeating-linear-gradient(90deg,var(--ink)_0_16px,transparent_16px_32px)] mx-2'
+	const sprockets = 'h-3 shrink-0 bg-[repeating-linear-gradient(90deg,var(--ink)_0_16px,transparent_16px_32px)] mx-2'
 </script>
 
 {#snippet slots(count: number, cls: string)}
@@ -35,6 +34,7 @@
 	>
 		<div class="mx-auto flex w-max min-w-full flex-col gap-3.5 bg-card py-4.5">
 			<div aria-hidden="true" class={sprockets}></div>
+
 			<ul class="flex justify-center gap-4 px-8">
 				<li class="flex flex-col items-start gap-2">
 					<div class="flex h-57.5 w-65 items-center justify-center bg-muted">
@@ -45,6 +45,7 @@
 					</div>
 					{@render caption('01A', m['landing.frames.strip_4']())}
 				</li>
+
 				<li class="flex flex-col items-start gap-2">
 					<div class="flex h-57.5 w-65 items-center justify-center bg-muted">
 						<div class="grid h-44 w-40 grid-cols-2 gap-1.5 bg-paper px-2 pt-2 pb-6">
@@ -53,6 +54,7 @@
 					</div>
 					{@render caption('02A', m['landing.frames.grid']())}
 				</li>
+
 				<li class="flex flex-col items-start gap-2">
 					<div
 						class="relative flex h-57.5 w-65 items-center justify-center bg-muted outline-3 -outline-offset-3 outline-primary"
@@ -60,6 +62,7 @@
 						<div class="h-41 w-34 bg-paper px-2.5 pt-2.5 pb-10">
 							<div class="size-full bg-[#5e5c57]"></div>
 						</div>
+
 						<Badge
 							class="absolute top-2.5 right-2.5 bg-primary px-2 py-1 font-mono text-[11px] font-normal tracking-widest text-primary-foreground"
 						>
@@ -68,6 +71,7 @@
 					</div>
 					{@render caption('03A', m['landing.frames.polaroid']())}
 				</li>
+
 				<li class="flex flex-col items-start gap-2">
 					<div class="flex h-57.5 w-65 items-center justify-center bg-muted">
 						<div class="flex h-49 w-21 flex-col gap-1.5 bg-primary p-1.75">
@@ -77,6 +81,7 @@
 					</div>
 					{@render caption('04A', m['landing.frames.strip_color']())}
 				</li>
+
 				<li class="flex flex-col items-start gap-2">
 					<div
 						class="flex h-57.5 w-65 items-center justify-center border-2 border-dashed border-[#5e5c57] font-display text-lg font-extrabold uppercase font-stretch-112%"
@@ -86,6 +91,7 @@
 					{@render caption('05A', m['landing.frames.seasonal']())}
 				</li>
 			</ul>
+
 			<div aria-hidden="true" class={sprockets}></div>
 		</div>
 	</div>
@@ -100,6 +106,5 @@
 </section>
 
 {#snippet caption(code: string, name: string)}
-	<span class="font-mono text-xs tracking-[0.12em] text-[#d99a3e] uppercase">▸ {code} · {name}</span
-	>
+	<span class="font-mono text-xs tracking-[0.12em] text-[#d99a3e] uppercase">▸ {code} · {name}</span>
 {/snippet}

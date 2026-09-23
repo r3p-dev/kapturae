@@ -85,16 +85,20 @@
 				<RiArrowLeftSLine class="size-4.5" />
 				{m['landing.editor.change_frame']()}
 			</Button>
+
 			<span class="font-mono text-xs tracking-[0.12em] text-muted-foreground uppercase max-md:hidden">
 				{m['landing.editor.status']()}
 			</span>
+
 			<div class="flex items-center gap-2">
 				<Button variant="outline" size="icon-lg" aria-label={m['landing.editor.undo']()}>
 					<RiArrowGoBackLine class="size-4.5" />
 				</Button>
+
 				<Button variant="outline" size="icon-lg" aria-label={m['landing.editor.redo']()}>
 					<RiArrowGoForwardLine class="size-4.5" />
 				</Button>
+
 				<Button class="h-11 gap-2 px-4.5 font-mono font-normal tracking-widest max-sm:px-3">
 					<RiDownload2Line class="size-4" />
 					<span class="max-sm:sr-only">{m['landing.editor.download']()}</span>
@@ -124,6 +128,7 @@
 
 			<div class="relative flex flex-col items-center justify-center gap-6 bg-background px-4 py-10 lg:py-0">
 				<span aria-hidden="true" class="absolute top-4 left-4 size-5.5 border-t-2 border-l-2 border-[#5e5c57]"></span>
+
 				<span aria-hidden="true" class="absolute right-4 bottom-4 size-5.5 border-r-2 border-b-2 border-[#5e5c57]"
 				></span>
 
@@ -143,6 +148,7 @@
 							{/if}
 						</div>
 					{/each}
+
 					<div
 						class="flex h-7.5 shrink-0 items-center justify-center font-display text-[13px] font-extrabold tracking-[0.06em] text-ink font-stretch-115%"
 					>
@@ -159,6 +165,7 @@
 						<RiRestartLine class="size-4 text-primary" />
 						{m['landing.editor.retake']()}
 					</Button>
+
 					<span class="font-mono text-[11px] tracking-[0.06em] whitespace-pre-line text-muted-foreground">
 						{m['landing.editor.retake_hint']()}
 					</span>
@@ -169,6 +176,7 @@
 				<span class="font-mono text-xs tracking-[0.14em] text-muted-foreground uppercase">
 					{m['landing.editor.adjustments']()}
 				</span>
+
 				{#each adjustments as adjustment, i (i)}
 					<div class="flex flex-col gap-2.5">
 						<div class="flex justify-between text-[13px]">
@@ -177,6 +185,7 @@
 								{formatSigned(adjustment.value, adjustment.min < 0)}
 							</span>
 						</div>
+
 						<Slider
 							type="single"
 							bind:value={adjustment.value}
@@ -190,6 +199,7 @@
 				<span class="mt-1 font-mono text-xs tracking-[0.14em] text-muted-foreground uppercase">
 					{m['landing.editor.filters_label']()}
 				</span>
+
 				<ToggleGroup.Root
 					type="single"
 					spacing={2}
@@ -225,6 +235,7 @@
 				</Badge>
 			</li>
 		{/each}
+
 		<li>
 			<Badge
 				class="bg-primary px-3.75 py-2.5 font-mono text-[13px] font-normal tracking-[0.08em] text-primary-foreground"
