@@ -139,5 +139,31 @@
 			"output": "Output",
 			"output_value": "PNG & GIF"
 		}
+	},
+	"error": {
+		"meta_title": "Error {status} | Kapturae",
+		"code": "CODE {status}",
+		"nav_home": "Home",
+		"not_found": {
+			"hud": "NO SIGNAL",
+			"title": "This frame is empty.",
+			"body": "The page you're looking for doesn't exist. The link may have a typo, or the content has moved.",
+			"primary": "Back to home",
+			"secondary": "Start a photo session"
+		},
+		"server": {
+			"hud": "SHUTTER JAMMED",
+			"title": "Something's jammed.",
+			"body": "The problem is on our side, not yours. Your current session isn't lost as long as this tab stays open. Try again in a moment.",
+			"primary": "Try again",
+			"secondary": "Report it"
+		},
+		"gone": {
+			"hud": "END OF ROLL",
+			"title": "This link has expired.",
+			"body": "Result links only last 24 hours. That time has passed, so every file has been permanently deleted and can't be recovered.",
+			"primary": "Shoot again, free",
+			"secondary": "Deletion policy"
+		}
 	}
 }

@@ -139,5 +139,31 @@
 			"output": "Hasil",
 			"output_value": "PNG & GIF"
 		}
+	},
+	"error": {
+		"meta_title": "Error {status} | Kapturae",
+		"code": "KODE {status}",
+		"nav_home": "Beranda",
+		"not_found": {
+			"hud": "NO SIGNAL",
+			"title": "Frame ini kosong.",
+			"body": "Halaman yang kamu cari tidak ada. Mungkin tautannya salah ketik, atau isinya sudah dipindah.",
+			"primary": "Kembali ke beranda",
+			"secondary": "Mulai sesi foto"
+		},
+		"server": {
+			"hud": "RANA MACET",
+			"title": "Ada yang macet di sini.",
+			"body": "Gangguan dari sisi kami, bukan dari kamu. Sesi yang sedang berjalan tidak hilang selama tab ini belum ditutup. Coba lagi sebentar lagi.",
+			"primary": "Coba lagi",
+			"secondary": "Lapor ke kami"
+		},
+		"gone": {
+			"hud": "ROL HABIS",
+			"title": "Tautannya sudah kedaluwarsa.",
+			"body": "Tautan hasil hanya berlaku 24 jam. Waktunya sudah lewat, jadi semua file sudah dihapus permanen dan tidak bisa dipulihkan.",
+			"primary": "Foto lagi, gratis",
+			"secondary": "Kebijakan penghapusan"
+		}
 	}
 }

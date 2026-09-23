@@ -82,6 +82,17 @@
 	--color-body: var(--body);
 	--animate-shutter-flash: shutter-flash 0.7s ease-out forwards;
 	--animate-gif-frame: gif-frame 2s steps(1, end) infinite;
+	--animate-rec-blink: rec-blink 1.2s ease-in-out infinite;
+
+	@keyframes rec-blink {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0.25;
+		}
+	}
 
 	@keyframes shutter-flash {
 		from {
