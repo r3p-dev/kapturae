@@ -9,7 +9,7 @@
 	import ShutterRelease from '$lib/components/molecules/shutter-release.svelte'
 	import { m } from '$lib/paraglide/messages'
 	import { localizeHref } from '$lib/paraglide/runtime'
-	import { FRAME_ASSETS } from '$lib/session'
+	import { FRAME_ASSETS } from '$lib/frames'
 
 	let {
 		size,

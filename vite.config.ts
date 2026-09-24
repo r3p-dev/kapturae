@@ -4,6 +4,7 @@ import adapter from 'svelte-adapter-bun'
 import { sveltekit } from '@sveltejs/kit/vite'
 import { defineConfig } from 'vite'
 import { paraglideConfig } from './paraglide.config.ts'
+import { frames } from './scripts/frames.ts'
 import { legalUpdated } from './scripts/legal-updated.ts'
 
 export default defineConfig({
@@ -12,6 +13,7 @@ export default defineConfig({
 	},
 
 	plugins: [
+		frames(),
 		tailwindcss(),
 		sveltekit({
 			compilerOptions: {

@@ -376,17 +376,6 @@
 			"edit": "Edit",
 			"done": "Selesai"
 		},
-		"frames": {
-			"classic": "Klasik Putih",
-			"film": "Film Hitam",
-			"christmas": "Natal",
-			"birthday": "Ulang Tahun",
-			"lines": "Garis Minimal",
-			"accent": "Warna Aksen",
-			"christmas_label": "Selamat Natal",
-			"birthday_label": "Happy Birthday",
-			"lines_label": "[Teks kamu]"
-		},
 		"frame": {
 			"meta_title": "Pilih frame | Kapturae",
 			"meta_description": "Pilih ukuran cetak dan tema frame sebelum kamera menyala.",

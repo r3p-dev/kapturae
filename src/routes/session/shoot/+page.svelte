@@ -15,13 +15,13 @@
 	import CameraStatus from '$lib/components/molecules/camera-status.svelte'
 	import TimerPicker from '$lib/components/molecules/timer-picker.svelte'
 	import SessionHeader from '$lib/components/organisms/session-header.svelte'
-	import FramePreview from '$lib/components/atoms/frame-preview.svelte'
+	import FrameImage from '$lib/components/atoms/frame-image.svelte'
 	import { Button } from '$lib/components/ui/button'
 	import { Camera } from '$lib/camera.svelte'
 	import { m } from '$lib/paraglide/messages'
 	import { localizeHref } from '$lib/paraglide/runtime'
-	import { DESIGNS, FRAME_DESIGNS, PRINT_SIZES, SIZES, pick } from '$lib/session'
-	import { FRAME_NAMES, frameLabel } from '$lib/session-messages'
+	import { FRAMES } from '$lib/frames'
+	import { PRINT_SIZES, SIZES, pick } from '$lib/session'
 	import { shots, useShots } from '$lib/shots.svelte'
 	import { cn } from '$lib/utils'
 
@@ -30,15 +30,18 @@
 	const FLASH_MS = 700
 
 	const params = page.url.searchParams
-	const size = pick(PRINT_SIZES, params.get('size')) ?? '2x6'
-	const frame = pick(FRAME_DESIGNS, params.get('frame')) ?? 'classic'
+	const requested = pick(PRINT_SIZES, params.get('size')) ?? '2x6'
+	const frame =
+		FRAMES.find((f) => f.id === params.get('frame')) ??
+		FRAMES.find((f) => f.size === requested) ??
+		FRAMES[0]
+	const size = frame.size
 	const spec = SIZES[size]
-	const design = DESIGNS[frame]
-	const query = new URLSearchParams({ size, frame })
+	const query = new URLSearchParams({ size, frame: frame.id })
 	const back = localizeHref(`/session/frame?${query}`)
 	const next = localizeHref(`/session/edit?${query}`)
 
-	if (browser) useShots(size, frame)
+	if (browser) useShots(size, frame.id)
 
 	const camera = new Camera()
 
@@ -48,7 +51,7 @@
 	let sound: HTMLAudioElement | undefined
 	let alive = true
 
-	const total = spec.shots
+	const total = frame.slots.length
 	const taken = $derived(shots.photos.length)
 	const complete = $derived(taken >= total)
 	const current = $derived(Math.min(taken + 1, total))
@@ -138,9 +141,7 @@
 	<div
 		aria-hidden="true"
 		class="absolute inset-0 -z-10 rail:hidden"
-		style:background-color={design.bg}
-		style:background-image={design.pattern}
-		style:background-size={design.patternSize}
+		style:background-color={frame.color}
 	></div>
 
 	<SessionHeader step="shoot" class="hidden rail:flex" />
@@ -174,10 +175,8 @@
 			<span
 				class="h-1 w-10"
 				style:background-color={i === taken && !complete
-					? frame === 'accent'
-						? design.ink
-						: 'var(--primary)'
-					: `color-mix(in srgb, ${design.ink} ${i < taken ? 100 : 30}%, transparent)`}
+					? 'var(--primary)'
+					: `color-mix(in srgb, ${frame.ink} ${i < taken ? 100 : 30}%, transparent)`}
 			></span>
 		{/each}
 	</div>
@@ -304,16 +303,16 @@
 
 		<div
 			class="flex flex-col items-center gap-1 py-4 text-center rail:hidden"
-			style:color={design.ink}
+			style:color={frame.ink}
 		>
 			<span class="font-display text-3xl font-black tracking-[0.06em] uppercase font-stretch-115%">
-				{frameLabel(frame)}
+				{m['common.brand']()}
 			</span>
 			<span class="{mono} text-[10px] tracking-[0.16em]">
 				{m['session.shoot.frame_meta']({
 					brand: m['common.brand'](),
 					size: spec.label,
-					name: FRAME_NAMES[frame]()
+					name: frame.name
 				})}
 			</span>
 		</div>
@@ -326,14 +325,14 @@
 		>
 			<span class="{mono} flex justify-between self-stretch text-xs text-muted-foreground">
 				<span>{m['session.shoot.in_frame']()}</span>
-				<span>{spec.label} · {FRAME_NAMES[frame]()}</span>
+				<span>{spec.label} · {frame.name}</span>
 			</span>
 
 			<div
 				class="flex min-h-0 flex-1 items-center"
 				style:--h="min(588px, calc(100svh - 250px), calc(var(--w) / {spec.ratio}))"
 			>
-				<FramePreview design={frame} {size}>
+				<FrameImage {frame}>
 					{#snippet photo(i)}
 						{#if shots.photos[i]}
 							<img src={shots.photos[i]} alt="" class="absolute inset-0 size-full object-cover" />
@@ -360,7 +359,7 @@
 							</span>
 						{/if}
 					{/snippet}
-				</FramePreview>
+				</FrameImage>
 			</div>
 
 			{#if complete}

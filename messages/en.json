@@ -376,17 +376,6 @@
 			"edit": "Edit",
 			"done": "Done"
 		},
-		"frames": {
-			"classic": "Classic White",
-			"film": "Black Film",
-			"christmas": "Christmas",
-			"birthday": "Birthday",
-			"lines": "Minimal Lines",
-			"accent": "Accent Color",
-			"christmas_label": "Merry Christmas",
-			"birthday_label": "Happy Birthday",
-			"lines_label": "[Your text]"
-		},
 		"frame": {
 			"meta_title": "Choose a frame | Kapturae",
 			"meta_description": "Pick a print size and a frame theme before the camera turns on.",

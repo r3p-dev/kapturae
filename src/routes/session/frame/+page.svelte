@@ -4,30 +4,23 @@
 	import RiArrowRightLine from 'remixicon-svelte/icons/arrow-right-line'
 	import Corners from '$lib/components/atoms/corners.svelte'
 	import SessionHeader from '$lib/components/organisms/session-header.svelte'
-	import FramePreview from '$lib/components/atoms/frame-preview.svelte'
+	import FrameImage from '$lib/components/atoms/frame-image.svelte'
+	import FramePlaceholder from '$lib/components/atoms/frame-placeholder.svelte'
 	import { Button } from '$lib/components/ui/button'
 	import { m } from '$lib/paraglide/messages'
 	import { localizeHref } from '$lib/paraglide/runtime'
-	import {
-		FRAME_DESIGNS,
-		PRINT_SIZES,
-		SESSION_STEPS,
-		SIZES,
-		pick,
-		type FrameDesign,
-		type PrintSize
-	} from '$lib/session'
-	import { FRAME_NAMES } from '$lib/session-messages'
+	import { FRAMES, type FrameId } from '$lib/frames'
+	import { PRINT_SIZES, SESSION_STEPS, SIZES, pick, type PrintSize } from '$lib/session'
 
-	type Selection = { size: PrintSize; frame: FrameDesign }
+	type Selection = { size: PrintSize; frame: FrameId }
 
 	const params = page.url.searchParams
-	const initialSize = pick(PRINT_SIZES, params.get('size')) ?? '2x6'
-	const initialFrame = pick(FRAME_DESIGNS, params.get('frame'))
+	const initialFrame = FRAMES.find((f) => f.id === params.get('frame'))
+	const initialSize = initialFrame?.size ?? pick(PRINT_SIZES, params.get('size')) ?? '2x6'
 
 	let browse = $state<PrintSize>(initialSize)
 	let selected = $state<Selection | undefined>(
-		initialFrame && { size: initialSize, frame: initialFrame }
+		initialFrame && { size: initialFrame.size, frame: initialFrame.id }
 	)
 
 	export const snapshot: Snapshot<{ browse: PrintSize; selected?: Selection }> = {
@@ -35,19 +28,23 @@
 		restore: (value) => ({ browse, selected } = value)
 	}
 
-	const isSelected = (size: PrintSize, frame: FrameDesign) =>
-		selected?.size === size && selected.frame === frame
+	const isSelected = (frame: FrameId) => selected?.frame === frame
 
 	const pad = (n: number) => String(n).padStart(2, '0')
 	const current = SESSION_STEPS.indexOf('frame')
 	const step = { n: pad(current + 1), total: pad(SESSION_STEPS.length) }
 
-	const shown = $derived(selected?.size ?? browse)
+	const frames = $derived(FRAMES.filter((f) => f.size === browse))
+	const chosen = $derived(FRAMES.find((f) => f.id === selected?.frame))
+	const shown = $derived(chosen?.size ?? browse)
 	const spec = $derived(SIZES[shown])
 	const facts = $derived([
 		[m['session.frame.size'](), `${spec.label} · ${spec.cm}`],
-		[m['session.frame.shots_label'](), m['session.frame.shots']({ n: spec.shots })],
-		[m['session.frame.theme'](), selected ? FRAME_NAMES[selected.frame]() : '—']
+		[
+			m['session.frame.shots_label'](),
+			m['session.frame.shots']({ n: chosen?.slots.length ?? spec.shots })
+		],
+		[m['session.frame.theme'](), chosen?.name ?? '—']
 	])
 	const next = $derived(selected && localizeHref(`/session/shoot?${new URLSearchParams(selected)}`))
 
@@ -62,7 +59,11 @@
 </svelte:head>
 
 {#snippet preview(cls: string)}
-	<FramePreview design={selected?.frame} size={shown} class={cls} />
+	{#if chosen}
+		<FrameImage frame={chosen} class={cls} />
+	{:else}
+		<FramePlaceholder size={shown} class={cls} />
+	{/if}
 {/snippet}
 
 {#snippet cta()}
@@ -148,29 +149,29 @@
 			>
 				<legend class="sr-only">{m['session.frame.frames_label']()}</legend>
 
-				{#each FRAME_DESIGNS as id, i (id)}
+				{#each frames as frame, i (frame.id)}
 					<label
 						class="relative flex h-32 w-26 shrink-0 cursor-pointer flex-col items-center justify-center gap-1.5 bg-[#151514] p-1.5 outline-1 -outline-offset-1 outline-[#2a2a28] has-checked:outline-3 has-checked:-outline-offset-3 has-checked:outline-primary rail:h-auto rail:w-auto rail:gap-3 rail:p-3 {focus}"
 					>
 						<input
 							type="radio"
 							name="frame"
-							value={id}
-							checked={isSelected(browse, id)}
-							onchange={() => (selected = { size: browse, frame: id })}
+							value={frame.id}
+							checked={isSelected(frame.id)}
+							onchange={() => (selected = { size: frame.size, frame: frame.id })}
 							class="sr-only"
 						/>
 
-						<FramePreview design={id} size={browse} class="[--h:92px] rail:[--h:176px]" />
+						<FrameImage {frame} class="[--h:92px] rail:[--h:176px]" />
 
 						<span
 							class="font-mono text-[10px] tracking-[0.06em] whitespace-nowrap uppercase rail:text-xs rail:tracking-widest"
 						>
 							<span class="hidden rail:inline">{pad(i + 1)} ·</span>
-							{FRAME_NAMES[id]()}
+							{frame.name}
 						</span>
 
-						{#if isSelected(browse, id)}
+						{#if isSelected(frame.id)}
 							<span
 								aria-hidden="true"
 								class="absolute top-2.5 right-2.5 hidden bg-primary px-2 py-0.75 font-mono text-[11px] tracking-widest text-primary-foreground uppercase rail:block"

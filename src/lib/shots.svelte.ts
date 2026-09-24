@@ -1,8 +1,9 @@
-import type { FrameDesign, PrintSize } from '$lib/session'
+import type { FrameId } from '$lib/frames'
+import type { PrintSize } from '$lib/session'
 
 export const shots = $state<{
 	size: PrintSize | null
-	frame: FrameDesign | null
+	frame: FrameId | null
 	photos: string[]
 }>({
 	size: null,
@@ -10,7 +11,7 @@ export const shots = $state<{
 	photos: []
 })
 
-export function useShots(size: PrintSize, frame: FrameDesign) {
+export function useShots(size: PrintSize, frame: FrameId) {
 	if (shots.size === size && shots.frame === frame) return
 	clearShots()
 	shots.size = size
