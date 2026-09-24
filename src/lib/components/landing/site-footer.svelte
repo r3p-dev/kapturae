@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Logo from '$lib/components/logo.svelte'
+	import Logo from '$lib/components/atoms/logo.svelte'
 	import { m } from '$lib/paraglide/messages'
 	import { localizeHref } from '$lib/paraglide/runtime'
 

@@ -1,10 +1,10 @@
 <script lang="ts">
 	import RiBatteryFill from 'remixicon-svelte/icons/battery-fill'
-	import LangSwitch from '$lib/components/lang-switch.svelte'
-	import Logo from '$lib/components/logo.svelte'
+	import LangSwitch from '$lib/components/molecules/lang-switch.svelte'
+	import Logo from '$lib/components/atoms/logo.svelte'
 	import SessionShutter from '$lib/components/organisms/session-shutter.svelte'
 	import { m } from '$lib/paraglide/messages'
-	import Corners from './corners.svelte'
+	import Corners from '$lib/components/atoms/corners.svelte'
 	import { FRAME_COUNT } from './section-heading.svelte'
 
 	const dial = [

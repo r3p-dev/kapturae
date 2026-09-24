@@ -54,14 +54,7 @@ export const SIZES: Record<PrintSize, SizeSpec> = {
 	}
 }
 
-export const FRAME_DESIGNS = [
-	'classic',
-	'film',
-	'christmas',
-	'birthday',
-	'lines',
-	'accent'
-] as const
+export const FRAME_DESIGNS = ['classic', 'film', 'christmas', 'birthday', 'lines', 'accent'] as const
 
 export type FrameDesign = (typeof FRAME_DESIGNS)[number]
 

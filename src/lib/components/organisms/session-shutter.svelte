@@ -39,11 +39,7 @@
 	let destroyed = false
 
 	const status = $derived(
-		phase === null
-			? idle
-			: phase === 'loading'
-				? m['common.shutter.loading']()
-				: m['common.shutter.busy']()
+		phase === null ? idle : phase === 'loading' ? m['common.shutter.loading']() : m['common.shutter.busy']()
 	)
 
 	function preloadImage(src: string) {
@@ -53,8 +49,7 @@
 	}
 
 	async function shoot(event: MouseEvent) {
-		if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
-			return
+		if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
 
 		event.preventDefault()
 

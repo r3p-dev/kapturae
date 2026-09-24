@@ -376,11 +376,6 @@
 			"edit": "Edit",
 			"done": "Done"
 		},
-		"sizes": {
-			"strip": "Strip",
-			"postcard": "Postcard",
-			"portrait": "Portrait"
-		},
 		"frames": {
 			"classic": "Classic White",
 			"film": "Black Film",
@@ -401,7 +396,6 @@
 			"title_accent": "frame.",
 			"sizes_label": "Print size",
 			"frames_label": "Frame theme",
-			"photos": "{n} photos",
 			"selected": "Selected",
 			"preview": "Preview",
 			"size": "Size",
@@ -409,7 +403,40 @@
 			"shots": "{n} shots",
 			"theme": "Theme",
 			"cta": "Turn on camera",
-			"note": "The frame locks once the photos are taken. You can still change its color in the editor."
+			"note": "The frame locks once the photos are taken. You can still change its color in the editor.",
+			"pick_first": "Pick a frame first."
+		},
+		"shoot": {
+			"meta_title": "Take photos | Kapturae",
+			"meta_description": "Pose in front of the camera. Photos are taken right in your browser, one per slot.",
+			"camera_label": "Camera",
+			"live": "Live",
+			"shot": "{n} / {total}",
+			"shot_hud": "Photo {n} / {total}",
+			"mirror": "Mirror on",
+			"timer_label": "Self-timer",
+			"timer_cycle": "Self-timer {n} seconds, tap to change",
+			"shutter": "Take photo",
+			"flip": "Flip camera",
+			"back": "Back to frame picker",
+			"hint_idle": "Press the red button",
+			"hint_busy": "Hold the pose…",
+			"hint_done": "All slots filled",
+			"in_frame": "In the frame",
+			"frame_meta": "{brand} · {size} frame · {name}",
+			"next": "Continue to editor",
+			"note": "Not quite right? Every slot can be retaken in the editor.",
+			"camera": {
+				"pending": "Starting camera…",
+				"denied_title": "Camera blocked",
+				"denied_body": "Allow camera access in your browser settings, then try again.",
+				"unavailable_title": "No camera found",
+				"unavailable_body": "Connect a camera, or open this page on a device that has one.",
+				"error_title": "Camera didn't start",
+				"error_body": "Another app may be using it. Close that app, then try again.",
+				"retry": "Try again",
+				"help": "Camera guide"
+			}
 		}
 	}
 }

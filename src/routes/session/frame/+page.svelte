@@ -2,11 +2,9 @@
 	import type { Snapshot } from '@sveltejs/kit'
 	import { page } from '$app/state'
 	import RiArrowRightLine from 'remixicon-svelte/icons/arrow-right-line'
-	import RiCloseLine from 'remixicon-svelte/icons/close-line'
-	import Corners from '$lib/components/landing/corners.svelte'
-	import LangSwitch from '$lib/components/lang-switch.svelte'
-	import Logo from '$lib/components/logo.svelte'
-	import FramePreview from '$lib/components/session/frame-preview.svelte'
+	import Corners from '$lib/components/atoms/corners.svelte'
+	import SessionHeader from '$lib/components/organisms/session-header.svelte'
+	import FramePreview from '$lib/components/atoms/frame-preview.svelte'
 	import { Button } from '$lib/components/ui/button'
 	import { m } from '$lib/paraglide/messages'
 	import { localizeHref } from '$lib/paraglide/runtime'
@@ -17,57 +15,42 @@
 		SIZES,
 		pick,
 		type FrameDesign,
-		type PrintSize,
-		type SessionStep
+		type PrintSize
 	} from '$lib/session'
+	import { FRAME_NAMES } from '$lib/session-messages'
 
-	type Message = () => string
-
-	const steps: Record<SessionStep, Message> = {
-		frame: m['session.steps.frame'],
-		shoot: m['session.steps.shoot'],
-		edit: m['session.steps.edit'],
-		done: m['session.steps.done']
-	}
-
-	const kinds: Record<PrintSize, Message> = {
-		'2x6': m['session.sizes.strip'],
-		'4x6': m['session.sizes.postcard'],
-		'5x7': m['session.sizes.portrait']
-	}
-
-	const names: Record<FrameDesign, Message> = {
-		classic: m['session.frames.classic'],
-		film: m['session.frames.film'],
-		christmas: m['session.frames.christmas'],
-		birthday: m['session.frames.birthday'],
-		lines: m['session.frames.lines'],
-		accent: m['session.frames.accent']
-	}
+	type Selection = { size: PrintSize; frame: FrameDesign }
 
 	const params = page.url.searchParams
-	let size = $state<PrintSize>(pick(PRINT_SIZES, params.get('size')) ?? '2x6')
-	let frame = $state<FrameDesign>(pick(FRAME_DESIGNS, params.get('frame')) ?? 'classic')
+	const initialSize = pick(PRINT_SIZES, params.get('size')) ?? '2x6'
+	const initialFrame = pick(FRAME_DESIGNS, params.get('frame'))
 
-	export const snapshot: Snapshot<{ size: PrintSize; frame: FrameDesign }> = {
-		capture: () => ({ size, frame }),
-		restore: (value) => ({ size, frame } = value)
+	let browse = $state<PrintSize>(initialSize)
+	let selected = $state<Selection | undefined>(
+		initialFrame && { size: initialSize, frame: initialFrame }
+	)
+
+	export const snapshot: Snapshot<{ browse: PrintSize; selected?: Selection }> = {
+		capture: () => ({ browse, selected }),
+		restore: (value) => ({ browse, selected } = value)
 	}
 
-	const home = localizeHref('/').replace(/(.)\/$/, '$1')
+	const isSelected = (size: PrintSize, frame: FrameDesign) =>
+		selected?.size === size && selected.frame === frame
+
 	const pad = (n: number) => String(n).padStart(2, '0')
 	const current = SESSION_STEPS.indexOf('frame')
 	const step = { n: pad(current + 1), total: pad(SESSION_STEPS.length) }
 
-	const spec = $derived(SIZES[size])
+	const shown = $derived(selected?.size ?? browse)
+	const spec = $derived(SIZES[shown])
 	const facts = $derived([
 		[m['session.frame.size'](), `${spec.label} · ${spec.cm}`],
 		[m['session.frame.shots_label'](), m['session.frame.shots']({ n: spec.shots })],
-		[m['session.frame.theme'](), names[frame]()]
+		[m['session.frame.theme'](), selected ? FRAME_NAMES[selected.frame]() : '—']
 	])
-	const next = $derived(localizeHref(`/session/shoot?${new URLSearchParams({ size, frame })}`))
+	const next = $derived(selected && localizeHref(`/session/shoot?${new URLSearchParams(selected)}`))
 
-	const mono = 'font-mono text-xs tracking-[0.14em] uppercase'
 	const bracket = 'h-3.5 w-1.75 border-2 border-current'
 	const focus =
 		'has-focus-visible:ring-2 has-focus-visible:ring-foreground has-focus-visible:ring-offset-2'
@@ -79,13 +62,14 @@
 </svelte:head>
 
 {#snippet preview(cls: string)}
-	<FramePreview design={frame} {size} class={cls} />
+	<FramePreview design={selected?.frame} size={shown} class={cls} />
 {/snippet}
 
 {#snippet cta()}
 	<Button
-		href={next}
-		class="h-14 w-full gap-2.5 font-display text-[15px] font-extrabold tracking-[0.06em] font-stretch-112% rail:gap-3 desktop:text-base"
+		href={next ?? '#'}
+		disabled={!next}
+		class="h-14 w-full gap-2.5 font-display text-[15px] font-extrabold tracking-[0.06em] font-stretch-112% aria-disabled:pointer-events-none aria-disabled:opacity-40 rail:gap-3 desktop:text-base"
 	>
 		{m['session.frame.cta']()}
 		<RiArrowRightLine aria-hidden="true" class="size-4.5 rail:size-5" />
@@ -95,62 +79,7 @@
 <div
 	class="dark flex min-h-svh scrollbar-thin [scrollbar-color:var(--border)_transparent] flex-col bg-background text-foreground scheme-dark rail:h-svh"
 >
-	<header
-		class="flex h-14 shrink-0 items-center justify-between border-b border-[#2a2a28] px-2 rail:h-18 rail:px-8"
-	>
-		<a
-			href={home}
-			aria-label={m['session.exit']()}
-			class="flex size-11 items-center justify-center text-foreground rail:hidden"
-		>
-			<RiCloseLine aria-hidden="true" class="size-5" />
-		</a>
-
-		<a
-			href={home}
-			class="hidden items-center gap-3 text-foreground no-underline rail:flex desktop:w-70"
-		>
-			<Logo class="size-9 shrink-0 text-paper" />
-			<span
-				class="font-display text-base font-extrabold tracking-[0.04em] uppercase font-stretch-118%"
-			>
-				{m['common.brand']()}
-			</span>
-		</a>
-
-		<span class="{mono} text-[11px] rail:text-xs desktop:hidden">
-			{m['session.step']({ ...step, name: steps.frame() })}
-		</span>
-
-		<nav aria-label={m['session.steps_aria']()} class="hidden desktop:block">
-			<ol class="m-0 flex list-none items-center gap-3 p-0">
-				{#each SESSION_STEPS as key, i (key)}
-					<li class="flex items-center gap-3">
-						{#if i > 0}<span aria-hidden="true" class="h-px w-7 bg-[#3a3936]"></span>{/if}
-						<span
-							aria-current={i === current ? 'step' : undefined}
-							class="{mono} px-2.5 py-1.25 text-[#8c8983] aria-[current=step]:border-[1.5px] aria-[current=step]:border-primary aria-[current=step]:text-primary-text"
-						>
-							{pad(i + 1)}
-							{steps[key]()}
-						</span>
-					</li>
-				{/each}
-			</ol>
-		</nav>
-
-		<div class="flex items-center gap-3 desktop:w-70 desktop:justify-end">
-			<LangSwitch class="text-xs" />
-
-			<a
-				href={home}
-				aria-label={m['session.exit']()}
-				class="hidden size-11 items-center justify-center border border-[#3a3936] text-foreground hover:border-foreground rail:flex"
-			>
-				<RiCloseLine aria-hidden="true" class="size-4.5" />
-			</a>
-		</div>
-	</header>
+	<SessionHeader step="frame" />
 
 	<div class="flex flex-1 flex-col rail:min-h-0 rail:flex-row">
 		<main
@@ -179,9 +108,13 @@
 					{@const s = SIZES[id]}
 
 					<label
-						class="flex h-19 cursor-pointer flex-col items-center justify-center gap-1 border-[1.5px] border-foreground has-checked:bg-foreground has-checked:text-background rail:h-23 rail:flex-1 rail:basis-0 rail:flex-row rail:justify-start rail:gap-4.5 rail:px-5 {focus}"
+						class="relative flex h-14 cursor-pointer items-center justify-center border-[1.5px] border-foreground has-checked:bg-foreground has-checked:text-background rail:h-23 rail:flex-1 rail:basis-0 rail:justify-start rail:gap-4.5 rail:px-5 {focus}"
 					>
-						<input type="radio" name="size" value={id} bind:group={size} class="sr-only" />
+						<input type="radio" name="size" value={id} bind:group={browse} class="sr-only" />
+
+						{#if selected?.size === id}
+							<span aria-hidden="true" class="absolute top-1.5 right-1.5 size-2 bg-primary"></span>
+						{/if}
 
 						<span
 							aria-hidden="true"
@@ -189,19 +122,10 @@
 							style:width="{42 * s.ratio}px"
 						></span>
 
-						<span class="flex flex-col items-center gap-1 rail:items-start">
-							<span
-								class="font-display text-[22px] leading-none font-black font-stretch-115% rail:text-3xl rail:font-stretch-118%"
-							>
-								{s.label}
-							</span>
-
-							<span
-								class="font-mono text-[10px] tracking-[0.06em] uppercase rail:text-xs rail:tracking-[0.08em]"
-							>
-								<span class="hidden desktop:inline">{kinds[id]()} ·</span>
-								{m['session.frame.photos']({ n: s.shots })}
-							</span>
+						<span
+							class="font-display text-[22px] leading-none font-black font-stretch-115% rail:text-3xl rail:font-stretch-118%"
+						>
+							{s.label}
 						</span>
 					</label>
 				{/each}
@@ -228,18 +152,25 @@
 					<label
 						class="relative flex h-32 w-26 shrink-0 cursor-pointer flex-col items-center justify-center gap-1.5 bg-[#151514] p-1.5 outline-1 -outline-offset-1 outline-[#2a2a28] has-checked:outline-3 has-checked:-outline-offset-3 has-checked:outline-primary rail:h-auto rail:w-auto rail:gap-3 rail:p-3 {focus}"
 					>
-						<input type="radio" name="frame" value={id} bind:group={frame} class="sr-only" />
+						<input
+							type="radio"
+							name="frame"
+							value={id}
+							checked={isSelected(browse, id)}
+							onchange={() => (selected = { size: browse, frame: id })}
+							class="sr-only"
+						/>
 
-						<FramePreview design={id} {size} class="[--h:92px] rail:[--h:176px]" />
+						<FramePreview design={id} size={browse} class="[--h:92px] rail:[--h:176px]" />
 
 						<span
 							class="font-mono text-[10px] tracking-[0.06em] whitespace-nowrap uppercase rail:text-xs rail:tracking-widest"
 						>
 							<span class="hidden rail:inline">{pad(i + 1)} ·</span>
-							{names[id]()}
+							{FRAME_NAMES[id]()}
 						</span>
 
-						{#if id === frame}
+						{#if isSelected(browse, id)}
 							<span
 								aria-hidden="true"
 								class="absolute top-2.5 right-2.5 hidden bg-primary px-2 py-0.75 font-mono text-[11px] tracking-widest text-primary-foreground uppercase rail:block"
@@ -280,12 +211,19 @@
 			<div class="mt-auto">{@render cta()}</div>
 
 			<p class="m-0 text-[13px] leading-normal text-muted-foreground">
-				{m['session.frame.note']()}
+				{selected ? m['session.frame.note']() : m['session.frame.pick_first']()}
 			</p>
 		</aside>
 	</div>
 
-	<div class="sticky bottom-0 shrink-0 border-t border-[#2a2a28] bg-background p-4 rail:hidden">
+	<div
+		class="sticky bottom-0 flex shrink-0 flex-col gap-2.5 border-t border-[#2a2a28] bg-background p-4 rail:hidden"
+	>
+		{#if !selected}
+			<p class="m-0 text-center text-[13px] text-muted-foreground">
+				{m['session.frame.pick_first']()}
+			</p>
+		{/if}
 		{@render cta()}
 	</div>
 </div>

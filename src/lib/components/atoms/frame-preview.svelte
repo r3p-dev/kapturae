@@ -1,32 +1,41 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages'
-	import { DESIGNS, SIZES, type FrameDesign, type PrintSize } from '$lib/session'
+	import type { Snippet } from 'svelte'
+	import { DESIGNS, SIZES, type DesignSpec, type FrameDesign, type PrintSize } from '$lib/session'
+	import { frameLabel } from '$lib/session-messages'
 	import { cn } from '$lib/utils'
 
 	let {
 		design,
 		size,
+		photo,
 		class: className
-	}: { design: FrameDesign; size: PrintSize; class?: string } = $props()
+	}: {
+		design?: FrameDesign
+		size: PrintSize
+		photo?: Snippet<[index: number]>
+		class?: string
+	} = $props()
 
-	const labels: Partial<Record<FrameDesign, () => string>> = {
-		christmas: m['session.frames.christmas_label'],
-		birthday: m['session.frames.birthday_label'],
-		lines: m['session.frames.lines_label']
-	}
+	const EMPTY: DesignSpec = { bg: 'transparent', slot: '#262624', ink: 'transparent' }
 
 	const h = (k: number) => `calc(var(--h) * ${k})`
 
-	const d = $derived(DESIGNS[design])
+	const d = $derived(design ? DESIGNS[design] : EMPTY)
 	const s = $derived(SIZES[size])
-	const label = $derived((labels[design] ?? m['common.brand'])())
+	const label = $derived(design ? frameLabel(design) : '')
 	const pad = $derived(`max(3px, ${h(s.ratio * s.pad)})`)
 	const inset = $derived(`${pad} ${pad} ${h(s.padBottom)}`)
 </script>
 
 <span
 	aria-hidden="true"
-	class={cn('relative grid h-(--h) shrink-0 ring-1 ring-paper/14', className)}
+	class={cn(
+		'relative grid h-(--h) shrink-0',
+		design
+			? 'ring-1 ring-paper/14'
+			: 'outline-[1.5px] outline-offset-0 outline-[#5e5c57] outline-dashed',
+		className
+	)}
 	style:width={h(s.ratio)}
 	style:padding={inset}
 	style:gap="max(2px, calc({pad} * 0.7))"
@@ -37,7 +46,13 @@
 	style:background-size={d.patternSize}
 >
 	{#each s.slots as area, i (i)}
-		<span style:grid-area={area} style:background-color={d.slot}></span>
+		<span
+			class="relative min-h-0 min-w-0 overflow-hidden"
+			style:grid-area={area}
+			style:background-color={d.slot}
+		>
+			{@render photo?.(i)}
+		</span>
 	{/each}
 
 	<span

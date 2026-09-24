@@ -2,9 +2,9 @@
 	import { onMount } from 'svelte'
 	import { page } from '$app/state'
 	import RiArrowRightLine from 'remixicon-svelte/icons/arrow-right-line'
-	import Corners from '$lib/components/landing/corners.svelte'
+	import Corners from '$lib/components/atoms/corners.svelte'
 	import { Button } from '$lib/components/ui/button'
-	import Logo from '$lib/components/logo.svelte'
+	import Logo from '$lib/components/atoms/logo.svelte'
 	import { m } from '$lib/paraglide/messages'
 	import { getLocale, localizeHref } from '$lib/paraglide/runtime'
 

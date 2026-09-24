@@ -2,7 +2,7 @@
 	import * as ToggleGroup from '$lib/components/ui/toggle-group'
 	import { m } from '$lib/paraglide/messages'
 	import { cn } from '$lib/utils'
-	import Corners from './corners.svelte'
+	import Corners from '$lib/components/atoms/corners.svelte'
 	import SectionHeading from './section-heading.svelte'
 
 	const poses = [

@@ -376,11 +376,6 @@
 			"edit": "Edit",
 			"done": "Selesai"
 		},
-		"sizes": {
-			"strip": "Strip",
-			"postcard": "Kartu pos",
-			"portrait": "Potret"
-		},
 		"frames": {
 			"classic": "Klasik Putih",
 			"film": "Film Hitam",
@@ -401,7 +396,6 @@
 			"title_accent": "frame.",
 			"sizes_label": "Ukuran cetak",
 			"frames_label": "Tema frame",
-			"photos": "{n} foto",
 			"selected": "Dipilih",
 			"preview": "Pratinjau",
 			"size": "Ukuran",
@@ -409,7 +403,40 @@
 			"shots": "{n} jepretan",
 			"theme": "Tema",
 			"cta": "Nyalakan kamera",
-			"note": "Frame terkunci setelah foto diambil. Warnanya masih bisa diganti di editor."
+			"note": "Frame terkunci setelah foto diambil. Warnanya masih bisa diganti di editor.",
+			"pick_first": "Pilih frame dulu."
+		},
+		"shoot": {
+			"meta_title": "Ambil foto | Kapturae",
+			"meta_description": "Berpose di depan kamera. Foto diambil langsung di browsermu, satu per slot.",
+			"camera_label": "Kamera",
+			"live": "Live",
+			"shot": "{n} / {total}",
+			"shot_hud": "Foto {n} / {total}",
+			"mirror": "Cermin on",
+			"timer_label": "Timer",
+			"timer_cycle": "Timer {n} detik, ketuk untuk ganti",
+			"shutter": "Jepret",
+			"flip": "Balik kamera",
+			"back": "Kembali ke pilih frame",
+			"hint_idle": "Tekan tombol merah",
+			"hint_busy": "Tahan pose…",
+			"hint_done": "Semua slot terisi",
+			"in_frame": "Di dalam frame",
+			"frame_meta": "{brand} · frame {size} · {name}",
+			"next": "Lanjut ke editor",
+			"note": "Kurang pas? Tenang, tiap slot bisa di-retake di editor.",
+			"camera": {
+				"pending": "Menyalakan kamera…",
+				"denied_title": "Kamera diblokir",
+				"denied_body": "Izinkan akses kamera di pengaturan browser, lalu coba lagi.",
+				"unavailable_title": "Kamera tidak ditemukan",
+				"unavailable_body": "Sambungkan kamera, atau buka halaman ini di perangkat yang punya kamera.",
+				"error_title": "Kamera gagal menyala",
+				"error_body": "Mungkin sedang dipakai aplikasi lain. Tutup aplikasi itu, lalu coba lagi.",
+				"retry": "Coba lagi",
+				"help": "Panduan kamera"
+			}
 		}
 	}
 }

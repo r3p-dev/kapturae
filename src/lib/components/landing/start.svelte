@@ -1,7 +1,7 @@
 <script lang="ts">
 	import SessionShutter from '$lib/components/organisms/session-shutter.svelte'
 	import { m } from '$lib/paraglide/messages'
-	import Corners from './corners.svelte'
+	import Corners from '$lib/components/atoms/corners.svelte'
 	import SectionHeading from './section-heading.svelte'
 
 	const facts = [

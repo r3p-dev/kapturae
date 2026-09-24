@@ -33,10 +33,7 @@
 
 	<span
 		aria-live="polite"
-		class={cn(
-			'font-mono text-xs tracking-[0.16em] text-muted-foreground uppercase',
-			hideStatus && 'sr-only'
-		)}
+		class={cn('font-mono text-xs tracking-[0.16em] text-muted-foreground uppercase', hideStatus && 'sr-only')}
 	>
 		{status}
 	</span>
