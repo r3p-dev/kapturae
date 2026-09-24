@@ -22,7 +22,7 @@
 	import { recolor } from '$lib/recolor'
 	import { PRINT_SIZES, SESSION_STEPS, SIZES, pick } from '$lib/session'
 	import { MAX_ATTEMPTS, UploadError, uploadShare, type UploadFailure } from '$lib/share-upload'
-	import { clearShots, shots, useShots, type Share } from '$lib/shots.svelte'
+	import { clearShots, photoFor, shots, useShots, type Share } from '$lib/shots.svelte'
 	import { cn } from '$lib/utils'
 
 	type Stage = 'idle' | 'rendering' | 'uploading' | 'done' | 'failed' | 'empty'
@@ -111,7 +111,7 @@
 	async function publish() {
 		const edit = shots.edit ?? blankEdit(total)
 		const photos = edit.order.map((shot) => shots.photos[shot])
-		const bursts = edit.order.map((shot) => shots.bursts[shot] ?? [])
+		const bursts = edit.order.map((shot) => photoFor(shots.photos[shot])?.burst ?? [])
 		const key = sessionKey()
 
 		failure = ''

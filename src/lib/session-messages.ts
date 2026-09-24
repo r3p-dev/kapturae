@@ -1,6 +1,7 @@
 import { m } from '$lib/paraglide/messages'
 import type { SessionStep } from '$lib/session'
 import type { StickerId } from '$lib/stickers'
+import { UPLOAD_MAX_MB, UPLOAD_MAX_MP, UPLOAD_MIN_SIDE, type UploadProblem } from '$lib/upload'
 
 type Message = () => string
 
@@ -36,4 +37,13 @@ export const STICKER_LABELS: Record<StickerId, Message> = {
 	bubble: m['session.edit.stickers.bubble'],
 	snowman: m['session.edit.stickers.snowman'],
 	cross: m['session.edit.stickers.cross']
+}
+
+export const UPLOAD_PROBLEMS: Record<UploadProblem, Message> = {
+	format: m['session.upload.problems.format'],
+	size: () => m['session.upload.problems.size']({ n: UPLOAD_MAX_MB }),
+	small: () => m['session.upload.problems.small']({ n: UPLOAD_MIN_SIDE }),
+	large: () => m['session.upload.problems.large']({ n: UPLOAD_MAX_MP }),
+	heic: m['session.upload.problems.heic'],
+	unreadable: m['session.upload.problems.unreadable']
 }

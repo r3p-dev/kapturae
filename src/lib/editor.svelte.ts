@@ -205,9 +205,14 @@ export function panTransform({ zoom, x, y }: SlotEdit) {
 	return `scale(${z}) translate(${t(x)}%, ${t(y)}%)`
 }
 
-export function panOffset({ zoom, x, y }: SlotEdit) {
+export function objectPosition({ x, y }: SlotEdit) {
+	return `${50 - 50 * x}% ${50 - 50 * y}%`
+}
+
+export function panReach({ zoom }: SlotEdit, box: { w: number; h: number }, aspect: number) {
 	const z = zoom / 100
-	return { zoom: z, dx: (x * (z - 1)) / 2, dy: (y * (z - 1)) / 2 }
+	const cover = Math.max(box.w / aspect, box.h)
+	return { x: (z * cover * aspect - box.w) / 2, y: (z * cover - box.h) / 2 }
 }
 
 export const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v))

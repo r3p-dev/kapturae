@@ -1,7 +1,9 @@
 <script lang="ts">
 	import RiCloseLine from 'remixicon-svelte/icons/close-line'
 	import RiDragMove2Line from 'remixicon-svelte/icons/drag-move-2-line'
+	import RiCameraLine from 'remixicon-svelte/icons/camera-line'
 	import RiExpandDiagonalSLine from 'remixicon-svelte/icons/expand-diagonal-s-line'
+	import RiUploadLine from 'remixicon-svelte/icons/upload-2-line'
 	import { SvelteMap } from 'svelte/reactivity'
 	import FrameImage from '$lib/components/atoms/frame-image.svelte'
 	import { m } from '$lib/paraglide/messages'
@@ -12,6 +14,8 @@
 		clamp,
 		filterCss,
 		filterTint,
+		objectPosition,
+		panReach,
 		panTransform,
 		type Edit,
 		type Item,
@@ -20,6 +24,7 @@
 	} from '$lib/editor.svelte'
 	import { SIZES, type Frame } from '$lib/session'
 	import { STICKER_LABELS } from '$lib/session-messages'
+	import { photoFor } from '$lib/shots.svelte'
 	import { isStickerId, stickerSrc } from '$lib/stickers'
 	import { cn } from '$lib/utils'
 
@@ -62,6 +67,7 @@
 	const px = $derived(width ? 100 / width : 0)
 
 	const pointers = new SvelteMap<number, { x: number; y: number }>()
+	const aspects = new SvelteMap<string, number>()
 	let pinch: { dist: number; zoom: number } | null = null
 	let stroke: Stroke | null = null
 	let erasing = false
@@ -121,6 +127,18 @@
 		if (pointers.size === 2) pinch = { dist: spread(), zoom: edit.slots[slot].zoom }
 	}
 
+	function reachOf(i: number) {
+		const box = frame.slots[i]
+		const w = (box.w / 100) * (stage?.clientWidth ?? 0)
+		const h = (box.h / 100) * (stage?.clientHeight ?? 0)
+		return panReach(edit.slots[i], { w, h }, aspects.get(photos[i]) ?? w / h)
+	}
+
+	const pannable = (i: number) => {
+		const reach = reachOf(i)
+		return reach.x > 0.5 || reach.y > 0.5
+	}
+
 	function slotMove(e: PointerEvent) {
 		const d = delta(e)
 		if (!d || !stage || slot === null) return
@@ -131,18 +149,16 @@
 			return
 		}
 
-		const reach = (s.zoom / 100 - 1) / 2
-		if (reach <= 0) return
-		const box = frame.slots[slot]
-		s.x = clamp(s.x + d.x / (reach * ((box.w / 100) * stage.clientWidth)), -1, 1)
-		s.y = clamp(s.y + d.y / (reach * ((box.h / 100) * stage.clientHeight)), -1, 1)
+		const reach = reachOf(slot)
+		if (reach.x > 0.5) s.x = clamp(s.x + d.x / reach.x, -1, 1)
+		if (reach.y > 0.5) s.y = clamp(s.y + d.y / reach.y, -1, 1)
 	}
 
 	function slotKey(e: KeyboardEvent, i: number) {
 		const s = edit.slots[i]
 		const pan = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key]
 
-		if (pan && s.zoom > ZOOM.min) {
+		if (pan && pannable(i)) {
 			s.x = clamp(s.x + pan[0] * PAN_STEP, -1, 1)
 			s.y = clamp(s.y + pan[1] * PAN_STEP, -1, 1)
 		} else if (e.key === '+' || e.key === '=') {
@@ -338,12 +354,18 @@
 	{#if photos[i]}
 		{@const s = edit.slots[i]}
 		{@const tint = filterTint(s.filter, s.intensity)}
+		{@const source = photoFor(photos[i])?.source}
 
 		<img
 			src={photos[i]}
 			alt=""
 			draggable="false"
+			onload={(e) => {
+				const img = e.currentTarget as HTMLImageElement
+				aspects.set(photos[i], img.naturalWidth / img.naturalHeight)
+			}}
 			class="absolute inset-0 size-full object-cover"
+			style:object-position={objectPosition(s)}
 			style:transform={panTransform(s)}
 			style:filter={filterCss(s.filter, s.intensity, s)}
 		/>
@@ -370,6 +392,19 @@
 				style:background-image={`url("${GRAIN}")`}
 				style:opacity={(s.grain / 100) * 0.6}
 			></span>
+		{/if}
+
+		{#if source && slot !== i}
+			<span
+				title={source === 'upload' ? m['session.source.from_upload']() : m['session.source.from_camera']()}
+				class="absolute top-1.5 left-1.5 flex size-5.5 items-center justify-center bg-ink/70 text-paper"
+			>
+				{#if source === 'upload'}
+					<RiUploadLine aria-hidden="true" class="size-3" />
+				{:else}
+					<RiCameraLine aria-hidden="true" class="size-3" />
+				{/if}
+			</span>
 		{/if}
 	{:else}
 		<span class="absolute inset-0 flex items-center justify-center font-display text-[22px] font-black text-[#8c8983]">
@@ -408,7 +443,7 @@
 			onkeydown={(e) => slotKey(e, i)}
 			class={cn(
 				'absolute touch-none outline-offset-3 outline-primary focus-visible:outline-3 data-active:outline-3',
-				photos[i] && edit.slots[i].zoom > ZOOM.min ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer',
+				photos[i] && width && pannable(i) ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer',
 				move &&
 					i !== move.from &&
 					photos[i] &&

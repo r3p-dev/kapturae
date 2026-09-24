@@ -7,6 +7,7 @@
 	import RiArrowGoForwardLine from 'remixicon-svelte/icons/arrow-go-forward-line'
 	import RiArrowRightLine from 'remixicon-svelte/icons/arrow-right-line'
 	import RiBrushLine from 'remixicon-svelte/icons/brush-line'
+	import RiCameraLine from 'remixicon-svelte/icons/camera-line'
 	import RiCloseLine from 'remixicon-svelte/icons/close-line'
 	import RiContrastDropLine from 'remixicon-svelte/icons/contrast-drop-line'
 	import RiDeleteBinLine from 'remixicon-svelte/icons/delete-bin-line'
@@ -14,15 +15,21 @@
 	import RiEqualizerLine from 'remixicon-svelte/icons/equalizer-line'
 	import RiEraserLine from 'remixicon-svelte/icons/eraser-line'
 	import RiImageAddLine from 'remixicon-svelte/icons/image-add-line'
+	import RiImageLine from 'remixicon-svelte/icons/image-line'
 	import RiPaletteLine from 'remixicon-svelte/icons/palette-line'
 	import RiRestartLine from 'remixicon-svelte/icons/restart-line'
 	import RiSipLine from 'remixicon-svelte/icons/sip-line'
 	import RiSubtractLine from 'remixicon-svelte/icons/subtract-line'
 	import RiText from 'remixicon-svelte/icons/text'
+	import RiUploadLine from 'remixicon-svelte/icons/upload-2-line'
 	import Corners from '$lib/components/atoms/corners.svelte'
+	import Dropzone from '$lib/components/molecules/dropzone.svelte'
+	import PhotoLibrary from '$lib/components/molecules/photo-library.svelte'
 	import EditorStage from '$lib/components/organisms/editor-stage.svelte'
+	import SlotCamera from '$lib/components/organisms/slot-camera.svelte'
 	import SessionHeader from '$lib/components/organisms/session-header.svelte'
 	import { Button } from '$lib/components/ui/button'
+	import * as Sheet from '$lib/components/ui/sheet'
 	import { Slider } from '$lib/components/ui/slider'
 	import * as ToggleGroup from '$lib/components/ui/toggle-group'
 	import {
@@ -52,8 +59,9 @@
 	import { localizeHref } from '$lib/paraglide/runtime'
 	import { recolor } from '$lib/recolor'
 	import { PRINT_SIZES, SIZES, pick } from '$lib/session'
-	import { STICKER_LABELS } from '$lib/session-messages'
-	import { shots, useShots } from '$lib/shots.svelte'
+	import { STICKER_LABELS, UPLOAD_PROBLEMS } from '$lib/session-messages'
+	import { addPhoto, photoFor, shots, useShots, type Photo } from '$lib/shots.svelte'
+	import { UPLOAD_ACCEPT, UPLOAD_MAX_MB, UploadRejected, importPhoto, type UploadProblem } from '$lib/upload'
 	import { STICKER_IDS, importSticker, stickerSrc } from '$lib/stickers'
 	import { cn } from '$lib/utils'
 
@@ -90,6 +98,10 @@
 	let draft = $state({ text: '', font: 'bold' as Font, color: SWATCHES.white as string })
 	let src = $state(frame.src)
 	let uploadFailed = $state(false)
+	let replace = $state<'camera' | 'upload' | null>(null)
+	let sheet = $state(false)
+	let replacing = $state(false)
+	let replaceProblem = $state<UploadProblem | null>(null)
 
 	const edit = $derived(history.value)
 	const shown = $derived({ ...frame, src })
@@ -103,7 +115,9 @@
 	)
 	const hasPhoto = $derived(slot !== null && Boolean(photos[slot]))
 	const preview = $derived((slot !== null && photos[slot]) || photos.find(Boolean))
-	const missing = $derived(shots.photos.length < total)
+	const missing = $derived(photos.some((photo) => !photo))
+	const slotPhoto = $derived(slot === null ? undefined : photoFor(photos[slot]))
+	const replacingSlot = $derived(slot !== null && replace !== null && !tool)
 	const selected = $derived(edit.items.find((it) => it.id === item))
 	const text = $derived(selected?.kind === 'text' ? selected : undefined)
 	const sticker = $derived(selected?.kind === 'sticker' ? selected : undefined)
@@ -141,10 +155,57 @@
 	}
 
 	function shootHref(i: number) {
-		return localizeHref(`/session/shoot?${query}${photos[i] ? `&retake=${edit.order[i]}` : ''}`)
+		return localizeHref(`/session/shoot?${query}&retake=${edit.order[i]}`)
+	}
+
+	function place(target: number, url: string) {
+		const from = edit.order.findIndex((shot) => shots.photos[shot] === url)
+		if (from === target) return
+
+		if (from === -1) {
+			shots.photos[edit.order[target]] = url
+			Object.assign(edit.slots[target], { zoom: ZOOM.min, x: 0, y: 0 })
+		} else {
+			const { order, slots } = edit
+			;[order[from], order[target]] = [order[target], order[from]]
+			;[slots[from], slots[target]] = [slots[target], slots[from]]
+		}
+
+		commit()
+	}
+
+	async function replaceWith(files: File[]) {
+		const target = slot
+		const [file] = files
+		if (target === null || !file || replacing) return
+
+		replacing = true
+		replaceProblem = null
+		try {
+			const url = await importPhoto(file)
+			place(target, addPhoto({ url, source: 'upload', name: file.name, burst: [] }))
+			sheet = false
+		} catch (error) {
+			replaceProblem = error instanceof UploadRejected ? error.problem : 'unreadable'
+		} finally {
+			replacing = false
+		}
+	}
+
+	function pickReplaceFile(e: Event & { currentTarget: HTMLInputElement }) {
+		const files = [...(e.currentTarget.files ?? [])]
+		e.currentTarget.value = ''
+		replaceWith(files)
+	}
+
+	function openReplace(mode: 'camera' | 'upload') {
+		replace = mode
+		replaceProblem = null
+		tool = null
 	}
 
 	function pickTool(next: Tool | null) {
+		replace = null
 		tool = next === tool ? null : next
 		if (selected && selected.kind !== tool) item = null
 	}
@@ -469,6 +530,75 @@
 	</div>
 {/snippet}
 
+{#snippet sourceLine(photo: Photo)}
+	<span class="{mono} flex min-w-0 items-center gap-1.5 text-[11px] tracking-[0.08em] text-body">
+		{#if photo.source === 'upload'}
+			<RiUploadLine aria-hidden="true" class="size-3.25 shrink-0" />
+			<span class="truncate">{m['session.source.upload']()}{photo.name ? ` · ${photo.name}` : ''}</span>
+		{:else}
+			<RiCameraLine aria-hidden="true" class="size-3.25 shrink-0" />
+			<span class="truncate">{m['session.source.camera']()}</span>
+		{/if}
+	</span>
+{/snippet}
+
+{#snippet replaceInput()}
+	<input type="file" accept={UPLOAD_ACCEPT} disabled={replacing} onchange={pickReplaceFile} class="sr-only" />
+{/snippet}
+
+{#snippet replaceError()}
+	{#if replaceProblem}
+		<p role="alert" class="m-0 border-l-2 border-primary pl-2.5 text-xs leading-normal text-body">
+			{UPLOAD_PROBLEMS[replaceProblem]()}
+		</p>
+	{/if}
+{/snippet}
+
+{#snippet uploadDrop()}
+	<Dropzone
+		onfiles={replaceWith}
+		disabled={replacing}
+		class="relative flex h-47 shrink-0 flex-col items-center justify-center gap-3 border-2 border-dashed border-[#5a5853] p-4 text-center"
+	>
+		<RiUploadLine aria-hidden="true" class="size-8 text-primary" />
+		<span class="font-display text-lg font-extrabold uppercase font-stretch-112%"
+			>{m['session.upload.drop_title']()}</span
+		>
+		<label
+			class={cn(
+				'flex h-11 items-center bg-paper px-5 font-mono text-xs font-medium tracking-[0.1em] text-ink uppercase hover:bg-paper-2 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-paper',
+				replacing ? 'pointer-events-none opacity-50' : 'cursor-pointer'
+			)}
+		>
+			{@render replaceInput()}
+			{replacing ? m['session.upload.loading']() : m['session.replace.pick_file']()}
+		</label>
+	</Dropzone>
+
+	<span class="{mono} text-[11px] tracking-[0.1em] text-muted-foreground">
+		{m['session.upload.formats']()} · {m['session.upload.max_size']({ n: UPLOAD_MAX_MB })}
+	</span>
+
+	{@render replaceError()}
+{/snippet}
+
+{#snippet libraryBlock(cols: string)}
+	{#if slot !== null && shots.library.length}
+		<div class="h-px shrink-0 bg-[#2a2a28]"></div>
+		<span class={eyebrow}>{m['session.library.title']()}</span>
+		<PhotoLibrary
+			order={edit.order}
+			current={photos[slot]}
+			onpick={(url) => {
+				if (slot !== null) place(slot, url)
+				sheet = false
+			}}
+			class={cols}
+		/>
+		<p class="m-0 text-xs leading-normal text-muted-foreground">{m['session.library.note']()}</p>
+	{/if}
+{/snippet}
+
 {#snippet applyAllToggle()}
 	<label class="flex min-h-11 items-center gap-2.5 text-[13px] text-body">
 		<input
@@ -567,7 +697,12 @@
 					{#if slot === null || !current}
 						<p class="m-0 text-[13px] leading-normal text-muted-foreground">{m['session.edit.select_slot']()}</p>
 					{:else}
-						<span class="{mono} text-[11px] text-muted-foreground">{m['session.edit.slot']({ n: slot + 1 })}</span>
+						<div class="flex flex-col gap-1.5">
+							<span class="{mono} text-[11px] text-muted-foreground">{m['session.edit.slot']({ n: slot + 1 })}</span>
+							{#if slotPhoto}
+								{@render sourceLine(slotPhoto)}
+							{/if}
+						</div>
 
 						<div class="flex flex-col gap-2">
 							<div class="flex justify-between text-[13px]">
@@ -613,10 +748,35 @@
 							<p class="m-0 text-xs leading-normal text-muted-foreground">{m['session.edit.no_crop']()}</p>
 						</div>
 
-						<Button href={shootHref(slot)} class="h-11 gap-2 bg-paper font-mono font-medium text-ink hover:bg-paper-2">
-							<RiRestartLine aria-hidden="true" class="size-4 text-primary" />
-							{hasPhoto ? m['session.edit.retake']() : m['session.edit.take']()}
-						</Button>
+						<div class="h-px bg-[#2a2a28]"></div>
+
+						<span class="{mono} text-[11px] text-muted-foreground">
+							{hasPhoto ? m['session.replace.title']() : m['session.replace.fill']()}
+						</span>
+
+						<ToggleGroup.Root
+							type="single"
+							orientation="vertical"
+							spacing={2}
+							aria-label={hasPhoto ? m['session.replace.title']() : m['session.replace.fill']()}
+							bind:value={
+								() => (replacingSlot ? (replace ?? '') : ''),
+								(next) => (next ? openReplace(next as 'camera' | 'upload') : (replace = null))
+							}
+							class="w-full"
+						>
+							{#each [['camera', RiRestartLine, m['session.replace.camera']()], ['upload', RiUploadLine, m['session.replace.upload']()]] as const as [value, Icon, label] (value)}
+								<ToggleGroup.Item
+									{value}
+									class="h-12 w-full justify-start gap-2.5 border-[1.5px] border-paper px-3.5 font-mono text-xs font-medium tracking-[0.1em] hover:bg-paper/10 data-[state=on]:bg-paper data-[state=on]:text-ink"
+								>
+									<Icon aria-hidden="true" class="size-4" />
+									{label}
+								</ToggleGroup.Item>
+							{/each}
+						</ToggleGroup.Root>
+
+						<p class="m-0 text-xs leading-[1.45] text-muted-foreground">{m['session.replace.note']()}</p>
 					{/if}
 				</div>
 
@@ -651,12 +811,14 @@
 						{/if}
 
 						<Button
-							href={shootHref(slot)}
-							aria-label={hasPhoto ? m['session.edit.retake']() : undefined}
+							onclick={() => {
+								replaceProblem = null
+								sheet = true
+							}}
 							class="h-11 gap-1.5 bg-paper px-3 font-mono text-[11px] font-medium text-ink hover:bg-paper-2"
 						>
 							<RiRestartLine aria-hidden="true" class="size-3.5 text-primary" />
-							{hasPhoto ? m['session.edit.retake_short']() : m['session.edit.take']()}
+							{hasPhoto ? m['session.replace.short']() : m['session.edit.take']()}
 						</Button>
 					</div>
 				{/if}
@@ -669,11 +831,42 @@
 			</div>
 		</section>
 
-		{#if tool}
+		{#if tool || replacingSlot}
 			<aside
 				class="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto border-t {edge} p-4 rail:w-72 rail:flex-none rail:gap-4.5 rail:border-t-0 rail:border-l rail:p-6 desktop:w-80"
 			>
-				{#if tool === 'color'}
+				{#if replacingSlot && slot !== null}
+					{@const n = slot + 1}
+
+					<div class="flex items-center justify-between gap-3">
+						<h2 class="m-0 min-w-0 font-normal {eyebrow}">
+							{replace === 'camera'
+								? m['session.replace.camera_title']({ n })
+								: m['session.replace.upload_title']({ n })}
+						</h2>
+						<button
+							type="button"
+							onclick={() => (replace = null)}
+							aria-label={m['session.edit.close_panel']()}
+							class="-my-2 -mr-2 flex size-9 items-center justify-center text-muted-foreground hover:text-foreground"
+						>
+							<RiCloseLine aria-hidden="true" class="size-4.5" />
+						</button>
+					</div>
+
+					{#if replace === 'camera'}
+						{#key slot}
+							<SlotCamera
+								label={m['session.replace.shutter']({ n })}
+								onshot={(url, burst) => slot !== null && place(slot, addPhoto({ url, source: 'camera', burst }))}
+							/>
+						{/key}
+						<p class="m-0 text-xs leading-normal text-muted-foreground">{m['session.replace.camera_note']({ n })}</p>
+					{:else}
+						{@render uploadDrop()}
+						{@render libraryBlock('grid-cols-3')}
+					{/if}
+				{:else if tool === 'color'}
 					{@render panelHead(m['session.edit.frame_title'](), m['session.edit.frame_note_short']())}
 
 					<p class="m-0 hidden text-sm leading-normal text-body rail:block">
@@ -950,3 +1143,74 @@
 		{/if}
 	</div>
 </div>
+
+<Sheet.Root bind:open={() => sheet && slot !== null, (open) => (sheet = open)}>
+	<Sheet.Content
+		side="bottom"
+		showCloseButton={false}
+		class="dark max-h-[85svh] gap-3.5 overflow-y-auto border-[#3a3936] bg-card px-4 pt-2.5 pb-4 text-foreground scheme-dark"
+	>
+		{#if slot !== null}
+			<span aria-hidden="true" class="h-1 w-10 shrink-0 self-center bg-[#5a5853]"></span>
+
+			<Sheet.Header class="gap-1 p-0">
+				<Sheet.Title class="m-0 font-display text-xl font-extrabold uppercase font-stretch-112%">
+					{hasPhoto
+						? m['session.replace.sheet_title']({ n: slot + 1 })
+						: m['session.replace.sheet_fill']({ n: slot + 1 })}
+				</Sheet.Title>
+				<Sheet.Description class="m-0">
+					{#if slotPhoto}
+						{m['session.replace.now']()}
+						{@render sourceLine(slotPhoto)}
+					{:else}
+						<span class="text-xs text-muted-foreground">{m['session.edit.select_slot']()}</span>
+					{/if}
+				</Sheet.Description>
+			</Sheet.Header>
+
+			<div class="flex flex-col gap-2">
+				<a
+					href={shootHref(slot)}
+					class="flex h-16 items-center gap-3.5 border border-[#3a3936] bg-[#232321] px-3.5 text-foreground no-underline"
+				>
+					<span class="flex size-10 shrink-0 items-center justify-center bg-primary text-primary-foreground">
+						<RiCameraLine aria-hidden="true" class="size-5" />
+					</span>
+					<span class="flex flex-col gap-0.5">
+						<span class="{mono} text-xs font-medium tracking-[0.1em]">{m['session.replace.camera']()}</span>
+						<span class="text-[13px] text-muted-foreground">{m['session.replace.camera_hint']()}</span>
+					</span>
+				</a>
+
+				<label
+					class={cn(
+						'flex h-16 items-center gap-3.5 border border-[#3a3936] bg-[#232321] px-3.5 has-focus-visible:outline-2 has-focus-visible:outline-paper',
+						replacing ? 'pointer-events-none opacity-50' : 'cursor-pointer'
+					)}
+				>
+					{@render replaceInput()}
+					<span class="flex size-10 shrink-0 items-center justify-center bg-paper text-ink">
+						<RiImageLine aria-hidden="true" class="size-5" />
+					</span>
+					<span class="flex flex-col gap-0.5">
+						<span class="{mono} text-xs font-medium tracking-[0.1em]">
+							{replacing ? m['session.upload.loading']() : m['session.replace.gallery']()}
+						</span>
+						<span class="text-[13px] text-muted-foreground">
+							{m['session.upload.formats']()} · {m['session.upload.max_size']({ n: UPLOAD_MAX_MB })}
+						</span>
+					</span>
+				</label>
+
+				{@render replaceError()}
+			</div>
+
+			{@render libraryBlock('grid-cols-4')}
+
+			<Sheet.Close class="mt-1 h-12 shrink-0 border border-[#3a3936] font-mono text-xs tracking-[0.12em] uppercase">
+				{m['session.replace.cancel']()}
+			</Sheet.Close>
+		{/if}
+	</Sheet.Content>
+</Sheet.Root>

@@ -1,4 +1,4 @@
-import { GRAIN, filterCss, filterTint, isFiltered, panOffset, type Edit, type SlotEdit } from '$lib/editor.svelte'
+import { GRAIN, filterCss, filterTint, isFiltered, type Edit, type SlotEdit } from '$lib/editor.svelte'
 import { LOOP_DELAY, LOOP_FRAMES, sampleIndexes } from '$lib/burst'
 import { SIZES, type Frame, type FrameSlot } from '$lib/session'
 import { isStickerId, stickerSrc } from '$lib/stickers'
@@ -93,8 +93,8 @@ async function drawPhoto(
 	pan: SlotEdit | null
 ) {
 	const image = await loadImage(src)
-	const { zoom, dx, dy } = pan ? panOffset(pan) : { zoom: 1, dx: 0, dy: 0 }
-	const cover = Math.max(box.w / image.naturalWidth, box.h / image.naturalHeight) * zoom
+	const { zoom, x, y } = pan ?? { zoom: 100, x: 0, y: 0 }
+	const cover = Math.max(box.w / image.naturalWidth, box.h / image.naturalHeight) * (zoom / 100)
 	const w = image.naturalWidth * cover
 	const h = image.naturalHeight * cover
 
@@ -103,7 +103,7 @@ async function drawPhoto(
 	ctx.rect(box.x, box.y, box.w, box.h)
 	ctx.clip()
 	ctx.filter = slot ? filterCss(slot.filter, slot.intensity, slot) : 'none'
-	ctx.drawImage(image, box.x + (box.w - w) / 2 + dx * box.w, box.y + (box.h - h) / 2 + dy * box.h, w, h)
+	ctx.drawImage(image, box.x + ((box.w - w) * (1 - x)) / 2, box.y + ((box.h - h) * (1 - y)) / 2, w, h)
 	ctx.restore()
 
 	if (!slot) return

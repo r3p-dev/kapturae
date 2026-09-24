@@ -1,6 +1,8 @@
 export type CameraStatus = 'idle' | 'pending' | 'live' | 'denied' | 'unavailable' | 'error'
 export type Facing = 'user' | 'environment'
 
+export const TIMERS = [3, 5] as const
+
 export class Camera {
 	stream = $state<MediaStream | null>(null)
 	status = $state<CameraStatus>('idle')
