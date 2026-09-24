@@ -12,8 +12,8 @@
 	const sprockets = 'h-3 shrink-0 bg-[repeating-linear-gradient(90deg,var(--ink)_0_16px,transparent_16px_32px)] mx-2'
 </script>
 
-{#snippet slots(count: number, cls: string)}
-	{#each { length: count }, i (i)}<div class={cls}></div>{/each}
+{#snippet slots(count: number, className: string)}
+	{#each { length: count }, index (index)}<div class={className}></div>{/each}
 {/snippet}
 
 <section

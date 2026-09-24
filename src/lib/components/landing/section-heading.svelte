@@ -40,7 +40,7 @@
 			titleClass
 		)}
 	>
-		{#each lines as line, i (i)}{#if i > 0}<br />{/if}{line}{/each}
+		{#each lines as line, index (index)}{#if index > 0}<br />{/if}{line}{/each}
 		{#if accent}<span class="text-primary">{accent}</span>{/if}
 	</h2>
 

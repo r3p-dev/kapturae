@@ -1,3 +1,3 @@
-export const LEGAL_DOCS = ['privacy', 'terms', 'deletion', 'camera', 'data', 'contact'] as const
+export const LEGAL_DOCUMENTS = ['privacy', 'terms', 'deletion', 'camera', 'data', 'contact'] as const
 
-export type LegalDoc = (typeof LEGAL_DOCS)[number]
+export type LegalDocument = (typeof LEGAL_DOCUMENTS)[number]

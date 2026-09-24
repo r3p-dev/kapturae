@@ -8,8 +8,8 @@
 		size,
 		label,
 		status,
-		busy = false,
-		hideStatus = false,
+		isBusy = false,
+		isStatusHidden = false,
 		onclick,
 		children,
 		class: className
@@ -18,8 +18,8 @@
 		size?: ShutterSize
 		label: string
 		status: string
-		busy?: boolean
-		hideStatus?: boolean
+		isBusy?: boolean
+		isStatusHidden?: boolean
 		onclick?: (event: MouseEvent) => void
 		children?: Snippet
 		class?: string
@@ -27,13 +27,13 @@
 </script>
 
 <div class={cn('flex flex-col items-center gap-3', className)}>
-	<ShutterButton {href} {size} {onclick} aria-label={label} aria-disabled={busy}>
+	<ShutterButton {href} {size} {onclick} aria-label={label} aria-disabled={isBusy}>
 		{@render children?.()}
 	</ShutterButton>
 
 	<span
 		aria-live="polite"
-		class={cn('font-mono text-xs tracking-[0.16em] text-muted-foreground uppercase', hideStatus && 'sr-only')}
+		class={cn('font-mono text-xs tracking-[0.16em] text-muted-foreground uppercase', isStatusHidden && 'sr-only')}
 	>
 		{status}
 	</span>

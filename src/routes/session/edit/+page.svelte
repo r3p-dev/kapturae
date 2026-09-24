@@ -71,20 +71,26 @@
 	const RECOLOR_DELAY = 60
 	const RAINBOW = 'conic-gradient(from 90deg, #e8483a, #e8b23a, #5fbf4a, #1f9fbf, #5a4fcf, #c84fb0, #e8483a)'
 
-	const params = page.url.searchParams
-	const requested = pick(PRINT_SIZES, params.get('size')) ?? '2x6'
+	const search = page.url.searchParams
+	const requested = pick(PRINT_SIZES, search.get('size')) ?? '2x6'
 	const frame =
-		FRAMES.find((f) => f.id === params.get('frame')) ?? FRAMES.find((f) => f.size === requested) ?? FRAMES[0]
+		FRAMES.find((candidate) => candidate.id === search.get('frame')) ??
+		FRAMES.find((candidate) => candidate.size === requested) ??
+		FRAMES[0]
 	const total = frame.slots.length
 	const query = new URLSearchParams({ size: frame.size, frame: frame.id })
 	const done = localizeHref(`/session/done?${query}`)
 
-	if (browser) useShots(frame.size, frame.id)
+	if (browser) {
+		useShots(frame.size, frame.id)
+	}
 
 	const history = new History<Edit>(shots.edit ?? blankEdit(total))
 
 	onDestroy(() => {
-		if (browser) shots.edit = $state.snapshot(history.value)
+		if (browser) {
+			shots.edit = $state.snapshot(history.value)
+		}
 	})
 
 	const empty = history.value.order.findIndex((shot) => !shots.photos[shot])
@@ -93,14 +99,14 @@
 	let slot = $state<number | null>(empty === -1 ? null : empty)
 	let item = $state<number | null>(null)
 	let move = $state<{ from: number; target: number } | null>(null)
-	let applyAll = $state(false)
-	let brush = $state({ color: SWATCHES.white as string, size: 8, eraser: false })
+	let shouldApplyAll = $state(false)
+	let brush = $state({ color: SWATCHES.white as string, size: 8, isEraser: false })
 	let draft = $state({ text: '', font: 'bold' as Font, color: SWATCHES.white as string })
 	let src = $state(frame.src)
-	let uploadFailed = $state(false)
+	let hasUploadFailed = $state(false)
 	let replace = $state<'camera' | 'upload' | null>(null)
-	let sheet = $state(false)
-	let replacing = $state(false)
+	let isSheetOpen = $state(false)
+	let isReplacing = $state(false)
 	let replaceProblem = $state<UploadProblem | null>(null)
 
 	const edit = $derived(history.value)
@@ -109,24 +115,34 @@
 	const current = $derived(slot === null ? undefined : edit.slots[slot])
 	const look = $derived(
 		current ??
-			(edit.slots.every((s) => s.filter === edit.slots[0].filter && s.intensity === edit.slots[0].intensity)
+			(edit.slots.every(
+				(slotEdit) => slotEdit.filter === edit.slots[0].filter && slotEdit.intensity === edit.slots[0].intensity
+			)
 				? edit.slots[0]
 				: undefined)
 	)
 	const hasPhoto = $derived(slot !== null && Boolean(photos[slot]))
 	const preview = $derived((slot !== null && photos[slot]) || photos.find(Boolean))
-	const missing = $derived(photos.some((photo) => !photo))
+	const isMissingPhotos = $derived(photos.some((photo) => !photo))
 	const slotPhoto = $derived(slot === null ? undefined : photoFor(photos[slot]))
-	const replacingSlot = $derived(slot !== null && replace !== null && !tool)
-	const selected = $derived(edit.items.find((it) => it.id === item))
+	const isReplacingSlot = $derived(slot !== null && replace !== null && !tool)
+	const selected = $derived(edit.items.find((entry) => entry.id === item))
 	const text = $derived(selected?.kind === 'text' ? selected : undefined)
 	const sticker = $derived(selected?.kind === 'sticker' ? selected : undefined)
 
 	const hint = $derived.by(() => {
-		if (move) return m['session.edit.hint_move']()
-		if (missing) return m['session.edit.hint_missing']()
-		if (tool === 'brush') return brush.eraser ? m['session.edit.hint_eraser']() : m['session.edit.hint_brush']()
-		if (selected) return m['session.edit.hint_item']()
+		if (move) {
+			return m['session.edit.hint_move']()
+		}
+		if (isMissingPhotos) {
+			return m['session.edit.hint_missing']()
+		}
+		if (tool === 'brush') {
+			return brush.isEraser ? m['session.edit.hint_eraser']() : m['session.edit.hint_brush']()
+		}
+		if (selected) {
+			return m['session.edit.hint_item']()
+		}
 		return null
 	})
 
@@ -137,15 +153,15 @@
 			return
 		}
 
-		let live = true
+		let isLive = true
 		const timer = setTimeout(() => {
 			recolor(frame, color)
-				.then((url) => live && (src = url))
+				.then((url) => isLive && (src = url))
 				.catch(() => {})
 		}, RECOLOR_DELAY)
 
 		return () => {
-			live = false
+			isLive = false
 			clearTimeout(timer)
 		}
 	})
@@ -154,13 +170,15 @@
 		history.commit()
 	}
 
-	function shootHref(i: number) {
-		return localizeHref(`/session/shoot?${query}&retake=${edit.order[i]}`)
+	function shootHref(index: number) {
+		return localizeHref(`/session/shoot?${query}&retake=${edit.order[index]}`)
 	}
 
 	function place(target: number, url: string) {
 		const from = edit.order.findIndex((shot) => shots.photos[shot] === url)
-		if (from === target) return
+		if (from === target) {
+			return
+		}
 
 		if (from === -1) {
 			shots.photos[edit.order[target]] = url
@@ -177,24 +195,26 @@
 	async function replaceWith(files: File[]) {
 		const target = slot
 		const [file] = files
-		if (target === null || !file || replacing) return
+		if (target === null || !file || isReplacing) {
+			return
+		}
 
-		replacing = true
+		isReplacing = true
 		replaceProblem = null
 		try {
 			const url = await importPhoto(file)
 			place(target, addPhoto({ url, source: 'upload', name: file.name, burst: [] }))
-			sheet = false
+			isSheetOpen = false
 		} catch (error) {
 			replaceProblem = error instanceof UploadRejected ? error.problem : 'unreadable'
 		} finally {
-			replacing = false
+			isReplacing = false
 		}
 	}
 
-	function pickReplaceFile(e: Event & { currentTarget: HTMLInputElement }) {
-		const files = [...(e.currentTarget.files ?? [])]
-		e.currentTarget.value = ''
+	function pickReplaceFile(event: Event & { currentTarget: HTMLInputElement }) {
+		const files = [...(event.currentTarget.files ?? [])]
+		event.currentTarget.value = ''
 		replaceWith(files)
 	}
 
@@ -207,41 +227,57 @@
 	function pickTool(next: Tool | null) {
 		replace = null
 		tool = next === tool ? null : next
-		if (selected && selected.kind !== tool) item = null
+		if (selected && selected.kind !== tool) {
+			item = null
+		}
 	}
 
 	function setAdjustment(key: Adjustment, value: number) {
-		if (!current) return
-		for (const target of applyAll ? edit.slots : [current]) target[key] = value
+		if (!current) {
+			return
+		}
+		for (const target of shouldApplyAll ? edit.slots : [current]) {
+			target[key] = value
+		}
 	}
 
 	function setLook<K extends (typeof FILTER_KEYS)[number]>(key: K, value: SlotEdit[K]) {
-		for (const target of applyAll || !current ? edit.slots : [current]) target[key] = value
+		for (const target of shouldApplyAll || !current ? edit.slots : [current]) {
+			target[key] = value
+		}
 	}
 
-	function setApplyAll(on: boolean) {
-		applyAll = on
-		if (!on || !current) return
+	function setApplyAll(isOn: boolean) {
+		shouldApplyAll = isOn
+		if (!isOn || !current) {
+			return
+		}
 		const keys: readonly (keyof SlotEdit)[] = tool === 'filter' ? FILTER_KEYS : ADJUSTMENTS
-		for (const target of edit.slots) for (const key of keys) Object.assign(target, { [key]: current[key] })
+		for (const target of edit.slots) {
+			for (const key of keys) {
+				Object.assign(target, { [key]: current[key] })
+			}
+		}
 		commit()
 	}
 
 	function zoomBy(step: number) {
-		if (!current) return
+		if (!current) {
+			return
+		}
 		current.zoom = clamp(current.zoom + step, ZOOM.min, ZOOM.max)
 		commit()
 	}
 
 	function addItem(next: Draft<Item>) {
-		const id = Math.max(0, ...edit.items.map((it) => it.id)) + 1
+		const id = Math.max(0, ...edit.items.map((entry) => entry.id)) + 1
 		edit.items.push({ ...next, id } as Item)
 		item = id
 		commit()
 	}
 
 	function removeItem() {
-		edit.items = edit.items.filter((it) => it.id !== item)
+		edit.items = edit.items.filter((entry) => entry.id !== item)
 		item = null
 		commit()
 	}
@@ -260,14 +296,14 @@
 		draft.text = ''
 	}
 
-	function addSticker(sticker: string) {
-		addItem({ kind: 'sticker', sticker, x: 50, y: 50, size: ITEM_SIZE.sticker.initial })
+	function addSticker(stickerSource: string) {
+		addItem({ kind: 'sticker', sticker: stickerSource, x: 50, y: 50, size: ITEM_SIZE.sticker.initial })
 	}
 
-	async function upload(e: Event & { currentTarget: HTMLInputElement }) {
-		const files = [...(e.currentTarget.files ?? [])]
-		e.currentTarget.value = ''
-		uploadFailed = false
+	async function upload(event: Event & { currentTarget: HTMLInputElement }) {
+		const files = [...(event.currentTarget.files ?? [])]
+		event.currentTarget.value = ''
+		hasUploadFailed = false
 
 		for (const file of files) {
 			try {
@@ -275,35 +311,49 @@
 				shots.uploads.push(url)
 				addSticker(url)
 			} catch {
-				uploadFailed = true
+				hasUploadFailed = true
 			}
 		}
 	}
 
 	function setTextStyle(style: Partial<Pick<typeof draft, 'font' | 'color'>>) {
 		Object.assign(draft, style)
-		if (text) Object.assign(text, style)
+		if (text) {
+			Object.assign(text, style)
+		}
 	}
 
-	function onkeydown(e: KeyboardEvent) {
-		if (e.key === 'Escape' && !(e.target as HTMLElement).closest('input, textarea')) {
-			if (move) move = null
-			else if (item !== null || slot !== null) {
+	function onkeydown(event: KeyboardEvent) {
+		if (event.key === 'Escape' && !(event.target as HTMLElement).closest('input, textarea')) {
+			if (move) {
+				move = null
+			} else if (item !== null || slot !== null) {
 				item = null
 				slot = null
-			} else return
-			e.preventDefault()
+			} else {
+				return
+			}
+			event.preventDefault()
 			return
 		}
 
-		if (!(e.ctrlKey || e.metaKey)) return
-		const key = e.key.toLowerCase()
-		if (key !== 'z' && key !== 'y') return
-		if ((e.target as HTMLElement).closest('input, textarea')) return
+		if (!(event.ctrlKey || event.metaKey)) {
+			return
+		}
+		const key = event.key.toLowerCase()
+		if (key !== 'z' && key !== 'y') {
+			return
+		}
+		if ((event.target as HTMLElement).closest('input, textarea')) {
+			return
+		}
 
-		e.preventDefault()
-		if (key === 'y' || e.shiftKey) history.redo()
-		else history.undo()
+		event.preventDefault()
+		if (key === 'y' || event.shiftKey) {
+			history.redo()
+		} else {
+			history.undo()
+		}
 	}
 
 	const tools = [
@@ -382,7 +432,9 @@
 		serif: 'font-serif italic text-[15px]'
 	}
 
-	const signed = (value: number, min: number) => (min < 0 && value > 0 ? `+${value}` : String(value))
+	function signed(value: number, min: number) {
+		return min < 0 && value > 0 ? `+${value}` : String(value)
+	}
 
 	const mono = 'font-mono tracking-[0.14em] uppercase'
 	const eyebrow = `${mono} text-[11px] text-muted-foreground rail:text-xs`
@@ -402,14 +454,17 @@
 
 <svelte:window {onkeydown} />
 
-{#snippet finish(cls: string, arrow = true)}
+{#snippet finish(className: string, hasArrow = true)}
 	<Button
 		href={done}
-		disabled={missing}
-		class={cn('h-11 gap-2.5 font-mono font-medium aria-disabled:pointer-events-none aria-disabled:opacity-40', cls)}
+		disabled={isMissingPhotos}
+		class={cn(
+			'h-11 gap-2.5 font-mono font-medium aria-disabled:pointer-events-none aria-disabled:opacity-40',
+			className
+		)}
 	>
 		{m['session.edit.done']()}
-		{#if arrow}<RiArrowRightLine aria-hidden="true" class="size-4" />{/if}
+		{#if hasArrow}<RiArrowRightLine aria-hidden="true" class="size-4" />{/if}
 	</Button>
 {/snippet}
 
@@ -421,7 +476,7 @@
 	<button
 		type="button"
 		onclick={() => history.undo()}
-		disabled={!history.canUndo}
+		disabled={!history.canUndo()}
 		aria-label={m['session.edit.undo']()}
 		class={square}
 	>
@@ -431,7 +486,7 @@
 	<button
 		type="button"
 		onclick={() => history.redo()}
-		disabled={!history.canRedo}
+		disabled={!history.canRedo()}
 		aria-label={m['session.edit.redo']()}
 		class={square}
 	>
@@ -441,15 +496,15 @@
 
 {#snippet range(
 	label: string,
-	shown: string,
+	display: string,
 	value: number,
-	set: (value: number) => void,
-	opts: { min: number; max: number; step?: number; disabled?: boolean }
+	set: (next: number) => void,
+	options: { min: number; max: number; step?: number; disabled?: boolean }
 )}
 	<div class="flex flex-col gap-2.5">
 		<div class="flex justify-between text-[13px]">
 			<span>{label}</span>
-			<span class="font-mono text-muted-foreground">{shown}</span>
+			<span class="font-mono text-muted-foreground">{display}</span>
 		</div>
 
 		<Slider
@@ -457,23 +512,23 @@
 			{value}
 			onValueChange={set}
 			onValueCommit={commit}
-			min={opts.min}
-			max={opts.max}
-			step={opts.step ?? 1}
-			disabled={opts.disabled}
+			min={options.min}
+			max={options.max}
+			step={options.step ?? 1}
+			disabled={options.disabled}
 			aria-label={label}
 		/>
 	</div>
 {/snippet}
 
-{#snippet customSwatch(value: string, active: boolean, set: (hex: string) => void)}
+{#snippet customSwatch(value: string, isActive: boolean, set: (hex: string) => void)}
 	<label
 		class={cn(
 			swatch,
 			'relative flex cursor-pointer items-center justify-center outline-primary has-focus-visible:outline-2',
-			active && 'outline-2 outline-paper'
+			isActive && 'outline-2 outline-paper'
 		)}
-		style:background={active ? value : RAINBOW}
+		style:background={isActive ? value : RAINBOW}
 	>
 		<RiSipLine aria-hidden="true" class="size-4 text-white mix-blend-difference" />
 
@@ -481,7 +536,7 @@
 			type="color"
 			aria-label={m['session.edit.swatches.custom']()}
 			{value}
-			oninput={(e) => set(e.currentTarget.value)}
+			oninput={(event) => set(event.currentTarget.value)}
 			onchange={commit}
 			class="absolute inset-0 size-full cursor-pointer opacity-0"
 		/>
@@ -496,18 +551,25 @@
 		bind:value={
 			() => value,
 			(next) => {
-				if (!next) return
+				if (!next) {
+					return
+				}
 				set(next)
 				commit()
 			}
 		}
 		class="grid w-full grid-cols-6 gap-2.5"
 	>
-		{#each swatches as s (s.hex)}
-			<ToggleGroup.Item value={s.hex} aria-label={s.label()} class={swatch} style="background-color: {s.hex}" />
+		{#each swatches as swatchOption (swatchOption.hex)}
+			<ToggleGroup.Item
+				value={swatchOption.hex}
+				aria-label={swatchOption.label()}
+				class={swatch}
+				style="background-color: {swatchOption.hex}"
+			/>
 		{/each}
 
-		{@render customSwatch(value, !swatches.some((s) => s.hex === value), set)}
+		{@render customSwatch(value, !swatches.some((option) => option.hex === value), set)}
 	</ToggleGroup.Root>
 {/snippet}
 
@@ -543,7 +605,7 @@
 {/snippet}
 
 {#snippet replaceInput()}
-	<input type="file" accept={UPLOAD_ACCEPT} disabled={replacing} onchange={pickReplaceFile} class="sr-only" />
+	<input type="file" accept={UPLOAD_ACCEPT} disabled={isReplacing} onchange={pickReplaceFile} class="sr-only" />
 {/snippet}
 
 {#snippet replaceError()}
@@ -557,7 +619,7 @@
 {#snippet uploadDrop()}
 	<Dropzone
 		onfiles={replaceWith}
-		disabled={replacing}
+		disabled={isReplacing}
 		class="relative flex h-47 shrink-0 flex-col items-center justify-center gap-3 border-2 border-dashed border-[#5a5853] p-4 text-center"
 	>
 		<RiUploadLine aria-hidden="true" class="size-8 text-primary" />
@@ -567,11 +629,11 @@
 		<label
 			class={cn(
 				'tracking-widests flex h-11 items-center bg-paper px-5 font-mono text-xs font-medium text-ink uppercase hover:bg-paper-2 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-paper',
-				replacing ? 'pointer-events-none opacity-50' : 'cursor-pointer'
+				isReplacing ? 'pointer-events-none opacity-50' : 'cursor-pointer'
 			)}
 		>
 			{@render replaceInput()}
-			{replacing ? m['session.upload.loading']() : m['session.replace.pick_file']()}
+			{isReplacing ? m['session.upload.loading']() : m['session.replace.pick_file']()}
 		</label>
 	</Dropzone>
 
@@ -590,8 +652,10 @@
 			order={edit.order}
 			current={photos[slot]}
 			onpick={(url) => {
-				if (slot !== null) place(slot, url)
-				sheet = false
+				if (slot !== null) {
+					place(slot, url)
+				}
+				isSheetOpen = false
 			}}
 			class={cols}
 		/>
@@ -603,8 +667,8 @@
 	<label class="flex min-h-11 items-center gap-2.5 text-[13px] text-body">
 		<input
 			type="checkbox"
-			checked={applyAll}
-			onchange={(e) => setApplyAll(e.currentTarget.checked)}
+			checked={shouldApplyAll}
+			onchange={(event) => setApplyAll(event.currentTarget.checked)}
 			class="size-4.5 accent-primary"
 		/>
 		{m['session.edit.apply_all']()}
@@ -631,17 +695,17 @@
 			bind:value={() => tool ?? '', (next) => pickTool((next || null) as Tool | null)}
 			class="order-last h-19 w-full shrink-0 flex-row! items-center! justify-around border-t {edge} px-1 pb-2 rail:order-first rail:h-auto rail:w-24 rail:flex-col! rail:justify-start rail:gap-1.5 rail:border-t-0 rail:border-r rail:px-0 rail:pt-4 rail:pb-0"
 		>
-			{#each tools as t (t.value)}
+			{#each tools as toolOption (toolOption.value)}
 				<ToggleGroup.Item
-					value={t.value}
+					value={toolOption.value}
 					class="h-14.5 w-14.5 flex-col gap-1 px-0 font-mono text-[9px] font-normal tracking-[0.04em] text-body hover:bg-[#232321] data-[state=on]:bg-[#232321] data-[state=on]:text-primary-text rail:h-16 rail:w-20 rail:text-[10px] rail:tracking-[0.06em]"
 				>
-					<t.icon aria-hidden="true" class="size-5" />
-					{#if 'short' in t}
-						<span class="rail:hidden">{t.short()}</span>
-						<span class="hidden rail:inline">{t.label()}</span>
+					<toolOption.icon aria-hidden="true" class="size-5" />
+					{#if 'short' in toolOption}
+						<span class="rail:hidden">{toolOption.short()}</span>
+						<span class="hidden rail:inline">{toolOption.label()}</span>
 					{:else}
-						{t.label()}
+						{toolOption.label()}
 					{/if}
 				</ToggleGroup.Item>
 			{/each}
@@ -663,8 +727,10 @@
 
 			<!-- svelte-ignore a11y_no_static_element_interactions -->
 			<div
-				onpointerdown={(e) => {
-					if (e.target !== e.currentTarget) return
+				onpointerdown={(event) => {
+					if (event.target !== event.currentTarget) {
+						return
+					}
 					slot = null
 					item = null
 					move = null
@@ -724,7 +790,7 @@
 								<Slider
 									type="single"
 									value={current.zoom}
-									onValueChange={(v) => (current.zoom = v)}
+									onValueChange={(next) => (current.zoom = next)}
 									onValueCommit={commit}
 									min={ZOOM.min}
 									max={ZOOM.max}
@@ -760,7 +826,7 @@
 							spacing={2}
 							aria-label={hasPhoto ? m['session.replace.title']() : m['session.replace.fill']()}
 							bind:value={
-								() => (replacingSlot ? (replace ?? '') : ''),
+								() => (isReplacingSlot ? (replace ?? '') : ''),
 								(next) => (next ? openReplace(next as 'camera' | 'upload') : (replace = null))
 							}
 							class="w-full"
@@ -813,7 +879,7 @@
 						<Button
 							onclick={() => {
 								replaceProblem = null
-								sheet = true
+								isSheetOpen = true
 							}}
 							class="h-11 gap-1.5 bg-paper px-3 font-mono text-[11px] font-medium text-ink hover:bg-paper-2"
 						>
@@ -831,18 +897,18 @@
 			</div>
 		</section>
 
-		{#if tool || replacingSlot}
+		{#if tool || isReplacingSlot}
 			<aside
 				class="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto border-t {edge} p-4 rail:w-72 rail:flex-none rail:gap-4.5 rail:border-t-0 rail:border-l rail:p-6 desktop:w-80"
 			>
-				{#if replacingSlot && slot !== null}
-					{@const n = slot + 1}
+				{#if isReplacingSlot && slot !== null}
+					{@const slotNumber = slot + 1}
 
 					<div class="flex items-center justify-between gap-3">
 						<h2 class="m-0 min-w-0 font-normal {eyebrow}">
 							{replace === 'camera'
-								? m['session.replace.camera_title']({ n })
-								: m['session.replace.upload_title']({ n })}
+								? m['session.replace.camera_title']({ n: slotNumber })
+								: m['session.replace.upload_title']({ n: slotNumber })}
 						</h2>
 						<button
 							type="button"
@@ -857,11 +923,13 @@
 					{#if replace === 'camera'}
 						{#key slot}
 							<SlotCamera
-								label={m['session.replace.shutter']({ n })}
+								label={m['session.replace.shutter']({ n: slotNumber })}
 								onshot={(url, burst) => slot !== null && place(slot, addPhoto({ url, source: 'camera', burst }))}
 							/>
 						{/key}
-						<p class="m-0 text-xs leading-normal text-muted-foreground">{m['session.replace.camera_note']({ n })}</p>
+						<p class="m-0 text-xs leading-normal text-muted-foreground">
+							{m['session.replace.camera_note']({ n: slotNumber })}
+						</p>
 					{:else}
 						{@render uploadDrop()}
 						{@render libraryBlock('grid-cols-3')}
@@ -878,22 +946,29 @@
 						spacing={2}
 						aria-label={m['session.edit.frame_title']()}
 						bind:value={
-							() => (edit.color ? (colors.find((c) => c.hex === edit.color)?.key ?? '') : 'original'),
+							() => (edit.color ? (colors.find((option) => option.hex === edit.color)?.key ?? '') : 'original'),
 							(next) => {
-								if (!next) return
-								edit.color = next === 'original' ? null : (colors.find((c) => c.key === next)?.hex ?? null)
+								if (!next) {
+									return
+								}
+								edit.color = next === 'original' ? null : (colors.find((option) => option.key === next)?.hex ?? null)
 								commit()
 							}
 						}
 						class="grid w-full grid-cols-6 gap-2 rail:gap-2.5"
 					>
-						{#each colors as c (c.key)}
-							<ToggleGroup.Item value={c.key} aria-label={c.label()} class={swatch} style="background-color: {c.hex}" />
+						{#each colors as colorOption (colorOption.key)}
+							<ToggleGroup.Item
+								value={colorOption.key}
+								aria-label={colorOption.label()}
+								class={swatch}
+								style="background-color: {colorOption.hex}"
+							/>
 						{/each}
 
 						{@render customSwatch(
 							edit.color ?? frame.color,
-							edit.color !== null && !colors.some((c) => c.hex === edit.color),
+							edit.color !== null && !colors.some((option) => option.hex === edit.color),
 							(hex) => (edit.color = hex)
 						)}
 					</ToggleGroup.Root>
@@ -912,14 +987,14 @@
 
 						{@render panelHead(m['session.edit.adjust_title']({ n: slot + 1 }))}
 
-						{#each adjustments as a (a.key)}
+						{#each adjustments as adjustment (adjustment.key)}
 							{@render range(
-								a.label(),
-								signed(adjusting[a.key], a.min),
-								adjusting[a.key],
-								(v) => setAdjustment(a.key, v),
+								adjustment.label(),
+								signed(adjusting[adjustment.key], adjustment.min),
+								adjusting[adjustment.key],
+								(next) => setAdjustment(adjustment.key, next),
 								{
-									min: a.min,
+									min: adjustment.min,
 									max: 100,
 									disabled: !hasPhoto
 								}
@@ -948,7 +1023,9 @@
 						bind:value={
 							() => look?.filter ?? '',
 							(next) => {
-								if (!next) return
+								if (!next) {
+									return
+								}
 								setLook('filter', next as FilterId)
 								commit()
 							}
@@ -983,11 +1060,17 @@
 						{/each}
 					</ToggleGroup.Root>
 
-					{@render range(m['session.edit.intensity'](), String(intensity), intensity, (v) => setLook('intensity', v), {
-						min: 0,
-						max: 100,
-						disabled: !look || look.filter === 'original'
-					})}
+					{@render range(
+						m['session.edit.intensity'](),
+						String(intensity),
+						intensity,
+						(next) => setLook('intensity', next),
+						{
+							min: 0,
+							max: 100,
+							disabled: !look || look.filter === 'original'
+						}
+					)}
 
 					{#if slot !== null}
 						{@render applyAllToggle()}
@@ -1013,10 +1096,12 @@
 							/>
 						</label>
 
-						{#each shots.uploads as url, i (url)}
+						{#each shots.uploads as url, index (url)}
 							<button
 								type="button"
-								aria-label={m['session.edit.sticker_add']({ name: `${m['session.edit.sticker_upload']()} ${i + 1}` })}
+								aria-label={m['session.edit.sticker_add']({
+									name: `${m['session.edit.sticker_upload']()} ${index + 1}`
+								})}
 								onclick={() => addSticker(url)}
 								class="{tile} p-1.5"
 							>
@@ -1037,7 +1122,7 @@
 					</div>
 
 					<p class="m-0 text-xs leading-normal text-muted-foreground" aria-live="polite">
-						{uploadFailed ? m['session.edit.sticker_upload_error']() : m['session.edit.sticker_upload_note']()}
+						{hasUploadFailed ? m['session.edit.sticker_upload_error']() : m['session.edit.sticker_upload_note']()}
 					</p>
 
 					{#if sticker}
@@ -1045,7 +1130,7 @@
 							m['session.edit.size'](),
 							`${sticker.size}%`,
 							sticker.size,
-							(v) => (sticker.size = v),
+							(next) => (sticker.size = next),
 							ITEM_SIZE.sticker
 						)}
 						{@render removeButton()}
@@ -1061,12 +1146,15 @@
 							maxlength="40"
 							placeholder={m['session.edit.text_placeholder']()}
 							value={text ? text.text : draft.text}
-							oninput={(e) => {
-								if (text) text.text = e.currentTarget.value
-								else draft.text = e.currentTarget.value
+							oninput={(event) => {
+								if (text) {
+									text.text = event.currentTarget.value
+								} else {
+									draft.text = event.currentTarget.value
+								}
 							}}
 							onchange={commit}
-							onkeydown={(e) => e.key === 'Enter' && !text && addText()}
+							onkeydown={(event) => event.key === 'Enter' && !text && addText()}
 							class="h-11 border border-[#3a3936] bg-card px-3 text-[15px] text-foreground placeholder:text-muted-foreground focus-visible:border-foreground focus-visible:outline-none"
 						/>
 					</div>
@@ -1078,7 +1166,9 @@
 						bind:value={
 							() => text?.font ?? draft.font,
 							(next) => {
-								if (!next) return
+								if (!next) {
+									return
+								}
 								setTextStyle({ font: next as Font })
 								commit()
 							}
@@ -1106,7 +1196,7 @@
 							m['session.edit.size'](),
 							`${text.size}%`,
 							text.size,
-							(v) => (text.size = v),
+							(next) => (text.size = next),
 							ITEM_SIZE.text
 						)}
 						{@render removeButton()}
@@ -1119,20 +1209,20 @@
 				{:else if tool === 'brush'}
 					{@render panelHead(m['session.edit.brush_title']())}
 
-					{@render range(m['session.edit.size'](), `${brush.size} px`, brush.size, (v) => (brush.size = v), {
+					{@render range(m['session.edit.size'](), `${brush.size} px`, brush.size, (next) => (brush.size = next), {
 						min: 1,
 						max: 40
 					})}
 
 					{@render colorPicker(m['session.edit.color_label'](), brush.color, (hex) => {
 						brush.color = hex
-						brush.eraser = false
+						brush.isEraser = false
 					})}
 
 					<Button
 						variant="outline"
-						aria-pressed={brush.eraser}
-						onclick={() => (brush.eraser = !brush.eraser)}
+						aria-pressed={brush.isEraser}
+						onclick={() => (brush.isEraser = !brush.isEraser)}
 						class="{outline} aria-pressed:border-paper aria-pressed:bg-paper aria-pressed:text-ink"
 					>
 						<RiEraserLine aria-hidden="true" class="size-4" />
@@ -1144,7 +1234,7 @@
 	</div>
 </div>
 
-<Sheet.Root bind:open={() => sheet && slot !== null, (open) => (sheet = open)}>
+<Sheet.Root bind:open={() => isSheetOpen && slot !== null, (open) => (isSheetOpen = open)}>
 	<Sheet.Content
 		side="bottom"
 		showCloseButton={false}
@@ -1186,7 +1276,7 @@
 				<label
 					class={cn(
 						'flex h-16 items-center gap-3.5 border border-[#3a3936] bg-[#232321] px-3.5 has-focus-visible:outline-2 has-focus-visible:outline-paper',
-						replacing ? 'pointer-events-none opacity-50' : 'cursor-pointer'
+						isReplacing ? 'pointer-events-none opacity-50' : 'cursor-pointer'
 					)}
 				>
 					{@render replaceInput()}
@@ -1195,7 +1285,7 @@
 					</span>
 					<span class="flex flex-col gap-0.5">
 						<span class="{mono} text-xs font-medium tracking-widest">
-							{replacing ? m['session.upload.loading']() : m['session.replace.gallery']()}
+							{isReplacing ? m['session.upload.loading']() : m['session.replace.gallery']()}
 						</span>
 						<span class="text-[13px] text-muted-foreground">
 							{m['session.upload.formats']()} · {m['session.upload.max_size']({ n: UPLOAD_MAX_MB })}

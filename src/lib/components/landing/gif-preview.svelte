@@ -33,18 +33,18 @@
 
 	<div class="relative my-4.5 aspect-340/420 w-[calc(100%-36px)] max-w-85 shrink-0">
 		<Corners inset="-18px" size="30px" class="text-foreground" />
-		{#each animated ? poses : poses.slice(0, 1) as pose, i (i)}
+		{#each animated ? poses : poses.slice(0, 1) as pose, index (index)}
 			<div
 				class={cn(
 					'absolute inset-0 flex items-center justify-center',
 					animated && 'animate-gif-frame opacity-0 motion-reduce:animate-none',
-					animated && i === 0 && 'motion-reduce:opacity-100',
+					animated && index === 0 && 'motion-reduce:opacity-100',
 					pose.class
 				)}
 				style:animation-delay={pose.delay}
 			>
-				<span class="font-mono text-xs">{m['landing.gif.pose']({ n: i + 1 })}</span>
-				<span class="absolute right-4 bottom-3.5 font-mono text-xs">{i + 1}/{poses.length}</span>
+				<span class="font-mono text-xs">{m['landing.gif.pose']({ n: index + 1 })}</span>
+				<span class="absolute right-4 bottom-3.5 font-mono text-xs">{index + 1}/{poses.length}</span>
 			</div>
 		{/each}
 

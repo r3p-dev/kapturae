@@ -16,12 +16,15 @@ export const MAX_ATTEMPTS = 3
 const TIMEOUT_MS = 90_000
 const RETRY_DELAY_MS = 1500
 
-const retryable = (status: number) => status >= 500 || status === 408 || status === 429
+function isRetryable(status: number) {
+	return status >= 500 || status === 408 || status === 429
+}
 
 export async function uploadShare(form: FormData, onAttempt?: (attempt: number) => void) {
 	let failure = new UploadError('network')
+	const attempts = Array.from({ length: MAX_ATTEMPTS }, (_, index) => index + 1)
 
-	for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+	for (const attempt of attempts) {
 		onAttempt?.(attempt)
 
 		try {
@@ -31,16 +34,26 @@ export async function uploadShare(form: FormData, onAttempt?: (attempt: number) 
 				signal: AbortSignal.timeout(TIMEOUT_MS)
 			})
 
-			if (response.ok) return (await response.json()) as UploadResult
+			if (response.ok) {
+				const result: UploadResult = await response.json()
+				return result
+			}
 
 			failure = new UploadError(response.status === 413 ? 'too_large' : 'server', response.status)
-			if (!retryable(response.status)) throw failure
+			if (!isRetryable(response.status)) {
+				throw failure
+			}
 		} catch (error) {
-			if (error instanceof UploadError) throw error
+			if (error instanceof UploadError) {
+				throw error
+			}
+
 			failure = new UploadError(error instanceof DOMException && error.name === 'TimeoutError' ? 'timeout' : 'network')
 		}
 
-		if (attempt < MAX_ATTEMPTS) await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS * attempt))
+		if (attempt < MAX_ATTEMPTS) {
+			await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS * attempt))
+		}
 	}
 
 	throw failure

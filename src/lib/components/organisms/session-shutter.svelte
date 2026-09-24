@@ -15,14 +15,14 @@
 		size,
 		label,
 		idle = '',
-		hideStatus,
+		isStatusHidden,
 		children,
 		class: className
 	}: {
 		size?: ShutterSize
 		label: string
 		idle?: string
-		hideStatus?: boolean
+		isStatusHidden?: boolean
 		children?: Snippet
 		class?: string
 	} = $props()
@@ -36,24 +36,28 @@
 
 	let phase = $state<Phase>(null)
 	let timers: ReturnType<typeof setTimeout>[] = []
-	let destroyed = false
+	let isDestroyed = false
 
 	const status = $derived(
 		phase === null ? idle : phase === 'loading' ? m['common.shutter.loading']() : m['common.shutter.busy']()
 	)
 
 	function preloadImage(src: string) {
-		const img = new Image()
-		img.src = src
-		return img.decode()
+		const image = new Image()
+		image.src = src
+		return image.decode()
 	}
 
 	async function shoot(event: MouseEvent) {
-		if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+		if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+			return
+		}
 
 		event.preventDefault()
 
-		if (phase !== null) return
+		if (phase !== null) {
+			return
+		}
 		phase = 'loading'
 
 		try {
@@ -63,16 +67,20 @@
 			return
 		}
 
-		if (destroyed) return
+		if (isDestroyed) {
+			return
+		}
 
 		const sequence: Phase[] = [3, 2, 1, 'flash']
-		timers = sequence.map((next, i) => setTimeout(() => (phase = next), i * STEP_MS))
+		timers = sequence.map((next, index) => setTimeout(() => (phase = next), index * STEP_MS))
 		timers.push(setTimeout(() => goto(session), (sequence.length - 1) * STEP_MS + JUMP_MS))
 	}
 
 	onDestroy(() => {
-		destroyed = true
-		timers.forEach(clearTimeout)
+		isDestroyed = true
+		for (const timer of timers) {
+			clearTimeout(timer)
+		}
 	})
 </script>
 
@@ -81,8 +89,8 @@
 	{size}
 	{label}
 	{status}
-	{hideStatus}
-	busy={phase !== null}
+	{isStatusHidden}
+	isBusy={phase !== null}
 	onclick={shoot}
 	class={className}
 >

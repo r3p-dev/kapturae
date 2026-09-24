@@ -1,6 +1,6 @@
 import type { CompilerOptions } from '@inlang/paraglide-js'
 
-export const paraglideConfig: CompilerOptions = {
+export const paraglideConfiguration: CompilerOptions = {
 	project: './project.inlang',
 	outdir: './src/lib/paraglide',
 	emitTsDeclarations: true,

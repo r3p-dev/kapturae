@@ -28,7 +28,7 @@
 	import { isStickerId, stickerSrc } from '$lib/stickers'
 	import { cn } from '$lib/utils'
 
-	type Brush = { color: string; size: number; eraser: boolean }
+	type Brush = { color: string; size: number; isEraser: boolean }
 
 	let {
 		frame,
@@ -64,156 +64,209 @@
 	let width = $state(0)
 
 	const height = $derived(100 / SIZES[frame.size].ratio)
-	const px = $derived(width ? 100 / width : 0)
+	const percentPerPixel = $derived(width ? 100 / width : 0)
 
 	const pointers = new SvelteMap<number, { x: number; y: number }>()
 	const aspects = new SvelteMap<string, number>()
-	let pinch: { dist: number; zoom: number } | null = null
+	let pinch: { distance: number; zoom: number } | null = null
 	let stroke: Stroke | null = null
-	let erasing = false
-	let carry: { id: number; x: number; y: number; travelled: boolean; picking: boolean } | null = null
+	let isErasing = false
+	let carry: { id: number; x: number; y: number; hasTravelled: boolean; isPicking: boolean } | null = null
 	let ghost = $state<{ x: number; y: number } | null>(null)
-	let resize: { id: number; cx: number; cy: number; dist: number; size: number } | null = null
+	let resize: { id: number; centerX: number; centerY: number; distance: number; size: number } | null = null
 
 	function spread() {
-		const [a, b] = [...pointers.values()]
-		return Math.hypot(a.x - b.x, a.y - b.y)
+		const [first, second] = [...pointers.values()]
+		return Math.hypot(first.x - second.x, first.y - second.y)
 	}
 
-	function grab(e: PointerEvent) {
-		;(e.currentTarget as Element).setPointerCapture(e.pointerId)
-		pointers.set(e.pointerId, { x: e.clientX, y: e.clientY })
+	function grab(event: PointerEvent) {
+		;(event.currentTarget as Element).setPointerCapture(event.pointerId)
+		pointers.set(event.pointerId, { x: event.clientX, y: event.clientY })
 	}
 
-	function delta(e: PointerEvent) {
-		const p = pointers.get(e.pointerId)
-		if (!p) return null
-		const d = { x: e.clientX - p.x, y: e.clientY - p.y }
-		p.x = e.clientX
-		p.y = e.clientY
-		return d
+	function delta(event: PointerEvent) {
+		const last = pointers.get(event.pointerId)
+		if (!last) {
+			return null
+		}
+
+		const movement = { x: event.clientX - last.x, y: event.clientY - last.y }
+		last.x = event.clientX
+		last.y = event.clientY
+		return movement
 	}
 
-	function release(e: PointerEvent) {
-		if (!pointers.delete(e.pointerId)) return
+	function release(event: PointerEvent) {
+		if (!pointers.delete(event.pointerId)) {
+			return
+		}
+
 		pinch = null
 		stroke = null
-		erasing = false
-		if (!pointers.size) oncommit()
+		isErasing = false
+
+		if (!pointers.size) {
+			oncommit()
+		}
 	}
 
-	function stageDown(e: PointerEvent) {
-		if ((e.target as Element).closest('button')) return
+	function stageDown(event: PointerEvent) {
+		if ((event.target as Element).closest('button')) {
+			return
+		}
+
 		slot = null
 		item = null
 		move = null
 	}
 
-	function slotDown(e: PointerEvent, i: number) {
+	function slotDown(event: PointerEvent, index: number) {
 		if (move && !pointers.size) {
-			if (i !== move.from && photos[i]) return swap(move.from, i)
+			if (index !== move.from && photos[index]) {
+				return swap(move.from, index)
+			}
 			move = null
 		}
 
 		if (!pointers.size) {
-			slot = i
+			slot = index
 			item = null
 		}
 
-		if (slot === null || !photos[slot]) return
+		if (slot === null || !photos[slot]) {
+			return
+		}
 
-		grab(e)
+		grab(event)
 
-		if (pointers.size === 2) pinch = { dist: spread(), zoom: edit.slots[slot].zoom }
+		if (pointers.size === 2) {
+			pinch = { distance: spread(), zoom: edit.slots[slot].zoom }
+		}
 	}
 
-	function reachOf(i: number) {
-		const box = frame.slots[i]
-		const w = (box.w / 100) * (stage?.clientWidth ?? 0)
-		const h = (box.h / 100) * (stage?.clientHeight ?? 0)
-		return panReach(edit.slots[i], { w, h }, aspects.get(photos[i]) ?? w / h)
+	function reachOf(index: number) {
+		const box = frame.slots[index]
+		const boxWidth = (box.width / 100) * (stage?.clientWidth ?? 0)
+		const boxHeight = (box.height / 100) * (stage?.clientHeight ?? 0)
+		return panReach(
+			edit.slots[index],
+			{ width: boxWidth, height: boxHeight },
+			aspects.get(photos[index]) ?? boxWidth / boxHeight
+		)
 	}
 
-	const pannable = (i: number) => {
-		const reach = reachOf(i)
+	function pannable(index: number) {
+		const reach = reachOf(index)
 		return reach.x > 0.5 || reach.y > 0.5
 	}
 
-	function slotMove(e: PointerEvent) {
-		const d = delta(e)
-		if (!d || !stage || slot === null) return
-		const s = edit.slots[slot]
+	function slotMove(event: PointerEvent) {
+		const movement = delta(event)
+		if (!movement || !stage || slot === null) {
+			return
+		}
+
+		const slotEdit = edit.slots[slot]
 
 		if (pinch && pointers.size === 2) {
-			s.zoom = clamp(Math.round((pinch.zoom * spread()) / pinch.dist), ZOOM.min, ZOOM.max)
+			slotEdit.zoom = clamp(Math.round((pinch.zoom * spread()) / pinch.distance), ZOOM.min, ZOOM.max)
 			return
 		}
 
 		const reach = reachOf(slot)
-		if (reach.x > 0.5) s.x = clamp(s.x + d.x / reach.x, -1, 1)
-		if (reach.y > 0.5) s.y = clamp(s.y + d.y / reach.y, -1, 1)
+		if (reach.x > 0.5) {
+			slotEdit.x = clamp(slotEdit.x + movement.x / reach.x, -1, 1)
+		}
+
+		if (reach.y > 0.5) {
+			slotEdit.y = clamp(slotEdit.y + movement.y / reach.y, -1, 1)
+		}
 	}
 
-	function slotKey(e: KeyboardEvent, i: number) {
-		const s = edit.slots[i]
-		const pan = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key]
+	function slotKey(event: KeyboardEvent, index: number) {
+		const slotEdit = edit.slots[index]
+		const pan = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[event.key]
 
-		if (pan && pannable(i)) {
-			s.x = clamp(s.x + pan[0] * PAN_STEP, -1, 1)
-			s.y = clamp(s.y + pan[1] * PAN_STEP, -1, 1)
-		} else if (e.key === '+' || e.key === '=') {
-			s.zoom = Math.min(ZOOM.max, s.zoom + ZOOM.step)
-		} else if (e.key === '-') {
-			s.zoom = Math.max(ZOOM.min, s.zoom - ZOOM.step)
-		} else return
+		if (pan && pannable(index)) {
+			slotEdit.x = clamp(slotEdit.x + pan[0] * PAN_STEP, -1, 1)
+			slotEdit.y = clamp(slotEdit.y + pan[1] * PAN_STEP, -1, 1)
+		} else if (event.key === '+' || event.key === '=') {
+			slotEdit.zoom = Math.min(ZOOM.max, slotEdit.zoom + ZOOM.step)
+		} else if (event.key === '-') {
+			slotEdit.zoom = Math.max(ZOOM.min, slotEdit.zoom - ZOOM.step)
+		} else {
+			return
+		}
 
-		e.preventDefault()
+		event.preventDefault()
 		oncommit()
 	}
 
-	function swap(a: number, b: number) {
+	function swap(from: number, to: number) {
 		const { order, slots } = edit
-		;[order[a], order[b]] = [order[b], order[a]]
-		;[slots[a], slots[b]] = [slots[b], slots[a]]
-		slot = b
+		;[order[from], order[to]] = [order[to], order[from]]
+		;[slots[from], slots[to]] = [slots[to], slots[from]]
+		slot = to
 		item = null
 		move = null
 		oncommit()
 	}
 
-	function slotAt(e: PointerEvent) {
+	function slotAt(event: PointerEvent) {
 		const box = stage!.getBoundingClientRect()
-		const x = ((e.clientX - box.left) / box.width) * 100
-		const y = ((e.clientY - box.top) / box.height) * 100
-		const i = frame.slots.findIndex((s) => x >= s.x && x <= s.x + s.w && y >= s.y && y <= s.y + s.h)
-		return i !== -1 && i !== move?.from && photos[i] ? i : null
+		const x = ((event.clientX - box.left) / box.width) * 100
+		const y = ((event.clientY - box.top) / box.height) * 100
+		const index = frame.slots.findIndex(
+			(candidate) =>
+				x >= candidate.x &&
+				x <= candidate.x + candidate.width &&
+				y >= candidate.y &&
+				y <= candidate.y + candidate.height
+		)
+		return index !== -1 && index !== move?.from && photos[index] ? index : null
 	}
 
-	function handleDown(e: PointerEvent, i: number) {
-		if (carry) return
-		;(e.currentTarget as Element).setPointerCapture(e.pointerId)
-		carry = { id: e.pointerId, x: e.clientX, y: e.clientY, travelled: false, picking: move !== null }
-		move = { from: i, target: i }
+	function handleDown(event: PointerEvent, index: number) {
+		if (carry) {
+			return
+		}
+
+		;(event.currentTarget as Element).setPointerCapture(event.pointerId)
+		carry = { id: event.pointerId, x: event.clientX, y: event.clientY, hasTravelled: false, isPicking: move !== null }
+		move = { from: index, target: index }
 	}
 
-	function handleMove(e: PointerEvent) {
-		if (carry?.id !== e.pointerId || !move) return
-		if (!carry.travelled && Math.hypot(e.clientX - carry.x, e.clientY - carry.y) < DRAG_SLOP) return
-		carry.travelled = true
+	function handleMove(event: PointerEvent) {
+		if (carry?.id !== event.pointerId || !move) {
+			return
+		}
+
+		if (!carry.hasTravelled && Math.hypot(event.clientX - carry.x, event.clientY - carry.y) < DRAG_SLOP) {
+			return
+		}
+
+		carry.hasTravelled = true
 		const box = stage!.getBoundingClientRect()
-		ghost = { x: ((e.clientX - box.left) / box.width) * 100, y: ((e.clientY - box.top) / box.height) * 100 }
-		move.target = slotAt(e) ?? move.from
+		ghost = { x: ((event.clientX - box.left) / box.width) * 100, y: ((event.clientY - box.top) / box.height) * 100 }
+		move.target = slotAt(event) ?? move.from
 	}
 
-	function handleUp(e: PointerEvent) {
-		if (carry?.id !== e.pointerId || !move) return
-		const { travelled, picking } = carry
+	function handleUp(event: PointerEvent) {
+		if (carry?.id !== event.pointerId || !move) {
+			return
+		}
+
+		const { hasTravelled, isPicking } = carry
 		carry = null
 		ghost = null
-		const over = travelled ? slotAt(e) : null
+		const dropSlot = hasTravelled ? slotAt(event) : null
 
-		if (over !== null) swap(move.from, over)
-		else if (travelled || picking) move = null
+		if (dropSlot !== null) {
+			swap(move.from, dropSlot)
+		} else if (hasTravelled || isPicking) {
+			move = null
+		}
 	}
 
 	function handleCancel() {
@@ -222,122 +275,171 @@
 		move = null
 	}
 
-	function handleClick(e: MouseEvent, i: number) {
-		if (e.detail) return
-		if (!move) move = { from: i, target: i }
-		else if (move.target !== move.from) swap(move.from, move.target)
-		else move = null
+	function handleClick(event: MouseEvent, index: number) {
+		if (event.detail) {
+			return
+		}
+
+		if (!move) {
+			move = { from: index, target: index }
+		} else if (move.target !== move.from) {
+			swap(move.from, move.target)
+		} else {
+			move = null
+		}
 	}
 
-	function handleKey(e: KeyboardEvent) {
-		if (!move) return
-		const step = { ArrowLeft: -1, ArrowUp: -1, ArrowRight: 1, ArrowDown: 1 }[e.key]
-		if (!step) return
+	function handleKey(event: KeyboardEvent) {
+		if (!move) {
+			return
+		}
 
-		e.preventDefault()
+		const step = { ArrowLeft: -1, ArrowUp: -1, ArrowRight: 1, ArrowDown: 1 }[event.key]
+		if (!step) {
+			return
+		}
+
+		event.preventDefault()
 		const count = frame.slots.length
 		let next = move.target
-		do next = (next + step + count) % count
-		while ((next === move.from || !photos[next]) && next !== move.target)
+
+		do {
+			next = (next + step + count) % count
+		} while ((next === move.from || !photos[next]) && next !== move.target)
 		move.target = next
 	}
 
-	function itemDown(e: PointerEvent, it: Item) {
-		item = it.id
+	function itemDown(event: PointerEvent, entry: Item) {
+		item = entry.id
 		move = null
-		onselect?.(it)
-		grab(e)
+		onselect?.(entry)
+		grab(event)
 	}
 
-	function itemMove(e: PointerEvent, it: Item) {
-		const d = delta(e)
-		if (!d || !stage) return
-		it.x = clamp(it.x + d.x * px, 0, 100)
-		it.y = clamp(it.y + (d.y / stage.clientHeight) * 100, 0, 100)
+	function itemMove(event: PointerEvent, entry: Item) {
+		const movement = delta(event)
+		if (!movement || !stage) {
+			return
+		}
+
+		entry.x = clamp(entry.x + movement.x * percentPerPixel, 0, 100)
+		entry.y = clamp(entry.y + (movement.y / stage.clientHeight) * 100, 0, 100)
 	}
 
-	function remove(it: Item) {
-		edit.items = edit.items.filter((other) => other.id !== it.id)
+	function remove(entry: Item) {
+		edit.items = edit.items.filter((other) => other.id !== entry.id)
 		item = null
 		oncommit()
 	}
 
-	function resizeDown(e: PointerEvent, it: Item) {
-		const handle = e.currentTarget as Element
+	function resizeDown(event: PointerEvent, entry: Item) {
+		const handle = event.currentTarget as Element
 		const box = handle.parentElement!.getBoundingClientRect()
-		const cx = box.left + box.width / 2
-		const cy = box.top + box.height / 2
-		handle.setPointerCapture(e.pointerId)
-		resize = { id: e.pointerId, cx, cy, dist: Math.max(1, Math.hypot(e.clientX - cx, e.clientY - cy)), size: it.size }
+		const centerX = box.left + box.width / 2
+		const centerY = box.top + box.height / 2
+		handle.setPointerCapture(event.pointerId)
+		resize = {
+			id: event.pointerId,
+			centerX,
+			centerY,
+			distance: Math.max(1, Math.hypot(event.clientX - centerX, event.clientY - centerY)),
+			size: entry.size
+		}
 	}
 
-	function resizeMove(e: PointerEvent, it: Item) {
-		if (resize?.id !== e.pointerId) return
-		const { min, max } = ITEM_SIZE[it.kind]
-		const scale = Math.hypot(e.clientX - resize.cx, e.clientY - resize.cy) / resize.dist
-		it.size = clamp(Math.round(resize.size * scale), min, max)
+	function resizeMove(event: PointerEvent, entry: Item) {
+		if (resize?.id !== event.pointerId) {
+			return
+		}
+
+		const { min, max } = ITEM_SIZE[entry.kind]
+		const scale = Math.hypot(event.clientX - resize.centerX, event.clientY - resize.centerY) / resize.distance
+		entry.size = clamp(Math.round(resize.size * scale), min, max)
 	}
 
-	function resizeUp(e: PointerEvent) {
-		if (resize?.id !== e.pointerId) return
+	function resizeUp(event: PointerEvent) {
+		if (resize?.id !== event.pointerId) {
+			return
+		}
+
 		resize = null
 		oncommit()
 	}
 
-	function itemKey(e: KeyboardEvent, it: Item) {
-		const nudge = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key]
+	function itemKey(event: KeyboardEvent, entry: Item) {
+		const nudge = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[event.key]
 
 		if (nudge) {
-			it.x = clamp(it.x + nudge[0], 0, 100)
-			it.y = clamp(it.y + nudge[1], 0, 100)
-		} else if (e.key === 'Delete' || e.key === 'Backspace') {
-			e.preventDefault()
-			return remove(it)
-		} else return
+			entry.x = clamp(entry.x + nudge[0], 0, 100)
+			entry.y = clamp(entry.y + nudge[1], 0, 100)
+		} else if (event.key === 'Delete' || event.key === 'Backspace') {
+			event.preventDefault()
+			return remove(entry)
+		} else {
+			return
+		}
 
-		e.preventDefault()
+		event.preventDefault()
 		oncommit()
 	}
 
-	function point(e: PointerEvent) {
+	function point(event: PointerEvent) {
 		const box = stage!.getBoundingClientRect()
-		return [(e.clientX - box.left) * px, (e.clientY - box.top) * px]
+		return [(event.clientX - box.left) * percentPerPixel, (event.clientY - box.top) * percentPerPixel]
 	}
 
 	function erase([x, y]: number[]) {
-		const reach = Math.max(3, brush.size * px)
-		edit.strokes = edit.strokes.filter((s) => {
-			for (let i = 0; i < s.points.length; i += 2) {
-				if (Math.hypot(s.points[i] - x, s.points[i + 1] - y) < reach + s.width / 2) return false
+		const reach = Math.max(3, brush.size * percentPerPixel)
+		edit.strokes = edit.strokes.filter((existing) => {
+			for (const [index, coordinate] of existing.points.entries()) {
+				if (
+					index % 2 === 0 &&
+					Math.hypot(coordinate - x, existing.points[index + 1] - y) < reach + existing.width / 2
+				) {
+					return false
+				}
 			}
 			return true
 		})
 	}
 
-	function brushDown(e: PointerEvent) {
-		if (pointers.size) return
-		grab(e)
-		const [x, y] = point(e)
+	function brushDown(event: PointerEvent) {
+		if (pointers.size) {
+			return
+		}
 
-		if (brush.eraser) {
-			erasing = true
+		grab(event)
+		const [x, y] = point(event)
+
+		if (brush.isEraser) {
+			isErasing = true
 			erase([x, y])
 			return
 		}
 
-		edit.strokes.push({ color: brush.color, width: brush.size * px, points: [x, y, x, y] })
+		edit.strokes.push({ color: brush.color, width: brush.size * percentPerPixel, points: [x, y, x, y] })
 		stroke = edit.strokes[edit.strokes.length - 1]
 	}
 
-	function brushMove(e: PointerEvent) {
-		if (!pointers.has(e.pointerId)) return
-		const [x, y] = point(e)
+	function brushMove(event: PointerEvent) {
+		if (!pointers.has(event.pointerId)) {
+			return
+		}
 
-		if (erasing) return erase([x, y])
-		if (!stroke) return
+		const [x, y] = point(event)
 
-		const n = stroke.points.length
-		if (Math.hypot(stroke.points[n - 2] - x, stroke.points[n - 1] - y) >= MIN_STEP) stroke.points.push(x, y)
+		if (isErasing) {
+			return erase([x, y])
+		}
+
+		if (!stroke) {
+			return
+		}
+
+		const { length } = stroke.points
+		if (Math.hypot(stroke.points[length - 2] - x, stroke.points[length - 1] - y) >= MIN_STEP) {
+			stroke.points.push(x, y)
+		}
 	}
 
 	const handle =
@@ -350,24 +452,24 @@
 	}
 </script>
 
-{#snippet photo(i: number)}
-	{#if photos[i]}
-		{@const s = edit.slots[i]}
-		{@const tint = filterTint(s.filter, s.intensity)}
-		{@const source = photoFor(photos[i])?.source}
+{#snippet photo(index: number)}
+	{#if photos[index]}
+		{@const slotEdit = edit.slots[index]}
+		{@const tint = filterTint(slotEdit.filter, slotEdit.intensity)}
+		{@const source = photoFor(photos[index])?.source}
 
 		<img
-			src={photos[i]}
+			src={photos[index]}
 			alt=""
 			draggable="false"
-			onload={(e) => {
-				const img = e.currentTarget as HTMLImageElement
-				aspects.set(photos[i], img.naturalWidth / img.naturalHeight)
+			onload={(event) => {
+				const image = event.currentTarget as HTMLImageElement
+				aspects.set(photos[index], image.naturalWidth / image.naturalHeight)
 			}}
 			class="absolute inset-0 size-full object-cover"
-			style:object-position={objectPosition(s)}
-			style:transform={panTransform(s)}
-			style:filter={filterCss(s.filter, s.intensity, s)}
+			style:object-position={objectPosition(slotEdit)}
+			style:transform={panTransform(slotEdit)}
+			style:filter={filterCss(slotEdit.filter, slotEdit.intensity, slotEdit)}
 		/>
 
 		{#if tint}
@@ -378,23 +480,23 @@
 			></span>
 		{/if}
 
-		{#if s.warmth}
+		{#if slotEdit.warmth}
 			<span
 				class="absolute inset-0 mix-blend-soft-light"
-				style:background-color={s.warmth > 0 ? '#ff8a1f' : '#2f7bff'}
-				style:opacity={Math.abs(s.warmth) / 200}
+				style:background-color={slotEdit.warmth > 0 ? '#ff8a1f' : '#2f7bff'}
+				style:opacity={Math.abs(slotEdit.warmth) / 200}
 			></span>
 		{/if}
 
-		{#if s.grain}
+		{#if slotEdit.grain}
 			<span
 				class="absolute inset-0 mix-blend-overlay"
 				style:background-image={`url("${GRAIN}")`}
-				style:opacity={(s.grain / 100) * 0.6}
+				style:opacity={(slotEdit.grain / 100) * 0.6}
 			></span>
 		{/if}
 
-		{#if source && slot !== i}
+		{#if source && slot !== index}
 			<span
 				title={source === 'upload' ? m['session.source.from_upload']() : m['session.source.from_camera']()}
 				class="absolute top-1.5 left-1.5 flex size-5.5 items-center justify-center bg-ink/70 text-paper"
@@ -408,7 +510,7 @@
 		{/if}
 	{:else}
 		<span class="absolute inset-0 flex items-center justify-center font-display text-[22px] font-black text-[#8c8983]">
-			{i + 1}
+			{index + 1}
 		</span>
 	{/if}
 {/snippet}
@@ -425,81 +527,81 @@
 		stroke-linecap="round"
 		stroke-linejoin="round"
 	>
-		{#each edit.strokes as s, i (i)}
-			<polyline points={s.points.join(' ')} stroke={s.color} stroke-width={s.width} />
+		{#each edit.strokes as line, index (index)}
+			<polyline points={line.points.join(' ')} stroke={line.color} stroke-width={line.width} />
 		{/each}
 	</svg>
 
-	{#each frame.slots as box, i (i)}
+	{#each frame.slots as box, index (index)}
 		<button
 			type="button"
-			aria-label={m['session.edit.slot']({ n: i + 1 })}
-			aria-pressed={slot === i}
-			data-active={slot === i && item === null ? '' : undefined}
-			onpointerdown={(e) => slotDown(e, i)}
+			aria-label={m['session.edit.slot']({ n: index + 1 })}
+			aria-pressed={slot === index}
+			data-active={slot === index && item === null ? '' : undefined}
+			onpointerdown={(event) => slotDown(event, index)}
 			onpointermove={slotMove}
 			onpointerup={release}
 			onpointercancel={release}
-			onkeydown={(e) => slotKey(e, i)}
+			onkeydown={(event) => slotKey(event, index)}
 			class={cn(
 				'absolute touch-none outline-offset-3 outline-primary focus-visible:outline-3 data-active:outline-3',
-				photos[i] && width && pannable(i) ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer',
+				photos[index] && width && pannable(index) ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer',
 				move &&
-					i !== move.from &&
-					photos[i] &&
-					(move.target === i
+					index !== move.from &&
+					photos[index] &&
+					(move.target === index
 						? 'bg-paper/25 outline-3 outline-paper'
 						: 'cursor-pointer outline-2 outline-paper/70 outline-dashed')
 			)}
 			style:left="{box.x}%"
 			style:top="{box.y}%"
-			style:width="{box.w}%"
-			style:height="{box.h}%"
+			style:width="{box.width}%"
+			style:height="{box.height}%"
 		></button>
 	{/each}
 
-	{#each edit.items as it (it.id)}
-		{@const on = item === it.id}
+	{#each edit.items as entry (entry.id)}
+		{@const isSelected = item === entry.id}
 
 		<div
 			class="absolute -translate-1/2"
-			style:left="{it.x}%"
-			style:top="{it.y}%"
-			style:width={it.kind === 'sticker' ? `${it.size}%` : undefined}
+			style:left="{entry.x}%"
+			style:top="{entry.y}%"
+			style:width={entry.kind === 'sticker' ? `${entry.size}%` : undefined}
 		>
 			<button
 				type="button"
-				aria-label={it.kind === 'text'
-					? it.text
-					: isStickerId(it.sticker)
-						? STICKER_LABELS[it.sticker]()
+				aria-label={entry.kind === 'text'
+					? entry.text
+					: isStickerId(entry.sticker)
+						? STICKER_LABELS[entry.sticker]()
 						: m['session.edit.sticker_upload']()}
-				aria-pressed={on}
-				onpointerdown={(e) => itemDown(e, it)}
-				onpointermove={(e) => itemMove(e, it)}
+				aria-pressed={isSelected}
+				onpointerdown={(event) => itemDown(event, entry)}
+				onpointermove={(event) => itemMove(event, entry)}
 				onpointerup={release}
 				onpointercancel={release}
-				onkeydown={(e) => itemKey(e, it)}
+				onkeydown={(event) => itemKey(event, entry)}
 				class="block w-full cursor-move touch-none outline-offset-2 focus-visible:outline-2 focus-visible:outline-primary aria-pressed:shadow-[0_0_0_1px_rgba(14,14,13,0.55)] aria-pressed:outline-2 aria-pressed:outline-paper aria-pressed:outline-dashed"
 			>
-				{#if it.kind === 'sticker'}
-					<img src={stickerSrc(it.sticker)} alt="" draggable="false" class="block w-full" />
+				{#if entry.kind === 'sticker'}
+					<img src={stickerSrc(entry.sticker)} alt="" draggable="false" class="block w-full" />
 				{:else}
 					<span
-						class={cn('block leading-none whitespace-pre', fonts[it.font])}
-						style:color={it.color}
-						style:font-size="{(it.size * width) / 100}px"
+						class={cn('block leading-none whitespace-pre', fonts[entry.font])}
+						style:color={entry.color}
+						style:font-size="{(entry.size * width) / 100}percentPerPixel"
 					>
-						{it.text}
+						{entry.text}
 					</span>
 				{/if}
 			</button>
 
-			{#if on && tool !== 'brush'}
+			{#if isSelected && tool !== 'brush'}
 				<button
 					type="button"
 					aria-label={m['session.edit.remove']()}
-					onclick={() => remove(it)}
+					onclick={() => remove(entry)}
 					class="{handle} -top-3.5 -right-3.5 bg-primary text-primary-foreground"
 				>
 					<RiCloseLine aria-hidden="true" class="size-3.5" />
@@ -509,8 +611,8 @@
 					type="button"
 					aria-label={m['session.edit.resize']()}
 					tabindex={-1}
-					onpointerdown={(e) => resizeDown(e, it)}
-					onpointermove={(e) => resizeMove(e, it)}
+					onpointerdown={(event) => resizeDown(event, entry)}
+					onpointermove={(event) => resizeMove(event, entry)}
 					onpointerup={resizeUp}
 					onpointercancel={resizeUp}
 					class="{handle} -bottom-3.5 -left-3.5 cursor-nesw-resize touch-none bg-paper text-ink"
@@ -523,17 +625,17 @@
 
 	{#if slot !== null && photos[slot] && tool !== 'brush'}
 		{@const box = frame.slots[slot]}
-		{@const n = slot}
+		{@const selected = slot}
 
 		<button
 			type="button"
-			aria-label={m['session.edit.move']({ n: n + 1 })}
-			aria-pressed={move?.from === n}
-			onpointerdown={(e) => handleDown(e, n)}
+			aria-label={m['session.edit.move']({ n: selected + 1 })}
+			aria-pressed={move?.from === selected}
+			onpointerdown={(event) => handleDown(event, selected)}
 			onpointermove={handleMove}
 			onpointerup={handleUp}
 			onpointercancel={handleCancel}
-			onclick={(e) => handleClick(e, n)}
+			onclick={(event) => handleClick(event, selected)}
 			onkeydown={handleKey}
 			class="absolute m-1.5 flex size-9 cursor-grab touch-none items-center justify-center bg-paper text-ink outline-offset-2 outline-primary focus-visible:outline-3 active:cursor-grabbing aria-pressed:bg-primary aria-pressed:text-primary-foreground"
 			style:left="{box.x}%"
@@ -553,8 +655,8 @@
 			class="pointer-events-none absolute -translate-1/2 object-cover opacity-85 shadow-lg ring-2 ring-paper"
 			style:left="{ghost.x}%"
 			style:top="{ghost.y}%"
-			style:width="{box.w * 0.6}%"
-			style:height="{box.h * 0.6}%"
+			style:width="{box.width * 0.6}%"
+			style:height="{box.height * 0.6}%"
 		/>
 	{/if}
 

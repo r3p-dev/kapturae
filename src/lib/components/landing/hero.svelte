@@ -91,7 +91,7 @@
 
 		<nav aria-label={m['common.nav.aria']()} class="flex w-full flex-col items-stretch gap-1.5">
 			<div class="grid grid-cols-5 items-end uppercase">
-				{#each dial as stop, i (i)}
+				{#each dial as stop, index (index)}
 					{#if stop}
 						<a
 							href={stop.href}

@@ -2,10 +2,12 @@ import { error } from '@sveltejs/kit'
 import { ASSET_MIME, parseAssetName, readShareAsset } from '$lib/server/share'
 import type { RequestHandler } from './$types'
 
-export const GET: RequestHandler = async ({ params }) => {
+export const GET: RequestHandler = async function ({ params }) {
 	const name = parseAssetName(params.asset)
 	const file = name && (await readShareAsset(params.id, name.key, name.kind))
-	if (!name || !file) error(404, 'Not found')
+	if (!name || !file) {
+		error(404, 'Not found')
+	}
 
 	return new Response(new Uint8Array(file), {
 		headers: {

@@ -61,17 +61,21 @@
 	const FLASH_MS = 700
 	const FLASH_LEAD_MS = 300
 
-	const params = page.url.searchParams
-	const requested = pick(PRINT_SIZES, params.get('size')) ?? '2x6'
+	const search = page.url.searchParams
+	const requested = pick(PRINT_SIZES, search.get('size')) ?? '2x6'
 	const frame =
-		FRAMES.find((f) => f.id === params.get('frame')) ?? FRAMES.find((f) => f.size === requested) ?? FRAMES[0]
+		FRAMES.find((candidate) => candidate.id === search.get('frame')) ??
+		FRAMES.find((candidate) => candidate.size === requested) ??
+		FRAMES[0]
 	const size = frame.size
 	const spec = SIZES[size]
 	const query = new URLSearchParams({ size, frame: frame.id })
 	const next = localizeHref(`/session/edit?${query}`)
-	const redo = params.has('retake') ? Number(params.get('retake')) : NaN
+	const redo = search.has('retake') ? Number(search.get('retake')) : NaN
 
-	if (browser) useShots(size, frame.id)
+	if (browser) {
+		useShots(size, frame.id)
+	}
 
 	const camera = new Camera()
 	const burst = new BurstRecorder()
@@ -79,40 +83,46 @@
 	let video = $state<HTMLVideoElement>()
 	let timer = $state<number>(TIMERS[0])
 	let phase = $state<number | 'flash' | null>(null)
-	let muted = $state(false)
-	let flash = $state(false)
-	let lit = $state(false)
+	let isMuted = $state(false)
+	let isFlashOn = $state(false)
+	let isLit = $state(false)
 	let source = $state<PhotoSource>('camera')
 	let uploads = $state<Upload[]>([])
-	let importing = $state(false)
+	let isImporting = $state(false)
 	let sound: HTMLAudioElement | undefined
-	let alive = true
-	let uploadSeq = 0
+	let isAlive = true
+	let uploadSequence = 0
 
 	const total = frame.slots.length
 	const retake = Number.isInteger(redo) && redo >= 0 && redo < total ? redo : null
 	const taken = $derived(shots.photos.filter(Boolean).length)
 	const target = $derived(retake ?? firstEmptyShot(total) ?? total)
 	const targetSlot = $derived(target < total ? slotOfShot(target) : total)
-	const shotAt = (i: number) => shots.edit?.order[i] ?? i
-	let retaken = $state(false)
-	const complete = $derived(retake === null ? taken >= total : retaken)
-	const remaining = $derived(complete ? 0 : retake === null ? total - taken : 1)
+	function shotAt(index: number) {
+		return shots.edit?.order[index] ?? index
+	}
+	let hasRetaken = $state(false)
+	const isComplete = $derived(retake === null ? taken >= total : hasRetaken)
+	const remaining = $derived(isComplete ? 0 : retake === null ? total - taken : 1)
 	const current = $derived(Math.min(targetSlot + 1, total))
 	const back = $derived(retake === null ? localizeHref(`/session/frame?${query}`) : next)
-	const busy = $derived(phase !== null)
-	const ready = $derived(source === 'camera' && camera.status === 'live' && !busy && !complete && !importing)
+	const isBusy = $derived(phase !== null)
+	const isReady = $derived(source === 'camera' && camera.status === 'live' && !isBusy && !isComplete && !isImporting)
 	const lastShot = $derived(
-		Array.from({ length: total }, (_, i) => shotAt(i))
+		Array.from({ length: total }, (_, index) => shotAt(index))
 			.filter((shot) => shots.photos[shot])
 			.at(-1)
 	)
 	const hint = $derived(
-		complete ? m['session.shoot.hint_done']() : busy ? m['session.shoot.hint_busy']() : m['session.shoot.hint_idle']()
+		isComplete
+			? m['session.shoot.hint_done']()
+			: isBusy
+				? m['session.shoot.hint_busy']()
+				: m['session.shoot.hint_idle']()
 	)
 
 	const hud = $derived(
-		[m['session.shoot.shot_hud']({ n: current, total }), camera.mirrored && m['session.shoot.mirror']()]
+		[m['session.shoot.shot_hud']({ n: current, total }), camera.isMirrored && m['session.shoot.mirror']()]
 			.filter(Boolean)
 			.join(' · ')
 	)
@@ -121,22 +131,26 @@
 	let guideHeight = $state(0)
 
 	const view = $derived.by(() => {
-		const slot = frame.slots[targetSlot] ?? { x: 0, y: 0, w: 100, h: 100 }
-		const h = Math.min(guideWidth / ((slot.w / 100) * spec.ratio), guideHeight / (slot.h / 100))
+		const slot = frame.slots[targetSlot] ?? { x: 0, y: 0, width: 100, height: 100 }
+		const height = Math.min(guideWidth / ((slot.width / 100) * spec.ratio), guideHeight / (slot.height / 100))
 
 		return {
-			h,
-			x: guideWidth / 2 - ((slot.x + slot.w / 2) / 100) * h * spec.ratio,
-			y: guideHeight / 2 - ((slot.y + slot.h / 2) / 100) * h
+			height,
+			x: guideWidth / 2 - ((slot.x + slot.width / 2) / 100) * height * spec.ratio,
+			y: guideHeight / 2 - ((slot.y + slot.height / 2) / 100) * height
 		}
 	})
 
-	const wait = (ms: number) => new Promise<boolean>((resolve) => setTimeout(() => resolve(alive), ms))
+	function wait(milliseconds: number) {
+		return new Promise<boolean>((resolve) => setTimeout(() => resolve(isAlive), milliseconds))
+	}
 
 	async function shoot() {
-		if (!ready) return
+		if (!isReady) {
+			return
+		}
 
-		if (!(await snap()) || !complete) {
+		if (!(await snap()) || !isComplete) {
 			phase = null
 			return
 		}
@@ -147,10 +161,12 @@
 
 	async function snap() {
 		const shot = target
-		if (video) burst.start(video, camera.mirrored)
+		if (video) {
+			burst.start(video, camera.isMirrored)
+		}
 
-		for (let n = timer; n > 0; n--) {
-			phase = n
+		for (const remainingSeconds of Array.from({ length: timer }, (_, index) => timer - index)) {
+			phase = remainingSeconds
 			if (!(await wait(TICK_MS))) {
 				burst.cancel()
 				return false
@@ -162,14 +178,17 @@
 			return false
 		}
 
-		if (flash) {
-			if (camera.canTorch) await camera.torch(true)
-			else lit = true
+		if (isFlashOn) {
+			if (camera.canTorch) {
+				await camera.torch(true)
+			} else {
+				isLit = true
+			}
 			await wait(FLASH_LEAD_MS)
 		}
 
 		phase = 'flash'
-		if (sound && !muted) {
+		if (sound && !isMuted) {
 			sound.currentTime = 0
 			sound.play().catch(() => {})
 		}
@@ -178,14 +197,17 @@
 			burst.grab()
 			const frames = burst.stop()
 			const url = await camera.capture(video)
-			if (!alive) URL.revokeObjectURL(url)
-			else place(shot, addPhoto({ url, source: 'camera', burst: frames }))
+			if (!isAlive) {
+				URL.revokeObjectURL(url)
+			} else {
+				place(shot, addPhoto({ url, source: 'camera', burst: frames }))
+			}
 		} catch {
 			burst.cancel()
 		}
 
-		if (flash) {
-			lit = false
+		if (isFlashOn) {
+			isLit = false
 			camera.torch(false)
 		}
 
@@ -194,26 +216,33 @@
 
 	function place(shot: number, url: string) {
 		shots.photos[shot] = url
-		if (retake !== null) retaken = true
+		if (retake !== null) {
+			hasRetaken = true
+		}
 	}
 
 	async function upload(files: File[]) {
-		if (!files.length || importing || busy) return
-		importing = true
+		if (!files.length || isImporting || isBusy) {
+			return
+		}
+		isImporting = true
 
 		for (const file of files) {
-			uploads.push({ id: ++uploadSeq, name: file.name, status: 'loading' })
+			uploads.push({ id: ++uploadSequence, name: file.name, status: 'loading' })
 			const entry = uploads[uploads.length - 1]
 
 			try {
 				const url = await importPhoto(file)
-				if (!alive) return URL.revokeObjectURL(url)
+				if (!isAlive) {
+					return URL.revokeObjectURL(url)
+				}
 
 				addPhoto({ url, source: 'upload', name: file.name, burst: [] })
 				entry.url = url
 
-				if (complete) entry.status = 'kept'
-				else {
+				if (isComplete) {
+					entry.status = 'kept'
+				} else {
 					entry.slot = slotOfShot(target) + 1
 					place(target, url)
 					entry.status = 'placed'
@@ -224,14 +253,16 @@
 			}
 		}
 
-		importing = false
-		// eslint-disable-next-line svelte/no-navigation-without-resolve
-		if (complete && alive) goto(next, { replaceState: true })
+		isImporting = false
+		if (isComplete && isAlive) {
+			// eslint-disable-next-line svelte/no-navigation-without-resolve
+			goto(next, { replaceState: true })
+		}
 	}
 
-	function pickFiles(e: Event & { currentTarget: HTMLInputElement }) {
-		const files = [...(e.currentTarget.files ?? [])]
-		e.currentTarget.value = ''
+	function pickFiles(event: Event & { currentTarget: HTMLInputElement }) {
+		const files = [...(event.currentTarget.files ?? [])]
+		event.currentTarget.value = ''
 		upload(files)
 	}
 
@@ -247,24 +278,24 @@
 	const toggles = $derived([
 		{
 			label: m['session.shoot.mirror_toggle'](),
-			on: camera.mirrored,
+			isOn: camera.isMirrored,
 			icon: RiFlipHorizontalLine,
-			locked: true,
-			flip: () => (camera.mirrored = !camera.mirrored)
+			isLocked: true,
+			flip: () => (camera.isMirrored = !camera.isMirrored)
 		},
 		{
 			label: m['session.shoot.sound'](),
-			on: !muted,
-			icon: muted ? RiVolumeMuteLine : RiVolumeUpLine,
-			locked: false,
-			flip: () => (muted = !muted)
+			isOn: !isMuted,
+			icon: isMuted ? RiVolumeMuteLine : RiVolumeUpLine,
+			isLocked: false,
+			flip: () => (isMuted = !isMuted)
 		},
 		{
 			label: m['session.shoot.flash'](),
-			on: flash,
-			icon: flash ? RiFlashlightFill : RiFlashlightLine,
-			locked: true,
-			flip: () => (flash = !flash)
+			isOn: isFlashOn,
+			icon: isFlashOn ? RiFlashlightFill : RiFlashlightLine,
+			isLocked: true,
+			flip: () => (isFlashOn = !isFlashOn)
 		}
 	])
 
@@ -281,7 +312,7 @@
 		sound = new Audio(asset('/shutter.mp3'))
 
 		return () => {
-			alive = false
+			isAlive = false
 			burst.cancel()
 			camera.stop()
 		}
@@ -299,15 +330,15 @@
 	<meta name="description" content={m['session.shoot.meta_description']()} />
 </svelte:head>
 
-{#snippet slotPhoto(i: number)}
-	{@const shot = shotAt(i)}
+{#snippet slotPhoto(index: number)}
+	{@const shot = shotAt(index)}
 	{@const photo = photoFor(shots.photos[shot])}
-	{@const waiting = shot === target && !complete}
+	{@const isWaiting = shot === target && !isComplete}
 
-	{#if waiting && source === 'camera' && camera.stream}
+	{#if isWaiting && source === 'camera' && camera.stream}
 		<CameraFeed
 			stream={camera.stream}
-			mirrored={camera.mirrored}
+			isMirrored={camera.isMirrored}
 			class="absolute inset-0 outline-3 -outline-offset-3 outline-primary"
 		/>
 	{:else if shots.photos[shot]}
@@ -329,11 +360,11 @@
 		<span
 			class={cn(
 				'absolute inset-0 flex flex-col items-center justify-center gap-1',
-				waiting ? 'bg-[#2a2a28] outline-3 -outline-offset-3 outline-primary' : 'text-[#8c8983]'
+				isWaiting ? 'bg-[#2a2a28] outline-3 -outline-offset-3 outline-primary' : 'text-[#8c8983]'
 			)}
 		>
-			<span class="font-display text-[22px] font-black">{i + 1}</span>
-			{#if waiting}
+			<span class="font-display text-[22px] font-black">{index + 1}</span>
+			{#if isWaiting}
 				<span class="font-mono text-[10px] tracking-widest text-body uppercase">
 					{source === 'upload' ? m['session.upload.waiting']() : m['session.upload.next']()}
 				</span>
@@ -342,15 +373,15 @@
 	{/if}
 {/snippet}
 
-{#snippet uploadThumb(item: Upload, cls: string)}
+{#snippet uploadThumb(item: Upload, className: string)}
 	{#if item.status === 'error'}
-		<span class="flex shrink-0 items-center justify-center border-[1.5px] border-primary bg-[#2a2a28] {cls}">
+		<span class="flex shrink-0 items-center justify-center border-[1.5px] border-primary bg-[#2a2a28] {className}">
 			<RiAlertLine aria-hidden="true" class="size-1/3 text-primary" />
 		</span>
 	{:else if item.url}
-		<img src={item.url} alt="" class="shrink-0 object-cover {cls}" />
+		<img src={item.url} alt="" class="shrink-0 object-cover {className}" />
 	{:else}
-		<span class="shrink-0 animate-pulse bg-[#8a7560]/50 motion-reduce:animate-none {cls}"></span>
+		<span class="shrink-0 animate-pulse bg-[#8a7560]/50 motion-reduce:animate-none {className}"></span>
 	{/if}
 {/snippet}
 
@@ -386,8 +417,8 @@
 	<ToggleGroup.Root
 		type="single"
 		aria-label={m['session.source.label']()}
-		disabled={busy || importing}
-		bind:value={() => source, (next) => next && (source = next as PhotoSource)}
+		disabled={isBusy || isImporting}
+		bind:value={() => source, (value) => value && (source = value as PhotoSource)}
 		class="border-[1.5px] border-foreground"
 	>
 		{#each sources as item (item.value)}
@@ -424,7 +455,7 @@
 			<button
 				type="button"
 				onclick={() => camera.flip()}
-				disabled={busy}
+				disabled={isBusy}
 				aria-label={m['session.shoot.flip']()}
 				class={cn(pill, 'justify-self-end disabled:opacity-50')}
 			>
@@ -434,12 +465,12 @@
 	</div>
 
 	<div aria-hidden="true" class="mt-1 flex justify-center gap-1.5 rail:hidden">
-		{#each { length: total }, i (i)}
+		{#each { length: total }, index (index)}
 			<span
 				class="h-1 w-10"
-				style:background-color={shotAt(i) === target && !complete
+				style:background-color={shotAt(index) === target && !isComplete
 					? 'var(--primary)'
-					: `color-mix(in srgb, ${frame.ink} ${shots.photos[shotAt(i)] ? 100 : 30}%, transparent)`}
+					: `color-mix(in srgb, ${frame.ink} ${shots.photos[shotAt(index)] ? 100 : 30}%, transparent)`}
 			></span>
 		{/each}
 	</div>
@@ -450,7 +481,7 @@
 				{@render sourceSwitch()}
 
 				<span class="{mono} text-xs text-muted-foreground">
-					{#if complete}
+					{#if isComplete}
 						{m['session.shoot.hint_done']()}
 					{:else}
 						{m['session.upload.filling']()}
@@ -463,7 +494,7 @@
 				<div class="hidden min-h-0 flex-1 flex-col gap-4 bg-[#1b1b19] p-6 rail:flex">
 					<Dropzone
 						onfiles={upload}
-						disabled={importing || complete}
+						disabled={isImporting || isComplete}
 						class="relative flex min-h-0 flex-1 flex-col items-center justify-center gap-4.5 overflow-y-auto border-2 border-dashed border-[#5a5853] p-6 text-center"
 					>
 						<Corners inset="16px" size="28px" weight="3px" class="text-primary" />
@@ -482,14 +513,14 @@
 						<label
 							class={cn(
 								'flex h-13 shrink-0 items-center gap-2.5 bg-primary px-8 font-mono text-[13px] font-medium tracking-[0.12em] text-primary-foreground uppercase hover:bg-primary/80 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-paper',
-								importing || complete ? 'pointer-events-none opacity-50' : 'cursor-pointer'
+								isImporting || isComplete ? 'pointer-events-none opacity-50' : 'cursor-pointer'
 							)}
 						>
 							<input
 								type="file"
 								accept={UPLOAD_ACCEPT}
 								multiple={retake === null}
-								disabled={importing || complete}
+								disabled={isImporting || isComplete}
 								onchange={pickFiles}
 								class="sr-only"
 							/>
@@ -554,16 +585,16 @@
 				{#if source === 'upload'}
 					<Dropzone
 						onfiles={upload}
-						disabled={importing || complete}
+						disabled={isImporting || isComplete}
 						class="absolute inset-4 flex flex-col items-center justify-center gap-3.5 overflow-y-auto border-2 border-dashed border-[#5a5853] p-5 text-center"
 					>
 						<RiImageLine aria-hidden="true" class="size-11 shrink-0 text-primary" />
 
 						<h2 class="m-0 font-display text-[26px] leading-[0.95] font-black uppercase font-stretch-112%">
-							{complete ? m['session.shoot.hint_done']() : m['session.upload.pick_for_slot']({ n: current })}
+							{isComplete ? m['session.shoot.hint_done']() : m['session.upload.pick_for_slot']({ n: current })}
 						</h2>
 
-						{#if !complete}
+						{#if !isComplete}
 							<p class="m-0 text-sm leading-normal text-body">
 								{remaining > 1 ? m['session.upload.pick_many']({ n: remaining }) : m['session.upload.pick_one']()}
 							</p>
@@ -590,7 +621,7 @@
 						{/if}
 					</Dropzone>
 				{:else if camera.status === 'live'}
-					<CameraFeed stream={camera.stream} mirrored={camera.mirrored} bind:video />
+					<CameraFeed stream={camera.stream} isMirrored={camera.isMirrored} bind:video />
 
 					<div
 						aria-hidden="true"
@@ -602,7 +633,7 @@
 							<div
 								class="transition-transform duration-700 ease-out motion-reduce:transition-none"
 								style:transform="translate({view.x}px, {view.y}px)"
-								style:--h="{view.h}px"
+								style:--h="{view.height}px"
 							>
 								<FrameImage
 									{frame}
@@ -669,8 +700,8 @@
 					<ToggleGroup.Root
 						type="single"
 						aria-label={m['session.source.label']()}
-						disabled={busy || importing}
-						bind:value={() => source, (next) => next && (source = next as PhotoSource)}
+						disabled={isBusy || isImporting}
+						bind:value={() => source, (value) => value && (source = value as PhotoSource)}
 						class="h-12 w-full shrink-0 justify-center gap-2 rail:hidden"
 					>
 						{#each sources as item (item.value)}
@@ -701,7 +732,7 @@
 									{/if}
 								</span>
 							{/if}
-							{#if !complete}
+							{#if !isComplete}
 								<span
 									class={cn(
 										'size-11 border-2 border-dashed',
@@ -715,7 +746,7 @@
 							<button
 								type="button"
 								onclick={cycleTimer}
-								disabled={busy}
+								disabled={isBusy}
 								aria-label={m['session.shoot.timer_cycle']({ n: timer })}
 								class={tile}
 							>
@@ -727,8 +758,8 @@
 								<button
 									type="button"
 									onclick={item.flip}
-									disabled={item.locked && busy}
-									aria-pressed={item.on}
+									disabled={item.isLocked && isBusy}
+									aria-pressed={item.isOn}
 									aria-label={item.label}
 									title={item.label}
 									class={tile}
@@ -741,7 +772,7 @@
 								<button
 									type="button"
 									onclick={() => camera.flip()}
-									disabled={busy}
+									disabled={isBusy}
 									aria-label={m['session.shoot.flip']()}
 									title={m['session.shoot.flip']()}
 									class={tile}
@@ -755,7 +786,7 @@
 							<ShutterButton
 								onclick={shoot}
 								aria-label={m['session.shoot.shutter']()}
-								aria-disabled={!ready}
+								aria-disabled={!isReady}
 								class="shrink-0 aria-disabled:opacity-50"
 							/>
 						{:else}
@@ -763,14 +794,14 @@
 								aria-label={m['session.upload.pick_gallery']()}
 								class={cn(
 									'flex size-21 shrink-0 items-center justify-center rounded-full border-4 border-paper has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-paper',
-									importing || complete ? 'pointer-events-none opacity-50' : 'cursor-pointer'
+									isImporting || isComplete ? 'pointer-events-none opacity-50' : 'cursor-pointer'
 								)}
 							>
 								<input
 									type="file"
 									accept={UPLOAD_ACCEPT}
 									multiple={retake === null}
-									disabled={importing || complete}
+									disabled={isImporting || isComplete}
 									onchange={pickFiles}
 									class="sr-only"
 								/>
@@ -808,7 +839,7 @@
 										<button
 											type="button"
 											onclick={cycleTimer}
-											disabled={busy}
+											disabled={isBusy}
 											aria-label={m['session.shoot.timer_cycle']({ n: timer })}
 											class="group flex w-16 flex-col items-center gap-1 py-1 disabled:opacity-50"
 										>
@@ -822,8 +853,8 @@
 											<button
 												type="button"
 												onclick={item.flip}
-												disabled={item.locked && busy}
-												aria-pressed={item.on}
+												disabled={item.isLocked && isBusy}
+												aria-pressed={item.isOn}
 												aria-label={item.label}
 												class="group flex w-16 flex-col items-center gap-1 py-1 disabled:opacity-50"
 											>
@@ -880,7 +911,7 @@
 		</aside>
 	</div>
 
-	{#if lit}
+	{#if isLit}
 		<div aria-hidden="true" class="pointer-events-none fixed inset-0 z-50 bg-white"></div>
 	{/if}
 </div>

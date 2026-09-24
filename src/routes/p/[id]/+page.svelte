@@ -8,7 +8,7 @@
 	import LangSwitch from '$lib/components/molecules/lang-switch.svelte'
 	import { Button } from '$lib/components/ui/button'
 	import * as ToggleGroup from '$lib/components/ui/toggle-group'
-	import { hms, useClock } from '$lib/clock.svelte'
+	import { formatDuration, useClock } from '$lib/clock.svelte'
 	import { m } from '$lib/paraglide/messages'
 	import { localizeHref } from '$lib/paraglide/runtime'
 	import type { ShareAsset, ShareCategory } from '$lib/server/share'
@@ -35,38 +35,52 @@
 	const clock = useClock()
 
 	let picked = $state<ShareCategory | null>(null)
-	let confirming = $state(false)
-	let deleting = $state(false)
+	let isConfirming = $state(false)
+	let isDeleting = $state(false)
 
 	const share = $derived(data.deleted ? null : data)
 	const assets = $derived(share?.assets ?? [])
-	const available = $derived(ORDER.filter((c) => assets.some((a) => a.category === c)))
+	const available = $derived(ORDER.filter((category) => assets.some((asset) => asset.category === category)))
 	const active = $derived(picked && available.includes(picked) ? picked : available[0])
-	const framed = $derived(active === 'frame' || active === 'frame-filtered')
-	const group = $derived(assets.filter((a) => a.category === active))
-	const stills = $derived(group.filter((a) => a.index && a.kind !== 'gif'))
-	const gifs = $derived(group.filter((a) => a.index && a.kind === 'gif'))
-	const sheet = $derived(group.find((a) => !a.index && a.kind !== 'gif'))
-	const sheetGif = $derived(framed ? group.find((a) => !a.index && a.kind === 'gif') : undefined)
+	const isFramed = $derived(active === 'frame' || active === 'frame-filtered')
+	const group = $derived(assets.filter((asset) => asset.category === active))
+	const stills = $derived(group.filter((asset) => asset.index && asset.kind !== 'gif'))
+	const gifs = $derived(group.filter((asset) => asset.index && asset.kind === 'gif'))
+	const sheet = $derived(group.find((asset) => !asset.index && asset.kind !== 'gif'))
+	const sheetGif = $derived(isFramed ? group.find((asset) => !asset.index && asset.kind === 'gif') : undefined)
 	const loop = $derived.by(() => {
-		const slideshows = assets.filter((a) => a.kind === 'gif' && !a.index && !a.category.startsWith('frame'))
-		const edited = active && EDITED.includes(active)
-		return slideshows.find((a) => a.category === (edited ? 'filtered' : 'plain')) ?? slideshows[0]
+		const slideshows = assets.filter(
+			(asset) => asset.kind === 'gif' && !asset.index && !asset.category.startsWith('frame')
+		)
+		const isEdited = active && EDITED.includes(active)
+		return slideshows.find((asset) => asset.category === (isEdited ? 'filtered' : 'plain')) ?? slideshows[0]
 	})
-	const remaining = $derived(share ? share.expiresAt - clock.now : 0)
+	const remaining = $derived(share ? share.expiresAt - clock.now() : 0)
 	const left = $derived(share ? Math.max(0, remaining / (share.expiresAt - share.createdAt)) : 0)
 	const code = $derived(share?.id.toUpperCase() ?? '')
 
 	const caption = $derived.by(() => {
-		if (!share) return ''
-		if (active === 'plain') return m['share.captions.plain']({ n: share.slots })
-		if (active === 'frame') return m['share.captions.frame']({ size: share.frame?.size ?? '' })
-		if (active === 'filtered') return m['share.captions.filtered']()
+		if (!share) {
+			return ''
+		}
+		if (active === 'plain') {
+			return m['share.captions.plain']({ n: share.slots })
+		}
+		if (active === 'frame') {
+			return m['share.captions.frame']({ size: share.frame?.size ?? '' })
+		}
+		if (active === 'filtered') {
+			return m['share.captions.filtered']()
+		}
 		return m['share.captions.frame_filtered']()
 	})
 
-	const src = (a: ShareAsset) => (share ? `/p/${share.id}/${a.key}.${a.kind}` : '')
-	const pad = (n = 0) => String(n).padStart(2, '0')
+	function src(asset: ShareAsset) {
+		return share ? `/p/${share.id}/${asset.key}.${asset.kind}` : ''
+	}
+	function pad(value = 0) {
+		return String(value).padStart(2, '0')
+	}
 
 	const mono = 'font-mono tracking-[0.14em] uppercase'
 	const bracket = 'h-3.5 w-1.75 border-2 border-current'
@@ -80,8 +94,8 @@
 	<meta name="referrer" content="no-referrer" />
 </svelte:head>
 
-{#snippet eyebrow(cls: string)}
-	<p class="{mono} m-0 items-center gap-2.5 text-[11px] tracking-[0.16em] rail:text-xs {cls}">
+{#snippet eyebrow(className: string)}
+	<p class="{mono} m-0 items-center gap-2.5 text-[11px] tracking-[0.16em] rail:text-xs {className}">
 		<span aria-hidden="true" class="{bracket} border-r-0"></span>
 		{m['share.eyebrow']({ code })}
 		<span aria-hidden="true" class="{bracket} border-l-0"></span>
@@ -140,11 +154,15 @@
 					<span class="{mono} flex items-center gap-2 text-xs tracking-[0.12em] rail:text-primary-text">
 						<span aria-hidden="true" class="size-2 animate-rec-blink rounded-full bg-primary motion-reduce:animate-none"
 						></span>
-						<span class="tabular-nums rail:hidden">{m['share.available_inline']({ time: hms(remaining) })}</span>
+						<span class="tabular-nums rail:hidden"
+							>{m['share.available_inline']({ time: formatDuration(remaining) })}</span
+						>
 						<span class="hidden rail:inline">{m['share.available']()}</span>
 					</span>
 
-					<span class="hidden text-[52px] leading-none tabular-nums rail:block {display}">{hms(remaining)}</span>
+					<span class="hidden text-[52px] leading-none tabular-nums rail:block {display}"
+						>{formatDuration(remaining)}</span
+					>
 
 					<span class="text-[13px] leading-[1.45] text-body rail:text-sm rail:leading-normal">
 						<span class="rail:hidden">{m['share.expiry_body_short']()}</span>
@@ -187,24 +205,24 @@
 				</div>
 
 				<div class="order-7 flex flex-col gap-2.5">
-					{#if confirming}
+					{#if isConfirming}
 						<p class="m-0 text-[13px] leading-normal text-body" role="alert">{m['share.delete_body']()}</p>
 
 						<form
 							method="POST"
 							action="?/delete"
 							use:enhance={() => {
-								deleting = true
+								isDeleting = true
 								return async ({ update }) => {
 									await update()
-									deleting = false
+									isDeleting = false
 								}
 							}}
 							class="flex flex-col gap-2.5"
 						>
 							<Button
 								type="submit"
-								disabled={deleting}
+								disabled={isDeleting}
 								class="h-auto min-h-12 gap-2 font-mono font-medium tracking-[0.1em] whitespace-normal"
 							>
 								<RiDeleteBinLine aria-hidden="true" class="size-4" />
@@ -213,8 +231,8 @@
 
 							<Button
 								variant="outline"
-								onclick={() => (confirming = false)}
-								disabled={deleting}
+								onclick={() => (isConfirming = false)}
+								disabled={isDeleting}
 								class="h-auto min-h-12 border-[#3a3936] font-mono font-normal tracking-[0.1em] whitespace-normal"
 							>
 								{m['share.cancel']()}
@@ -223,7 +241,7 @@
 					{:else}
 						<Button
 							variant="outline"
-							onclick={() => (confirming = true)}
+							onclick={() => (isConfirming = true)}
 							class="h-auto min-h-12 gap-2.5 border-[#3a3936] font-mono font-normal tracking-[0.1em] whitespace-normal"
 						>
 							<RiDeleteBinLine aria-hidden="true" class="size-4" />
@@ -270,26 +288,26 @@
 
 				<section
 					aria-label={active ? labels[active]() : undefined}
-					class="relative flex flex-col items-center justify-center gap-5 rail:min-h-0 rail:flex-1 rail:overflow-y-auto rail:bg-[#151514] rail:p-8 {framed
+					class="relative flex flex-col items-center justify-center gap-5 rail:min-h-0 rail:flex-1 rail:overflow-y-auto rail:bg-[#151514] rail:p-8 {isFramed
 						? 'bg-[#151514] px-3 py-4'
 						: ''}"
 				>
 					<Corners inset="14px" size="24px" weight="2px" class="hidden text-[#3a3936] rail:block" />
 
-					{#if framed && sheet}
+					{#if isFramed && sheet}
 						<div class="flex w-full flex-wrap items-center justify-center gap-x-10 gap-y-6">
 							<div class="flex max-w-full items-start justify-center gap-3 rail:gap-6">
-								{#each [sheet, sheetGif].filter((a) => a !== undefined) as a (a.key)}
+								{#each [sheet, sheetGif].filter((asset) => asset !== undefined) as asset (asset.key)}
 									<figure class="m-0 flex min-w-0 flex-col items-center gap-2">
 										<img
-											src={src(a)}
-											alt={a.kind === 'gif'
-												? m['share.sheet_gif_alt']({ version: labels[a.category]() })
-												: m['share.sheet_alt']({ version: labels[a.category]() })}
+											src={src(asset)}
+											alt={asset.kind === 'gif'
+												? m['share.sheet_gif_alt']({ version: labels[asset.category]() })
+												: m['share.sheet_alt']({ version: labels[asset.category]() })}
 											class="block h-auto max-h-(--sh) w-auto max-w-full object-contain [--sh:22rem] rail:[--sh:min(540px,calc(100svh-360px))]"
 										/>
 										<figcaption class="{mono} text-[10px] text-muted-foreground rail:text-[11px]">
-											{a.kind === 'gif' ? m['share.kind_gif']() : m['share.kind_photo']()}
+											{asset.kind === 'gif' ? m['share.kind_gif']() : m['share.kind_photo']()}
 										</figcaption>
 									</figure>
 								{/each}
@@ -318,13 +336,13 @@
 										class="m-0 grid w-full list-none grid-cols-2 gap-2.5 p-0 rail:grid-cols-(--cols) rail:gap-4"
 										style:--cols="repeat({Math.min(items.length, 4)}, minmax(0, 1fr))"
 									>
-										{#each items as a (a.key)}
+										{#each items as asset (asset.key)}
 											<li class="relative overflow-hidden bg-[#8a7560]">
 												<img
-													src={src(a)}
-													alt={a.kind === 'gif'
-														? m['share.gif_item_alt']({ n: a.index ?? 0 })
-														: m['share.photo_alt']({ n: a.index ?? 0 })}
+													src={src(asset)}
+													alt={asset.kind === 'gif'
+														? m['share.gif_item_alt']({ n: asset.index ?? 0 })
+														: m['share.photo_alt']({ n: asset.index ?? 0 })}
 													loading="lazy"
 													class="block h-auto w-full"
 												/>
@@ -332,7 +350,7 @@
 													aria-hidden="true"
 													class="absolute top-2 left-2 bg-ink px-1.5 py-0.5 font-mono text-[10px] rail:top-2.5 rail:left-2.5 rail:px-1.75 rail:text-[11px]"
 												>
-													{pad(a.index)}{a.kind === 'gif' ? ' · GIF' : ''}
+													{pad(asset.index)}{asset.kind === 'gif' ? ' · GIF' : ''}
 												</span>
 											</li>
 										{/each}

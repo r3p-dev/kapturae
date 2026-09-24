@@ -24,18 +24,24 @@
 	let timer = $state<number>(TIMERS[0])
 	let phase = $state<number | 'flash' | null>(null)
 	let sound: HTMLAudioElement | undefined
-	let alive = true
+	let isAlive = true
 
-	const ready = $derived(camera.status === 'live' && phase === null)
-	const wait = (ms: number) => new Promise<boolean>((resolve) => setTimeout(() => resolve(alive), ms))
+	const isReady = $derived(camera.status === 'live' && phase === null)
+	function wait(milliseconds: number) {
+		return new Promise<boolean>((resolve) => setTimeout(() => resolve(isAlive), milliseconds))
+	}
 
 	async function shoot() {
-		if (!ready || !video) return
-		burst.start(video, camera.mirrored)
+		if (!isReady || !video) {
+			return
+		}
+		burst.start(video, camera.isMirrored)
 
-		for (let n = timer; n > 0; n--) {
-			phase = n
-			if (!(await wait(TICK_MS))) return burst.cancel()
+		for (const remaining of Array.from({ length: timer }, (_, index) => timer - index)) {
+			phase = remaining
+			if (!(await wait(TICK_MS))) {
+				return burst.cancel()
+			}
 		}
 
 		if (camera.status !== 'live') {
@@ -54,13 +60,19 @@
 			burst.grab()
 			const frames = burst.stop()
 			const url = await camera.capture(video)
-			if (alive) onshot(url, frames)
-			else URL.revokeObjectURL(url)
+
+			if (isAlive) {
+				onshot(url, frames)
+			} else {
+				URL.revokeObjectURL(url)
+			}
 		} catch {
 			burst.cancel()
 		}
 
-		if (await wait(FLASH_MS)) phase = null
+		if (await wait(FLASH_MS)) {
+			phase = null
+		}
 	}
 
 	onMount(() => {
@@ -68,7 +80,7 @@
 		camera.start()
 
 		return () => {
-			alive = false
+			isAlive = false
 			burst.cancel()
 			camera.stop()
 		}
@@ -77,7 +89,7 @@
 
 <div class="relative h-51 shrink-0 overflow-hidden bg-[#232321]">
 	{#if camera.status === 'live'}
-		<CameraFeed stream={camera.stream} mirrored={camera.mirrored} bind:video />
+		<CameraFeed stream={camera.stream} isMirrored={camera.isMirrored} bind:video />
 		<span class="absolute top-4 left-10 flex items-center gap-1.5 font-mono text-[11px] tracking-[0.12em] uppercase">
 			<span aria-hidden="true" class="size-1.75 animate-rec-blink rounded-full bg-primary motion-reduce:animate-none"
 			></span>
@@ -108,12 +120,12 @@
 		disabled={phase !== null}
 		bind:value={() => String(timer), (next) => next && (timer = Number(next))}
 	>
-		{#each TIMERS as t (t)}
+		{#each TIMERS as seconds (seconds)}
 			<ToggleGroup.Item
-				value={String(t)}
+				value={String(seconds)}
 				class="h-11 min-w-12 border-[1.5px] border-paper px-2 font-mono text-xs font-normal normal-case data-[state=on]:bg-paper data-[state=on]:text-ink"
 			>
-				{t}s
+				{seconds}s
 			</ToggleGroup.Item>
 		{/each}
 	</ToggleGroup.Root>
@@ -121,7 +133,7 @@
 	<ShutterButton
 		onclick={shoot}
 		aria-label={label}
-		aria-disabled={!ready}
+		aria-disabled={!isReady}
 		class="size-18 border-3 aria-disabled:opacity-50 [&>span]:size-13"
 	/>
 </div>

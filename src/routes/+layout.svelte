@@ -27,7 +27,7 @@
 {@render children()}
 
 <div style="display:none">
-	{#each locales as locale (locale)}
-		<a href={resolve(localizeHref(page.url.pathname, { locale }) as Pathname)}>{locale}</a>
+	{#each locales as alternate (alternate)}
+		<a href={resolve(localizeHref(page.url.pathname, { locale: alternate }) as Pathname)}>{alternate}</a>
 	{/each}
 </div>

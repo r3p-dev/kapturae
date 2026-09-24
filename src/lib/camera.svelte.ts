@@ -9,7 +9,7 @@ export class Camera {
 	facing = $state<Facing>('user')
 	canFlip = $state(false)
 	canTorch = $state(false)
-	mirrored = $state(true)
+	isMirrored = $state(true)
 
 	async start() {
 		this.stop()
@@ -27,7 +27,9 @@ export class Camera {
 			})
 
 			if (this.status !== 'pending') {
-				stream.getTracks().forEach((track) => track.stop())
+				for (const track of stream.getTracks()) {
+					track.stop()
+				}
 				return
 			}
 
@@ -49,7 +51,9 @@ export class Camera {
 	}
 
 	stop() {
-		this.stream?.getTracks().forEach((track) => track.stop())
+		for (const track of this.stream?.getTracks() ?? []) {
+			track.stop()
+		}
 		this.stream = null
 		this.status = 'idle'
 		this.canTorch = false
@@ -57,15 +61,17 @@ export class Camera {
 
 	flip() {
 		this.facing = this.facing === 'user' ? 'environment' : 'user'
-		this.mirrored = this.facing === 'user'
+		this.isMirrored = this.facing === 'user'
 		return this.start()
 	}
 
-	async torch(on: boolean) {
+	async torch(isOn: boolean) {
 		const track = this.stream?.getVideoTracks()[0]
-		if (!this.canTorch || !track) return
+		if (!this.canTorch || !track) {
+			return
+		}
 
-		await track.applyConstraints({ advanced: [{ torch: on } as MediaTrackConstraintSet] }).catch(() => {})
+		await track.applyConstraints({ advanced: [{ torch: isOn } as MediaTrackConstraintSet] }).catch(() => {})
 	}
 
 	async capture(video: HTMLVideoElement): Promise<string> {
@@ -73,18 +79,22 @@ export class Camera {
 		canvas.width = video.videoWidth
 		canvas.height = video.videoHeight
 
-		const ctx = canvas.getContext('2d')
-		if (!ctx) throw new Error('2D canvas unavailable')
-
-		if (this.mirrored) {
-			ctx.translate(canvas.width, 0)
-			ctx.scale(-1, 1)
+		const context = canvas.getContext('2d')
+		if (!context) {
+			throw new Error('2D canvas unavailable')
 		}
 
-		ctx.drawImage(video, 0, 0)
+		if (this.isMirrored) {
+			context.translate(canvas.width, 0)
+			context.scale(-1, 1)
+		}
+
+		context.drawImage(video, 0, 0)
 
 		const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.92))
-		if (!blob) throw new Error('Capture failed')
+		if (!blob) {
+			throw new Error('Capture failed')
+		}
 
 		return URL.createObjectURL(blob)
 	}

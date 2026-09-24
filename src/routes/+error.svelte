@@ -22,7 +22,7 @@
 	const status = $derived(page.status)
 
 	const variant = $derived.by((): Variant => {
-		if (status === 404)
+		if (status === 404) {
 			return {
 				hud: m['error.not_found.hud'](),
 				title: m['error.not_found.title'](),
@@ -30,8 +30,9 @@
 				primary: { label: m['error.not_found.primary'](), href: home },
 				secondary: { label: m['error.not_found.secondary'](), href: start }
 			}
+		}
 
-		if (status === 410)
+		if (status === 410) {
 			return {
 				hud: m['error.gone.hud'](),
 				title: m['error.gone.title'](),
@@ -39,6 +40,7 @@
 				primary: { label: m['error.gone.primary'](), href: start },
 				secondary: { label: m['error.gone.secondary'](), href: deletion }
 			}
+		}
 
 		return {
 			hud: m['error.server.hud'](),
@@ -56,7 +58,7 @@
 
 	const meta = $derived([m['error.code']({ status }), time, page.error?.id].filter(Boolean).join(' · '))
 
-	const nav = [
+	const navigation = [
 		{ href: contact, label: m['legal.contact.title'] },
 		{ href: privacy, label: m['common.footer.privacy'] },
 		{ href: home, label: m['error.nav_home'] }
@@ -150,7 +152,7 @@
 	</main>
 
 	<nav class="flex justify-center gap-5 pb-8 font-mono text-[11px] tracking-widest uppercase">
-		{#each nav as link (link.href)}
+		{#each navigation as link (link.href)}
 			<a href={link.href} class="inline-flex min-h-11 items-center text-muted-foreground hover:text-foreground">
 				{link.label()}
 			</a>

@@ -19,15 +19,15 @@
 	class={cn('relative block h-(--h) shrink-0 ring-1 ring-paper/14', className)}
 	style:width="calc(var(--h) * {SIZES[frame.size].ratio})"
 >
-	{#each frame.slots as slot, i (i)}
+	{#each frame.slots as slot, index (index)}
 		<span
 			class="absolute overflow-hidden bg-[#5e5c57]"
 			style:left="{slot.x}%"
 			style:top="{slot.y}%"
-			style:width="{slot.w}%"
-			style:height="{slot.h}%"
+			style:width="{slot.width}%"
+			style:height="{slot.height}%"
 		>
-			{@render photo?.(i)}
+			{@render photo?.(index)}
 		</span>
 	{/each}
 

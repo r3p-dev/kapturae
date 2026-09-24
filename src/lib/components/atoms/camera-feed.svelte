@@ -3,12 +3,12 @@
 
 	let {
 		stream,
-		mirrored = false,
+		isMirrored = false,
 		video = $bindable(),
 		class: className
 	}: {
 		stream: MediaStream | null
-		mirrored?: boolean
+		isMirrored?: boolean
 		video?: HTMLVideoElement
 		class?: string
 	} = $props()
@@ -26,5 +26,5 @@
 	muted
 	playsinline
 	aria-hidden="true"
-	class={cn('size-full object-cover', mirrored && '-scale-x-100', className)}
+	class={cn('size-full object-cover', isMirrored && '-scale-x-100', className)}
 ></video>

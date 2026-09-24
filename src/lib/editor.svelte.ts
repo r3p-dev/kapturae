@@ -39,7 +39,7 @@ export type Edit = {
 	strokes: Stroke[]
 }
 
-type Step = [fn: string, full: number, none: number, unit?: string]
+type Step = [cssFunction: string, full: number, none: number, unit?: string]
 
 type Preset = { steps: Step[]; tint?: [color: string, opacity: number] }
 
@@ -148,26 +148,30 @@ export const SWATCHES = {
 	blue: '#1f5fbf'
 } as const
 
-export const blankSlot = (): SlotEdit => ({
-	zoom: ZOOM.min,
-	x: 0,
-	y: 0,
-	filter: 'original',
-	intensity: 100,
-	brightness: 0,
-	contrast: 0,
-	saturation: 0,
-	warmth: 0,
-	grain: 0
-})
+export function blankSlot(): SlotEdit {
+	return {
+		zoom: ZOOM.min,
+		x: 0,
+		y: 0,
+		filter: 'original',
+		intensity: 100,
+		brightness: 0,
+		contrast: 0,
+		saturation: 0,
+		warmth: 0,
+		grain: 0
+	}
+}
 
-export const blankEdit = (slots: number): Edit => ({
-	color: null,
-	order: Array.from({ length: slots }, (_, i) => i),
-	slots: Array.from({ length: slots }, blankSlot),
-	items: [],
-	strokes: []
-})
+export function blankEdit(slots: number): Edit {
+	return {
+		color: null,
+		order: Array.from({ length: slots }, (_, index) => index),
+		slots: Array.from({ length: slots }, blankSlot),
+		items: [],
+		strokes: []
+	}
+}
 
 export const GRAIN = `data:image/svg+xml,${encodeURIComponent(
 	'<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>'
@@ -175,13 +179,14 @@ export const GRAIN = `data:image/svg+xml,${encodeURIComponent(
 
 export const FILTER_KEYS = ['filter', 'intensity'] as const
 
-export const isFiltered = (slot: SlotEdit) =>
-	(slot.filter !== 'original' && slot.intensity > 0) || ADJUSTMENTS.some((key) => slot[key] !== 0)
+export function isFiltered(slot: SlotEdit) {
+	return (slot.filter !== 'original' && slot.intensity > 0) || ADJUSTMENTS.some((key) => slot[key] !== 0)
+}
 
 export function filterCss(filter: FilterId, intensity: number, slot?: SlotEdit) {
-	const k = intensity / 100
+	const strength = intensity / 100
 	const preset = (FILTERS[filter] as Preset).steps.map(
-		([fn, full, none, unit = '']) => `${fn}(${none + (full - none) * k}${unit})`
+		([cssFunction, full, none, unit = '']) => `${cssFunction}(${none + (full - none) * strength}${unit})`
 	)
 	const own = slot
 		? [
@@ -200,22 +205,28 @@ export function filterTint(filter: FilterId, intensity: number) {
 }
 
 export function panTransform({ zoom, x, y }: SlotEdit) {
-	const z = zoom / 100
-	const t = (v: number) => ((v * (z - 1)) / (2 * z)) * 100
-	return `scale(${z}) translate(${t(x)}%, ${t(y)}%)`
+	const scale = zoom / 100
+
+	function offset(value: number) {
+		return ((value * (scale - 1)) / (2 * scale)) * 100
+	}
+
+	return `scale(${scale}) translate(${offset(x)}%, ${offset(y)}%)`
 }
 
 export function objectPosition({ x, y }: SlotEdit) {
 	return `${50 - 50 * x}% ${50 - 50 * y}%`
 }
 
-export function panReach({ zoom }: SlotEdit, box: { w: number; h: number }, aspect: number) {
-	const z = zoom / 100
-	const cover = Math.max(box.w / aspect, box.h)
-	return { x: (z * cover * aspect - box.w) / 2, y: (z * cover - box.h) / 2 }
+export function panReach({ zoom }: SlotEdit, box: { width: number; height: number }, aspect: number) {
+	const scale = zoom / 100
+	const cover = Math.max(box.width / aspect, box.height)
+	return { x: (scale * cover * aspect - box.width) / 2, y: (scale * cover - box.height) / 2 }
 }
 
-export const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v))
+export function clamp(value: number, min: number, max: number) {
+	return Math.min(max, Math.max(min, value))
+}
 
 export class History<T> {
 	value = $state() as T
@@ -228,20 +239,22 @@ export class History<T> {
 		this.#base = JSON.stringify(initial)
 	}
 
-	get canUndo() {
+	canUndo() {
 		return this.#past.length > 0
 	}
 
-	get canRedo() {
+	canRedo() {
 		return this.#future.length > 0
 	}
 
 	commit() {
-		const now = JSON.stringify(this.value)
-		if (now === this.#base) return
+		const current = JSON.stringify(this.value)
+		if (current === this.#base) {
+			return
+		}
 		this.#past.push(this.#base)
 		this.#future = []
-		this.#base = now
+		this.#base = current
 	}
 
 	undo() {
@@ -255,7 +268,9 @@ export class History<T> {
 
 	#step(from: string[], to: string[]) {
 		const next = from.pop()
-		if (next === undefined) return
+		if (next === undefined) {
+			return
+		}
 		to.push(this.#base)
 		this.#base = next
 		this.value = JSON.parse(next)

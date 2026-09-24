@@ -15,14 +15,14 @@
 	{@render children?.()}
 
 	{#each languages as locale (locale)}
-		{@const active = getLocale() === locale}
+		{@const isActive = getLocale() === locale}
 
 		<Button
 			href={localizeHref(page.url.pathname, { locale })}
 			data-sveltekit-reload
 			hreflang={locale}
 			lang={locale}
-			aria-current={active ? 'true' : undefined}
+			aria-current={isActive ? 'true' : undefined}
 			variant="ghost"
 			size="icon-lg"
 			class="font-mono font-normal tracking-widest hover:bg-transparent"
@@ -30,7 +30,7 @@
 			<span
 				class={cn(
 					'border-[1.5px] border-foreground px-2 py-1 transition-colors',
-					active ? 'bg-foreground text-background' : 'text-foreground hover:bg-foreground/15'
+					isActive ? 'bg-foreground text-background' : 'text-foreground hover:bg-foreground/15'
 				)}
 			>
 				{locale.toUpperCase()}

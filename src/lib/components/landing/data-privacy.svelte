@@ -15,7 +15,7 @@
 	let remaining = $state(23 * 3600 + 41 * 60 + 7)
 	const countdown = $derived(
 		[remaining / 3600, (remaining % 3600) / 60, remaining % 60]
-			.map((n) => String(Math.floor(n)).padStart(2, '0'))
+			.map((part) => String(Math.floor(part)).padStart(2, '0'))
 			.join(':')
 	)
 
@@ -96,7 +96,7 @@
 	</div>
 
 	<ul class="grid w-full max-w-300 gap-6 text-left tablet:grid-cols-3 tablet:gap-8 rail:gap-12">
-		{#each tips as tip, i (i)}
+		{#each tips as tip, index (index)}
 			<li class="flex flex-col gap-2 border-t-2 border-ink pt-4">
 				<span class="font-mono text-xs tracking-[0.14em] uppercase">{tip.title()}</span>
 				<span class={body}>{tip.body()}</span>

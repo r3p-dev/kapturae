@@ -10,24 +10,28 @@
 		children
 	}: { onfiles: (files: File[]) => void; disabled?: boolean; class?: string; children: Snippet } = $props()
 
-	let over = $state(false)
+	let isOver = $state(false)
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-	data-over={over ? '' : undefined}
-	ondragenter={(e) => {
-		e.preventDefault()
-		over = !disabled
+	data-over={isOver ? '' : undefined}
+	ondragenter={(event) => {
+		event.preventDefault()
+		isOver = !disabled
 	}}
-	ondragover={(e) => e.preventDefault()}
-	ondragleave={(e) => {
-		if (!e.currentTarget.contains(e.relatedTarget as Node | null)) over = false
+	ondragover={(event) => event.preventDefault()}
+	ondragleave={(event) => {
+		if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+			isOver = false
+		}
 	}}
-	ondrop={(e) => {
-		e.preventDefault()
-		over = false
-		if (!disabled) onfiles(droppedFiles(e))
+	ondrop={(event) => {
+		event.preventDefault()
+		isOver = false
+		if (!disabled) {
+			onfiles(droppedFiles(event))
+		}
 	}}
 	class={cn('transition-colors data-over:border-primary data-over:bg-primary/8', className)}
 >

@@ -5,13 +5,13 @@
 	import LangSwitch from '$lib/components/molecules/lang-switch.svelte'
 	import Logo from '$lib/components/atoms/logo.svelte'
 	import * as Select from '$lib/components/ui/select'
-	import { LEGAL_DOCS, type LegalDoc } from '$lib/legal'
+	import { LEGAL_DOCUMENTS, type LegalDocument } from '$lib/legal'
 	import { m } from '$lib/paraglide/messages'
 	import { localizeHref } from '$lib/paraglide/runtime'
 	import type { PageProps } from './$types'
 
 	type Message = () => string
-	type Doc = {
+	type Page = {
 		title: Message
 		summary: Message
 		sections: [title: Message, body: Message, href?: string][]
@@ -19,7 +19,7 @@
 
 	let { params }: PageProps = $props()
 
-	const docs: Record<LegalDoc, Doc> = {
+	const pages: Record<LegalDocument, Page> = {
 		privacy: {
 			title: m['legal.privacy.title'],
 			summary: m['legal.privacy.summary'],
@@ -88,16 +88,24 @@
 	}
 
 	const home = localizeHref('/').replace(/(.)\/$/, '$1')
-	const href = (doc: LegalDoc) => localizeHref(`/legal/${doc}`)
-	const pad = (n: number) => String(n).padStart(2, '0')
+	function href(name: LegalDocument) {
+		return localizeHref(`/legal/${name}`)
+	}
+	function pad(value: number) {
+		return String(value).padStart(2, '0')
+	}
 
-	const slug = $derived<LegalDoc>(params.doc ?? 'privacy')
-	const doc = $derived(docs[slug])
-	const count = $derived(m['legal.count']({ n: pad(LEGAL_DOCS.indexOf(slug) + 1), total: pad(LEGAL_DOCS.length) }))
+	const slug = $derived<LegalDocument>(params.doc ?? 'privacy')
+	const current = $derived(pages[slug])
+	const count = $derived(
+		m['legal.count']({ n: pad(LEGAL_DOCUMENTS.indexOf(slug) + 1), total: pad(LEGAL_DOCUMENTS.length) })
+	)
 
 	function pick(next: string) {
-		if (next === slug) return
-		goto(resolve(href(next as LegalDoc) as Pathname), { noScroll: true })
+		if (next === slug) {
+			return
+		}
+		goto(resolve(href(next as LegalDocument) as Pathname), { noScroll: true })
 	}
 
 	const updated = __LEGAL_UPDATED__
@@ -114,7 +122,7 @@
 </script>
 
 <svelte:head>
-	<title>{m['legal.meta_title']({ doc: doc.title() })}</title>
+	<title>{m['legal.meta_title']({ doc: current.title() })}</title>
 	<meta name="description" content={m['legal.meta_description']()} />
 </svelte:head>
 
@@ -137,14 +145,14 @@
 	<div class="flex flex-1">
 		<nav aria-label={m['legal.nav_aria']()} class="hidden w-85 shrink-0 border-r border-rule px-8 py-10 rail:block">
 			<div class="sticky top-10 flex flex-col gap-1.5">
-				{#each LEGAL_DOCS as key, i (key)}
+				{#each LEGAL_DOCUMENTS as key, index (key)}
 					<a
 						href={href(key)}
 						aria-current={key === slug ? 'page' : undefined}
 						class="flex h-13 items-center gap-3.5 px-4 text-foreground no-underline hover:bg-paper-2 aria-[current=page]:bg-ink aria-[current=page]:text-paper"
 					>
-						<span class="font-mono text-xs tracking-widest">{pad(i + 1)}</span>
-						<span class="text-[15px] font-medium">{docs[key].title()}</span>
+						<span class="font-mono text-xs tracking-widest">{pad(index + 1)}</span>
+						<span class="text-[15px] font-medium">{pages[key].title()}</span>
 					</a>
 				{/each}
 
@@ -165,14 +173,14 @@
 						aria-labelledby="legal-doc"
 						class="h-12! w-full border-2 border-ink bg-paper px-3 text-base text-foreground focus-visible:border-ink focus-visible:ring-2 focus-visible:ring-ring [&_svg]:size-5! [&_svg]:text-foreground"
 					>
-						{doc.title()}
+						{current.title()}
 					</Select.Trigger>
 
 					<Select.Content class="border-2 border-ink ring-0">
-						{#each LEGAL_DOCS as key, i (key)}
-							<Select.Item value={key} label={docs[key].title()} class="min-h-11 gap-3 text-base">
-								<span class="font-mono text-xs tracking-widest text-muted-foreground">{pad(i + 1)}</span>
-								{docs[key].title()}
+						{#each LEGAL_DOCUMENTS as key, index (key)}
+							<Select.Item value={key} label={pages[key].title()} class="min-h-11 gap-3 text-base">
+								<span class="font-mono text-xs tracking-widest text-muted-foreground">{pad(index + 1)}</span>
+								{pages[key].title()}
 							</Select.Item>
 						{/each}
 					</Select.Content>
@@ -188,7 +196,7 @@
 			<h1
 				class="m-0 font-display text-[38px] leading-[0.95] font-black uppercase font-stretch-115% rail:text-[56px] rail:font-stretch-118%"
 			>
-				{doc.title()}
+				{current.title()}
 			</h1>
 
 			<div
@@ -197,10 +205,10 @@
 				<span class="shrink-0 font-mono text-[11px] tracking-[0.14em] text-primary-text uppercase rail:pt-0.75">
 					{m['legal.summary']()}
 				</span>
-				<p class="m-0 text-[15px] leading-[1.55] rail:text-base">{doc.summary()}</p>
+				<p class="m-0 text-[15px] leading-[1.55] rail:text-base">{current.summary()}</p>
 			</div>
 
-			{#each doc.sections as [title, body, link], i (i)}
+			{#each current.sections as [title, body, link], index (index)}
 				<section class="flex flex-col gap-1.5 border-t border-rule pt-3.5 rail:gap-2 rail:pt-4.5">
 					<h2 class="m-0 font-display text-[17px] font-extrabold font-stretch-110% rail:text-xl">
 						{title()}

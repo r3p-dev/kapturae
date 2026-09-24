@@ -19,7 +19,9 @@
 	} = $props()
 
 	const home = localizeHref('/').replace(/(.)\/$/, '$1')
-	const pad = (n: number) => String(n).padStart(2, '0')
+	function pad(value: number) {
+		return String(value).padStart(2, '0')
+	}
 	const current = $derived(SESSION_STEPS.indexOf(step))
 
 	const mono = 'font-mono text-xs tracking-[0.14em] uppercase'
@@ -56,19 +58,19 @@
 
 	<nav aria-label={m['session.steps_aria']()} class="hidden desktop:block">
 		<ol class="m-0 flex list-none items-center gap-3 p-0">
-			{#each SESSION_STEPS as key, i (key)}
+			{#each SESSION_STEPS as key, index (key)}
 				<li class="flex items-center gap-3">
-					{#if i > 0}<span aria-hidden="true" class="h-px w-7 bg-[#3a3936]"></span>{/if}
+					{#if index > 0}<span aria-hidden="true" class="h-px w-7 bg-[#3a3936]"></span>{/if}
 					<span
-						aria-current={i === current ? 'step' : undefined}
+						aria-current={index === current ? 'step' : undefined}
 						class={cn(
 							mono,
 							'px-2.5 py-1.25 text-[#8c8983]',
-							i < current && 'text-foreground',
+							index < current && 'text-foreground',
 							'aria-[current=step]:border-[1.5px] aria-[current=step]:border-primary aria-[current=step]:text-primary-text'
 						)}
 					>
-						{pad(i + 1)}
+						{pad(index + 1)}
 						{STEP_LABELS[key]()}
 					</span>
 				</li>

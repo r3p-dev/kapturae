@@ -25,12 +25,12 @@
 		titleClass="leading-[0.9] rail:text-[96px]"
 	/>
 
-	<SessionShutter size="lg" label={m['landing.cta.aria']()} hideStatus>
+	<SessionShutter size="lg" label={m['landing.cta.aria']()} isStatusHidden>
 		{m['landing.cta.button']()}
 	</SessionShutter>
 
 	<dl class="grid w-full max-w-280 gap-8 tablet:grid-cols-2 tablet:gap-12 rail:grid-cols-4">
-		{#each facts as fact, i (i)}
+		{#each facts as fact, index (index)}
 			<div class="flex flex-col gap-1.5">
 				<dt class="font-mono text-xs tracking-[0.16em] text-muted-foreground uppercase">
 					{fact.term()}

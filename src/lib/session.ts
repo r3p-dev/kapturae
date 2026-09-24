@@ -12,9 +12,9 @@ export type SizeSpec = {
 	inches: [number, number]
 	shots: number
 	ratio: number
-	pad: number
-	padBottom: number
-	cols: string
+	padding: number
+	paddingBottom: number
+	columns: string
 	rows: string
 	slots: string[]
 }
@@ -26,9 +26,9 @@ export const SIZES: Record<PrintSize, SizeSpec> = {
 		inches: [2, 6],
 		shots: 4,
 		ratio: 1 / 3,
-		pad: 0.08,
-		padBottom: 0.11,
-		cols: '1fr',
+		padding: 0.08,
+		paddingBottom: 0.11,
+		columns: '1fr',
 		rows: 'repeat(4, 1fr)',
 		slots: ['auto', 'auto', 'auto', 'auto']
 	},
@@ -38,9 +38,9 @@ export const SIZES: Record<PrintSize, SizeSpec> = {
 		inches: [4, 6],
 		shots: 4,
 		ratio: 2 / 3,
-		pad: 0.05,
-		padBottom: 0.15,
-		cols: '1fr 1fr',
+		padding: 0.05,
+		paddingBottom: 0.15,
+		columns: '1fr 1fr',
 		rows: '1fr 1fr',
 		slots: ['auto', 'auto', 'auto', 'auto']
 	},
@@ -50,15 +50,15 @@ export const SIZES: Record<PrintSize, SizeSpec> = {
 		inches: [5, 7],
 		shots: 3,
 		ratio: 5 / 7,
-		pad: 0.05,
-		padBottom: 0.15,
-		cols: '1fr 1fr',
+		padding: 0.05,
+		paddingBottom: 0.15,
+		columns: '1fr 1fr',
 		rows: '2fr 1fr',
 		slots: ['1 / 1 / 2 / 3', '2 / 1', '2 / 2']
 	}
 }
 
-export type FrameSlot = { x: number; y: number; w: number; h: number }
+export type FrameSlot = { x: number; y: number; width: number; height: number }
 
 export type Frame = {
 	id: string
@@ -72,10 +72,10 @@ export type Frame = {
 
 export const INK = { light: '#f4f2ee', dark: '#0e0e0d' }
 
-export function inkOn([r, g, b]: number[]) {
-	return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 > 0.5 ? INK.dark : INK.light
+export function inkOn([red, green, blue]: number[]) {
+	return (0.2126 * red + 0.7152 * green + 0.0722 * blue) / 255 > 0.5 ? INK.dark : INK.light
 }
 
-export function pick<T extends string>(list: readonly T[], value: string | null): T | undefined {
+export function pick<T extends string>(list: readonly T[], value: string | null) {
 	return list.find((item) => item === value)
 }

@@ -4,30 +4,34 @@ import { SIZES } from '$lib/session'
 import { deleteShare, readShare } from '$lib/server/share'
 import type { Actions, PageServerLoad } from './$types'
 
-export const load: PageServerLoad = async ({ params, url, setHeaders }) => {
+export const load: PageServerLoad = async function ({ params, url, setHeaders }) {
 	setHeaders({ 'x-robots-tag': 'noindex', 'cache-control': 'private, no-store' })
 
-	if (url.searchParams.has('deleted')) return { deleted: true as const }
+	if (url.searchParams.has('deleted')) {
+		return { deleted: true as const }
+	}
 
-	const meta = await readShare(params.id)
-	if (!meta) error(410, 'Gone')
+	const share = await readShare(params.id)
+	if (!share) {
+		error(410, 'Gone')
+	}
 
-	const frame = FRAMES.find((f) => f.id === meta.frame)
+	const frame = FRAMES.find((candidate) => candidate.id === share.frame)
 	const size = frame && SIZES[frame.size]
 
 	return {
 		deleted: false as const,
-		id: meta.id,
-		createdAt: meta.createdAt,
-		expiresAt: meta.expiresAt,
-		slots: meta.slots,
+		id: share.id,
+		createdAt: share.createdAt,
+		expiresAt: share.expiresAt,
+		slots: share.slots,
 		frame: frame && size ? { name: frame.name, size: size.label, cm: size.cm, ratio: size.ratio } : null,
-		assets: meta.assets
+		assets: share.assets
 	}
 }
 
 export const actions: Actions = {
-	delete: async ({ params, url }) => {
+	async delete({ params, url }) {
 		await deleteShare(params.id)
 		redirect(303, `${url.pathname}?deleted`)
 	}

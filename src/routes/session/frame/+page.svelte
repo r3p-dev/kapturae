@@ -14,26 +14,34 @@
 
 	type Selection = { size: PrintSize; frame: FrameId }
 
-	const params = page.url.searchParams
-	const initialFrame = FRAMES.find((f) => f.id === params.get('frame'))
-	const initialSize = initialFrame?.size ?? pick(PRINT_SIZES, params.get('size')) ?? '2x6'
+	const query = page.url.searchParams
+	const initialFrame = FRAMES.find((candidate) => candidate.id === query.get('frame'))
+	const initialSize = initialFrame?.size ?? pick(PRINT_SIZES, query.get('size')) ?? '2x6'
 
 	let browse = $state<PrintSize>(initialSize)
 	let selected = $state<Selection | undefined>(initialFrame && { size: initialFrame.size, frame: initialFrame.id })
 
 	export const snapshot: Snapshot<{ browse: PrintSize; selected?: Selection }> = {
-		capture: () => ({ browse, selected }),
-		restore: (value) => ({ browse, selected } = value)
+		capture() {
+			return { browse, selected }
+		},
+		restore(value) {
+			;({ browse, selected } = value)
+		}
 	}
 
-	const isSelected = (frame: FrameId) => selected?.frame === frame
+	function isSelected(frame: FrameId) {
+		return selected?.frame === frame
+	}
 
-	const pad = (n: number) => String(n).padStart(2, '0')
+	function pad(value: number) {
+		return String(value).padStart(2, '0')
+	}
 	const current = SESSION_STEPS.indexOf('frame')
 	const step = { n: pad(current + 1), total: pad(SESSION_STEPS.length) }
 
-	const frames = $derived(FRAMES.filter((f) => f.size === browse))
-	const chosen = $derived(FRAMES.find((f) => f.id === selected?.frame))
+	const frames = $derived(FRAMES.filter((candidate) => candidate.size === browse))
+	const chosen = $derived(FRAMES.find((candidate) => candidate.id === selected?.frame))
 	const shown = $derived(chosen?.size ?? browse)
 	const spec = $derived(SIZES[shown])
 	const facts = $derived([
@@ -52,11 +60,11 @@
 	<meta name="description" content={m['session.frame.meta_description']()} />
 </svelte:head>
 
-{#snippet preview(cls: string)}
+{#snippet preview(className: string)}
 	{#if chosen}
-		<FrameImage frame={chosen} class={cls} />
+		<FrameImage frame={chosen} class={className} />
 	{:else}
-		<FramePlaceholder size={shown} class={cls} />
+		<FramePlaceholder size={shown} class={className} />
 	{/if}
 {/snippet}
 
@@ -98,7 +106,7 @@
 				<legend class="sr-only">{m['session.frame.sizes_label']()}</legend>
 
 				{#each PRINT_SIZES as id (id)}
-					{@const s = SIZES[id]}
+					{@const sizeSpec = SIZES[id]}
 
 					<label
 						class="relative flex h-14 cursor-pointer items-center justify-center border-[1.5px] border-foreground has-checked:bg-foreground has-checked:text-background rail:h-23 rail:flex-1 rail:basis-0 rail:justify-start rail:gap-4.5 rail:px-5 {focus}"
@@ -112,13 +120,13 @@
 						<span
 							aria-hidden="true"
 							class="hidden h-10.5 shrink-0 border-2 border-current rail:block"
-							style:width="{42 * s.ratio}px"
+							style:width="{42 * sizeSpec.ratio}px"
 						></span>
 
 						<span
 							class="font-display text-[22px] leading-none font-black font-stretch-115% rail:text-3xl rail:font-stretch-118%"
 						>
-							{s.label}
+							{sizeSpec.label}
 						</span>
 					</label>
 				{/each}
@@ -137,7 +145,7 @@
 			>
 				<legend class="sr-only">{m['session.frame.frames_label']()}</legend>
 
-				{#each frames as frame, i (frame.id)}
+				{#each frames as frame, index (frame.id)}
 					<label
 						class="relative flex h-32 w-26 shrink-0 cursor-pointer flex-col items-center justify-center gap-1.5 bg-[#151514] p-1.5 outline-1 -outline-offset-1 outline-[#2a2a28] has-checked:outline-3 has-checked:-outline-offset-3 has-checked:outline-primary rail:h-auto rail:w-auto rail:gap-3 rail:p-3 {focus}"
 					>
@@ -155,7 +163,7 @@
 						<span
 							class="font-mono text-[10px] tracking-[0.06em] whitespace-nowrap uppercase rail:text-xs rail:tracking-widest"
 						>
-							<span class="hidden rail:inline">{pad(i + 1)} ·</span>
+							<span class="hidden rail:inline">{pad(index + 1)} ·</span>
 							{frame.name}
 						</span>
 

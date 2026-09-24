@@ -6,11 +6,15 @@ import { PRINT_SIZES, pick } from '$lib/session'
 import { shots } from '$lib/shots.svelte'
 import type { PageLoad } from './$types'
 
-export const load: PageLoad = ({ url }) => {
-	if (!browser) return
+export const load: PageLoad = function ({ url }) {
+	if (!browser) {
+		return
+	}
 
 	const size = pick(PRINT_SIZES, url.searchParams.get('size')) ?? '2x6'
-	const frame = FRAMES.find((f) => f.id === url.searchParams.get('frame')) ?? FRAMES.find((f) => f.size === size)
+	const frame =
+		FRAMES.find((candidate) => candidate.id === url.searchParams.get('frame')) ??
+		FRAMES.find((candidate) => candidate.size === size)
 	const query = new URLSearchParams(frame ? { size: frame.size, frame: frame.id } : { size })
 
 	if (shots.frame !== frame?.id || !shots.photos.some(Boolean)) {

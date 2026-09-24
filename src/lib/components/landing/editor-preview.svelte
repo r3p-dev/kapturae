@@ -58,7 +58,10 @@
 	)
 
 	function formatSigned(value: number, signed: boolean) {
-		if (value < 0) return `-${Math.abs(value)}`
+		if (value < 0) {
+			return `-${Math.abs(value)}`
+		}
+
 		return signed && value > 0 ? `+${value}` : String(value)
 	}
 </script>
@@ -151,14 +154,14 @@
 				<div
 					class="relative flex h-95 w-33 shrink-0 flex-col gap-1.75 bg-paper p-2 tablet:h-130 tablet:w-47.5 tablet:gap-2.5 tablet:p-3"
 				>
-					{#each [1, 2, 3, 4] as n (n)}
+					{#each [1, 2, 3, 4] as photoNumber (photoNumber)}
 						<div
 							class="relative flex grow items-center justify-center bg-[#3a3936] font-mono text-[10px] text-muted-foreground data-selected:outline-3 data-selected:outline-offset-3 data-selected:outline-primary"
-							data-selected={n === 3 ? '' : undefined}
+							data-selected={photoNumber === 3 ? '' : undefined}
 							style:filter={previewFilter}
 						>
-							{m['landing.editor.photo']({ n })}
-							{#if n === 4}
+							{m['landing.editor.photo']({ n: photoNumber })}
+							{#if photoNumber === 4}
 								<RiStarFill
 									aria-hidden="true"
 									class="absolute -right-2.5 -bottom-2 size-6.5 stroke-ink stroke-1 text-[#e8b23a] tablet:size-8.5"
@@ -199,9 +202,9 @@
 					{m['landing.editor.adjustments']()}
 				</span>
 
-				{#each adjustments as adjustment, i (i)}
+				{#each adjustments as adjustment, index (index)}
 					<!-- Mobile keeps one slider (contrast) so the panel stays a single row. -->
-					<div class={['flex flex-col gap-2.5 mobile:gap-2', i !== 1 && 'mobile:hidden']}>
+					<div class={['flex flex-col gap-2.5 mobile:gap-2', index !== 1 && 'mobile:hidden']}>
 						<div class="flex justify-between text-xs tablet:text-[13px]">
 							<span>{adjustment.label()}</span>
 							<span class="font-mono text-muted-foreground">
@@ -248,7 +251,7 @@
 	</div>
 
 	<ul class="flex max-w-250 flex-wrap justify-center gap-2 tablet:gap-2.5">
-		{#each features as feature, i (i)}
+		{#each features as feature, index (index)}
 			<li>
 				<Badge
 					variant="outline"

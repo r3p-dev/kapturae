@@ -49,8 +49,8 @@
 	/>
 
 	<ol class="grid w-full max-w-270 grid-cols-2 gap-3 tablet:gap-5 rail:grid-cols-4">
-		{#each steps as step, i (i)}
-			{@const last = i === steps.length - 1}
+		{#each steps as step, index (index)}
+			{@const last = index === steps.length - 1}
 			<li
 				class={cn(
 					'relative flex h-52.5 flex-col items-center justify-center gap-2.5 px-3 py-4 tablet:h-72 tablet:gap-3.5 tablet:p-6',
@@ -63,7 +63,7 @@
 						last && 'text-primary-text'
 					)}
 				>
-					{String(i + 1).padStart(2, '0')}
+					{String(index + 1).padStart(2, '0')}
 				</span>
 
 				<step.icon aria-hidden="true" class="size-8.5 tablet:size-11" />

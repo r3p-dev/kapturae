@@ -28,15 +28,21 @@ const SLOT_GIF_SIDE = 480
 const SLIDESHOW_SIDE = 720
 const SLIDESHOW_DELAY = 500
 const GRAIN_TILE = 400
-const STICKER_PX = 512
+const STICKER_SIZE = 512
 
 const FONTS = {
-	bold: (px: number) => `800 ${px}px "Archivo Variable"`,
-	mono: (px: number) => `400 ${px}px "IBM Plex Mono"`,
-	serif: (px: number) => `italic 400 ${px}px ui-serif, Georgia, Cambria, "Times New Roman", Times, serif`
+	bold(size: number) {
+		return `800 ${size}px "Archivo Variable"`
+	},
+	mono(size: number) {
+		return `400 ${size}px "IBM Plex Mono"`
+	},
+	serif(size: number) {
+		return `italic 400 ${size}px ui-serif, Georgia, Cambria, "Times New Roman", Times, serif`
+	}
 }
 
-type Box = { x: number; y: number; w: number; h: number }
+type Box = { x: number; y: number; width: number; height: number }
 
 const images = new Map<string, Promise<HTMLImageElement>>()
 
@@ -49,44 +55,47 @@ function loadImage(src: string) {
 		images.set(src, job)
 		job.catch(() => images.delete(src))
 	}
+
 	return job
 }
 
 function canvas(width: number, height: number) {
-	const el = document.createElement('canvas')
-	el.width = Math.round(width)
-	el.height = Math.round(height)
+	const element = document.createElement('canvas')
+	element.width = Math.round(width)
+	element.height = Math.round(height)
 
-	const ctx = el.getContext('2d', { willReadFrequently: true })
-	if (!ctx) throw new Error('2D canvas unavailable')
-	ctx.imageSmoothingQuality = 'high'
+	const context = element.getContext('2d', { willReadFrequently: true })
+	if (!context) {
+		throw new Error('2D canvas unavailable')
+	}
+	context.imageSmoothingQuality = 'high'
 
-	return { el, ctx }
+	return { element, context }
 }
 
-function toBlob(el: HTMLCanvasElement, type = 'image/png', quality?: number) {
+function toBlob(element: HTMLCanvasElement, type = 'image/png', quality?: number) {
 	return new Promise<Blob>((resolve, reject) =>
-		el.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('Encoding failed'))), type, quality)
+		element.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('Encoding failed'))), type, quality)
 	)
 }
 
 function overlay(
-	ctx: CanvasRenderingContext2D,
+	context: CanvasRenderingContext2D,
 	box: Box,
 	mode: GlobalCompositeOperation,
 	alpha: number,
 	fill: string | CanvasPattern
 ) {
-	ctx.save()
-	ctx.globalCompositeOperation = mode
-	ctx.globalAlpha = alpha
-	ctx.fillStyle = fill
-	ctx.fillRect(box.x, box.y, box.w, box.h)
-	ctx.restore()
+	context.save()
+	context.globalCompositeOperation = mode
+	context.globalAlpha = alpha
+	context.fillStyle = fill
+	context.fillRect(box.x, box.y, box.width, box.height)
+	context.restore()
 }
 
 async function drawPhoto(
-	ctx: CanvasRenderingContext2D,
+	context: CanvasRenderingContext2D,
 	src: string,
 	box: Box,
 	slot: SlotEdit | null,
@@ -94,134 +103,166 @@ async function drawPhoto(
 ) {
 	const image = await loadImage(src)
 	const { zoom, x, y } = pan ?? { zoom: 100, x: 0, y: 0 }
-	const cover = Math.max(box.w / image.naturalWidth, box.h / image.naturalHeight) * (zoom / 100)
-	const w = image.naturalWidth * cover
-	const h = image.naturalHeight * cover
+	const cover = Math.max(box.width / image.naturalWidth, box.height / image.naturalHeight) * (zoom / 100)
+	const drawWidth = image.naturalWidth * cover
+	const drawHeight = image.naturalHeight * cover
 
-	ctx.save()
-	ctx.beginPath()
-	ctx.rect(box.x, box.y, box.w, box.h)
-	ctx.clip()
-	ctx.filter = slot ? filterCss(slot.filter, slot.intensity, slot) : 'none'
-	ctx.drawImage(image, box.x + ((box.w - w) * (1 - x)) / 2, box.y + ((box.h - h) * (1 - y)) / 2, w, h)
-	ctx.restore()
+	context.save()
+	context.beginPath()
+	context.rect(box.x, box.y, box.width, box.height)
+	context.clip()
+	context.filter = slot ? filterCss(slot.filter, slot.intensity, slot) : 'none'
+	context.drawImage(
+		image,
+		box.x + ((box.width - drawWidth) * (1 - x)) / 2,
+		box.y + ((box.height - drawHeight) * (1 - y)) / 2,
+		drawWidth,
+		drawHeight
+	)
+	context.restore()
 
-	if (!slot) return
+	if (!slot) {
+		return
+	}
 
 	const tint = filterTint(slot.filter, slot.intensity)
-	if (tint) overlay(ctx, box, 'soft-light', tint.opacity, tint.color)
-	if (slot.warmth) overlay(ctx, box, 'soft-light', Math.abs(slot.warmth) / 200, slot.warmth > 0 ? '#ff8a1f' : '#2f7bff')
+	if (tint) {
+		overlay(context, box, 'soft-light', tint.opacity, tint.color)
+	}
+
+	if (slot.warmth) {
+		overlay(context, box, 'soft-light', Math.abs(slot.warmth) / 200, slot.warmth > 0 ? '#ff8a1f' : '#2f7bff')
+	}
 
 	if (slot.grain) {
-		const pattern = ctx.createPattern(await loadImage(GRAIN), 'repeat')
+		const grain = await loadImage(GRAIN)
+		const pattern = context.createPattern(grain, 'repeat')
+
 		if (pattern) {
-			pattern.setTransform(new DOMMatrix().scale(ctx.canvas.width / GRAIN_TILE))
-			overlay(ctx, box, 'overlay', (slot.grain / 100) * 0.6, pattern)
+			pattern.setTransform(new DOMMatrix().scale(context.canvas.width / GRAIN_TILE))
+			overlay(context, box, 'overlay', (slot.grain / 100) * 0.6, pattern)
 		}
 	}
 }
 
-async function drawItems(ctx: CanvasRenderingContext2D, edit: Edit, width: number, height: number) {
+async function drawItems(context: CanvasRenderingContext2D, edit: Edit, width: number, height: number) {
 	const unit = width / 100
 
-	ctx.save()
-	ctx.lineCap = 'round'
-	ctx.lineJoin = 'round'
+	context.save()
+	context.lineCap = 'round'
+	context.lineJoin = 'round'
+
 	for (const stroke of edit.strokes) {
-		ctx.strokeStyle = stroke.color
-		ctx.lineWidth = stroke.width * unit
-		ctx.beginPath()
-		for (let i = 0; i < stroke.points.length; i += 2) ctx.lineTo(stroke.points[i] * unit, stroke.points[i + 1] * unit)
-		ctx.stroke()
+		context.strokeStyle = stroke.color
+		context.lineWidth = stroke.width * unit
+		context.beginPath()
+
+		for (const [index, coordinate] of stroke.points.entries()) {
+			if (index % 2 === 0) {
+				context.lineTo(coordinate * unit, stroke.points[index + 1] * unit)
+			}
+		}
+
+		context.stroke()
 	}
-	ctx.restore()
 
-	for (const it of edit.items) {
-		const x = (it.x / 100) * width
-		const y = (it.y / 100) * height
+	context.restore()
 
-		if (it.kind === 'sticker') {
-			const image = await loadImage(isStickerId(it.sticker) ? stickerSrc(it.sticker, STICKER_PX) : it.sticker)
-			const w = it.size * unit
-			const h = (w * image.naturalHeight) / image.naturalWidth
-			ctx.drawImage(image, x - w / 2, y - h / 2, w, h)
+	for (const item of edit.items) {
+		const x = (item.x / 100) * width
+		const y = (item.y / 100) * height
+
+		if (item.kind === 'sticker') {
+			const src = isStickerId(item.sticker) ? stickerSrc(item.sticker, STICKER_SIZE) : item.sticker
+			const image = await loadImage(src)
+			const drawWidth = item.size * unit
+			const drawHeight = (drawWidth * image.naturalHeight) / image.naturalWidth
+			context.drawImage(image, x - drawWidth / 2, y - drawHeight / 2, drawWidth, drawHeight)
 			continue
 		}
 
-		const px = it.size * unit
-		const font = FONTS[it.font](px)
-		await document.fonts?.load(font, it.text)
+		const fontSize = item.size * unit
+		const font = FONTS[item.font](fontSize)
+		await document.fonts?.load(font, item.text)
 
-		ctx.save()
-		ctx.font = font
-		ctx.fillStyle = it.color
-		ctx.textAlign = 'center'
-		ctx.textBaseline = 'middle'
-		if (it.font === 'bold') {
-			ctx.fontStretch = 'semi-expanded'
-			ctx.letterSpacing = `${px * 0.08}px`
+		context.save()
+		context.font = font
+		context.fillStyle = item.color
+		context.textAlign = 'center'
+		context.textBaseline = 'middle'
+
+		if (item.font === 'bold') {
+			context.fontStretch = 'semi-expanded'
+			context.letterSpacing = `${fontSize * 0.08}px`
 		}
-		ctx.fillText(it.text, x, y)
-		ctx.restore()
+
+		context.fillText(item.text, x, y)
+		context.restore()
 	}
 }
 
 async function paintSheet(
-	ctx: CanvasRenderingContext2D,
+	context: CanvasRenderingContext2D,
 	{ frame, artwork, edit }: OutputSpec,
 	sources: (string | undefined)[],
-	filtered: boolean
+	shouldFilter: boolean
 ) {
-	const { width, height } = ctx.canvas
-	const box = (s: FrameSlot): Box => ({
-		x: (s.x / 100) * width,
-		y: (s.y / 100) * height,
-		w: (s.w / 100) * width,
-		h: (s.h / 100) * height
-	})
-
-	ctx.clearRect(0, 0, width, height)
-	for (const [i, src] of sources.entries()) {
-		const slot = edit.slots[i]
-		if (src) await drawPhoto(ctx, src, box(frame.slots[i]), filtered ? slot : null, slot)
+	const { width, height } = context.canvas
+	function box(frameSlot: FrameSlot): Box {
+		return {
+			x: (frameSlot.x / 100) * width,
+			y: (frameSlot.y / 100) * height,
+			width: (frameSlot.width / 100) * width,
+			height: (frameSlot.height / 100) * height
+		}
 	}
 
-	ctx.drawImage(await loadImage(artwork), 0, 0, width, height)
-	await drawItems(ctx, edit, width, height)
+	context.clearRect(0, 0, width, height)
+	for (const [index, src] of sources.entries()) {
+		const slot = edit.slots[index]
+
+		if (src) {
+			await drawPhoto(context, src, box(frame.slots[index]), shouldFilter ? slot : null, slot)
+		}
+	}
+
+	const artworkImage = await loadImage(artwork)
+	context.drawImage(artworkImage, 0, 0, width, height)
+	await drawItems(context, edit, width, height)
 }
 
 function sheetSize(frame: Frame, longSide?: number) {
-	const [w, h] = SIZES[frame.size].inches
-	const dpi = longSide ? longSide / Math.max(w, h) : DPI
-	return [w * dpi, h * dpi] as const
+	const [widthInches, heightInches] = SIZES[frame.size].inches
+	const dpi = longSide ? longSide / Math.max(widthInches, heightInches) : DPI
+	return [widthInches * dpi, heightInches * dpi] as const
 }
 
-async function sheet(spec: OutputSpec, filtered: boolean) {
-	const { el, ctx } = canvas(...sheetSize(spec.frame))
-	await paintSheet(ctx, spec, spec.photos, filtered)
-	return toBlob(el)
+async function sheet(spec: OutputSpec, shouldFilter: boolean) {
+	const { element, context } = canvas(...sheetSize(spec.frame))
+	await paintSheet(context, spec, spec.photos, shouldFilter)
+	return toBlob(element)
 }
 
 async function still(src: string, slot: SlotEdit) {
 	const image = await loadImage(src)
-	const { el, ctx } = canvas(image.naturalWidth, image.naturalHeight)
-	await drawPhoto(ctx, src, { x: 0, y: 0, w: el.width, h: el.height }, slot, null)
-	return toBlob(el, 'image/jpeg', JPEG_QUALITY)
+	const { element, context } = canvas(image.naturalWidth, image.naturalHeight)
+	await drawPhoto(context, src, { x: 0, y: 0, width: element.width, height: element.height }, slot, null)
+	return toBlob(element, 'image/jpeg', JPEG_QUALITY)
 }
 
 async function encodeGif(
-	ctx: CanvasRenderingContext2D,
+	context: CanvasRenderingContext2D,
 	count: number,
 	paint: (step: number) => Promise<void>,
 	delay = LOOP_DELAY
 ) {
 	const { GIFEncoder, quantize, applyPalette } = await import('gifenc')
-	const { width, height } = ctx.canvas
+	const { width, height } = context.canvas
 	const encoder = GIFEncoder()
 
-	for (let step = 0; step < count; step++) {
+	for (const step of Array.from({ length: count }).keys()) {
 		await paint(step)
-		const { data } = ctx.getImageData(0, 0, width, height)
+		const { data } = context.getImageData(0, 0, width, height)
 		const palette = quantize(data, 256, { format: 'rgb565' })
 		encoder.writeFrame(applyPalette(data, palette, 'rgb565'), width, height, { palette, delay })
 		await new Promise((resolve) => setTimeout(resolve))
@@ -231,19 +272,21 @@ async function encodeGif(
 	return new Blob([encoder.bytesView() as BlobPart], { type: 'image/gif' })
 }
 
-const footage = (burst: string[] | undefined, still: string) => (burst?.length ? burst : [still])
+function footage(burst: string[] | undefined, fallback: string) {
+	return burst?.length ? burst : [fallback]
+}
 
-async function sheetGif(spec: OutputSpec, filtered: boolean) {
-	const reels = spec.photos.map((src, i) => footage(spec.bursts[i], src))
+async function sheetGif(spec: OutputSpec, shouldFilter: boolean) {
+	const reels = spec.photos.map((src, index) => footage(spec.bursts[index], src))
 	const picks = sampleIndexes(Math.max(...reels.map((reel) => reel.length)), LOOP_FRAMES)
-	const { ctx } = canvas(...sheetSize(spec.frame, SHEET_GIF_SIDE))
+	const { context } = canvas(...sheetSize(spec.frame, SHEET_GIF_SIDE))
 
-	return encodeGif(ctx, picks.length, (step) =>
+	return encodeGif(context, picks.length, (step) =>
 		paintSheet(
-			ctx,
+			context,
 			spec,
 			reels.map((reel) => reel[Math.min(picks[step], reel.length - 1)]),
-			filtered
+			shouldFilter
 		)
 	)
 }
@@ -251,43 +294,55 @@ async function sheetGif(spec: OutputSpec, filtered: boolean) {
 async function slotGif(reel: string[], slot: SlotEdit | null) {
 	const first = await loadImage(reel[0])
 	const scale = Math.min(1, SLOT_GIF_SIDE / Math.max(first.naturalWidth, first.naturalHeight))
-	const { el, ctx } = canvas(first.naturalWidth * scale, first.naturalHeight * scale)
+	const { element, context } = canvas(first.naturalWidth * scale, first.naturalHeight * scale)
 	const picks = sampleIndexes(reel.length, LOOP_FRAMES)
 
-	return encodeGif(ctx, picks.length, async (step) => {
-		ctx.clearRect(0, 0, el.width, el.height)
-		await drawPhoto(ctx, reel[picks[step]], { x: 0, y: 0, w: el.width, h: el.height }, slot, null)
+	return encodeGif(context, picks.length, async (step) => {
+		context.clearRect(0, 0, element.width, element.height)
+		await drawPhoto(
+			context,
+			reel[picks[step]],
+			{ x: 0, y: 0, width: element.width, height: element.height },
+			slot,
+			null
+		)
 	})
 }
 
 async function slideshow(photos: string[], slots: (SlotEdit | null)[]) {
 	const first = await loadImage(photos[0])
 	const scale = Math.min(1, SLIDESHOW_SIDE / Math.max(first.naturalWidth, first.naturalHeight))
-	const { el, ctx } = canvas(first.naturalWidth * scale, first.naturalHeight * scale)
+	const { element, context } = canvas(first.naturalWidth * scale, first.naturalHeight * scale)
 
 	return encodeGif(
-		ctx,
+		context,
 		photos.length,
 		async (step) => {
-			ctx.clearRect(0, 0, el.width, el.height)
-			await drawPhoto(ctx, photos[step], { x: 0, y: 0, w: el.width, h: el.height }, slots[step], null)
+			context.clearRect(0, 0, element.width, element.height)
+			await drawPhoto(
+				context,
+				photos[step],
+				{ x: 0, y: 0, width: element.width, height: element.height },
+				slots[step],
+				null
+			)
 		},
 		SLIDESHOW_DELAY
 	)
 }
 
 export function outputCount({ photos, edit }: Pick<OutputSpec, 'photos' | 'edit'>) {
-	const filtered = edit.slots.some(isFiltered)
-	return (photos.length * 2 + 3) * (filtered ? 2 : 1)
+	const hasFilters = edit.slots.some(isFiltered)
+	return (photos.length * 2 + 3) * (hasFilters ? 2 : 1)
 }
 
 export async function buildOutputs(spec: OutputSpec, onProgress?: (done: number, total: number) => void) {
 	const { photos, bursts, edit } = spec
-	const filtered = edit.slots.some(isFiltered)
+	const hasFilters = edit.slots.some(isFiltered)
 	const total = outputCount(spec)
 	const outputs: Output[] = []
 
-	const add = (output: Output) => {
+	function add(output: Output) {
 		outputs.push(output)
 		onProgress?.(outputs.length, total)
 	}
@@ -295,15 +350,17 @@ export async function buildOutputs(spec: OutputSpec, onProgress?: (done: number,
 	await document.fonts?.ready
 
 	try {
-		if (filtered) add({ key: 'frame-filtered', kind: 'png', category: 'frame-filtered', blob: await sheet(spec, true) })
+		if (hasFilters) {
+			add({ key: 'frame-filtered', kind: 'png', category: 'frame-filtered', blob: await sheet(spec, true) })
+		}
 		add({ key: 'frame', kind: 'png', category: 'frame', blob: await sheet(spec, false) })
 
-		if (filtered) {
+		if (hasFilters) {
 			add({ key: 'frame-filtered-gif', kind: 'gif', category: 'frame-filtered', blob: await sheetGif(spec, true) })
 		}
 		add({ key: 'frame-gif', kind: 'gif', category: 'frame', blob: await sheetGif(spec, false) })
 
-		if (filtered) {
+		if (hasFilters) {
 			add({ key: 'filtered-slideshow', kind: 'gif', category: 'filtered', blob: await slideshow(photos, edit.slots) })
 		}
 		add({
@@ -316,15 +373,19 @@ export async function buildOutputs(spec: OutputSpec, onProgress?: (done: number,
 			)
 		})
 
-		for (const [i, src] of photos.entries()) {
-			const index = i + 1
-			const reel = footage(bursts[i], src)
+		for (const [position, src] of photos.entries()) {
+			const index = position + 1
+			const reel = footage(bursts[position], src)
+			const response = await fetch(src)
 
-			add({ key: `plain-${index}`, kind: 'jpg', category: 'plain', index, blob: await (await fetch(src)).blob() })
+			add({ key: `plain-${index}`, kind: 'jpg', category: 'plain', index, blob: await response.blob() })
 			add({ key: `plain-${index}-gif`, kind: 'gif', category: 'plain', index, blob: await slotGif(reel, null) })
 
-			if (!filtered) continue
-			const slot = edit.slots[i]
+			if (!hasFilters) {
+				continue
+			}
+
+			const slot = edit.slots[position]
 			add({ key: `filtered-${index}`, kind: 'jpg', category: 'filtered', index, blob: await still(src, slot) })
 			add({ key: `filtered-${index}-gif`, kind: 'gif', category: 'filtered', index, blob: await slotGif(reel, slot) })
 		}
@@ -344,6 +405,10 @@ export function shareForm(outputs: Output[], frame: Frame, locale: string) {
 		'manifest',
 		JSON.stringify(outputs.map(({ key, kind, category, index }) => ({ key, kind, category, index })))
 	)
-	for (const { key, kind, blob } of outputs) form.append(`${key}.${kind}`, blob, `${key}.${kind}`)
+
+	for (const { key, kind, blob } of outputs) {
+		form.append(`${key}.${kind}`, blob, `${key}.${kind}`)
+	}
+
 	return form
 }

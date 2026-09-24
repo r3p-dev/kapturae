@@ -1,4 +1,6 @@
 declare module 'virtual:frames' {
-	const frames: import('$lib/session').Frame[]
+	import type { Frame } from '$lib/session'
+
+	const frames: Frame[]
 	export default frames
 }

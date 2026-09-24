@@ -41,9 +41,17 @@ export const STICKER_LABELS: Record<StickerId, Message> = {
 
 export const UPLOAD_PROBLEMS: Record<UploadProblem, Message> = {
 	format: m['session.upload.problems.format'],
-	size: () => m['session.upload.problems.size']({ n: UPLOAD_MAX_MB }),
-	small: () => m['session.upload.problems.small']({ n: UPLOAD_MIN_SIDE }),
-	large: () => m['session.upload.problems.large']({ n: UPLOAD_MAX_MP }),
+
+	size() {
+		return m['session.upload.problems.size']({ n: UPLOAD_MAX_MB })
+	},
+	small() {
+		return m['session.upload.problems.small']({ n: UPLOAD_MIN_SIDE })
+	},
+	large() {
+		return m['session.upload.problems.large']({ n: UPLOAD_MAX_MP })
+	},
+
 	heic: m['session.upload.problems.heic'],
 	unreadable: m['session.upload.problems.unreadable']
 }

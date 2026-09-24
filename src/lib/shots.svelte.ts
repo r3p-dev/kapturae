@@ -39,7 +39,10 @@ export const shots = $state<{
 })
 
 export function useShots(size: PrintSize, frame: FrameId) {
-	if (shots.size === size && shots.frame === frame) return
+	if (shots.size === size && shots.frame === frame) {
+		return
+	}
+
 	clearShots()
 	shots.size = size
 	shots.frame = frame
@@ -60,7 +63,7 @@ export function slotOfShot(shot: number) {
 
 export function firstEmptyShot(total: number) {
 	return Array.from({ length: total }, (_, shot) => shot)
-		.sort((a, b) => slotOfShot(a) - slotOfShot(b))
+		.sort((first, second) => slotOfShot(first) - slotOfShot(second))
 		.find((shot) => !shots.photos[shot])
 }
 
@@ -71,7 +74,11 @@ export function clearShots() {
 		...shots.uploads,
 		...(published ? [published.share.sheet, published.share.gif] : [])
 	]
-	urls.filter((url) => url.startsWith('blob:')).forEach((url) => URL.revokeObjectURL(url))
+
+	for (const url of urls.filter((candidate) => candidate.startsWith('blob:'))) {
+		URL.revokeObjectURL(url)
+	}
+
 	shots.photos = []
 	shots.library = []
 	shots.uploads = []

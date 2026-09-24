@@ -13,7 +13,7 @@
 	import SessionHeader from '$lib/components/organisms/session-header.svelte'
 	import { Button } from '$lib/components/ui/button'
 	import * as ToggleGroup from '$lib/components/ui/toggle-group'
-	import { hms, useClock } from '$lib/clock.svelte'
+	import { formatDuration, useClock } from '$lib/clock.svelte'
 	import { blankEdit } from '$lib/editor.svelte'
 	import { FRAMES } from '$lib/frames'
 	import { buildOutputs, outputCount, shareForm, type Output } from '$lib/outputs'
@@ -30,16 +30,22 @@
 	const STORAGE_KEY = 'kapturae:share'
 	const COPIED_MS = 2000
 
-	const params = page.url.searchParams
-	const requested = pick(PRINT_SIZES, params.get('size')) ?? '2x6'
+	const query = page.url.searchParams
+	const requested = pick(PRINT_SIZES, query.get('size')) ?? '2x6'
 	const frame =
-		FRAMES.find((f) => f.id === params.get('frame')) ?? FRAMES.find((f) => f.size === requested) ?? FRAMES[0]
+		FRAMES.find((candidate) => candidate.id === query.get('frame')) ??
+		FRAMES.find((candidate) => candidate.size === requested) ??
+		FRAMES[0]
 	const total = frame.slots.length
 	const again = localizeHref('/session/frame')
-	const pad = (n: number) => String(n).padStart(2, '0')
+	function pad(value: number) {
+		return String(value).padStart(2, '0')
+	}
 	const step = { n: pad(SESSION_STEPS.indexOf('done') + 1), total: pad(SESSION_STEPS.length) }
 
-	if (browser) useShots(frame.size, frame.id)
+	if (browser) {
+		useShots(frame.size, frame.id)
+	}
 
 	const errors: Record<UploadFailure | 'render', () => string> = {
 		network: m['session.done.errors.network'],
@@ -56,27 +62,39 @@
 	let share = $state<Share | null>(null)
 	let local = $state<{ sheet?: string; gif?: string }>({})
 	let format = $state('photo')
-	let copied = $state(false)
+	let isCopied = $state(false)
 
 	const clock = useClock()
-	const remaining = $derived(share ? share.expiresAt - clock.now : 0)
-	const expired = $derived(share !== null && remaining <= 0)
-	const ready = $derived(stage === 'done' && share !== null && !expired)
-	const busy = $derived(stage === 'idle' || stage === 'rendering' || stage === 'uploading')
+	const remaining = $derived(share ? share.expiresAt - clock.now() : 0)
+	const isExpired = $derived(share !== null && remaining <= 0)
+	const isReady = $derived(stage === 'done' && share !== null && !isExpired)
+	const isBusy = $derived(stage === 'idle' || stage === 'rendering' || stage === 'uploading')
 	const sheet = $derived(share?.sheet ?? local.sheet)
 	const gif = $derived(share?.gif ?? local.gif)
 	const zip = $derived(share ? `/p/${share.id}/download.zip` : undefined)
 
 	const status = $derived.by(() => {
-		if (stage === 'rendering') return m['session.done.rendering'](progress)
-		if (stage === 'uploading') return m['session.done.uploading']({ attempt, total: MAX_ATTEMPTS })
-		if (stage === 'failed') return `${m['session.done.failed']()}: ${failure}`
-		if (expired) return m['session.done.expired']()
-		if (stage === 'done') return m['session.done.ready']()
+		if (stage === 'rendering') {
+			return m['session.done.rendering'](progress)
+		}
+		if (stage === 'uploading') {
+			return m['session.done.uploading']({ attempt, total: MAX_ATTEMPTS })
+		}
+		if (stage === 'failed') {
+			return `${m['session.done.failed']()}: ${failure}`
+		}
+		if (isExpired) {
+			return m['session.done.expired']()
+		}
+		if (stage === 'done') {
+			return m['session.done.ready']()
+		}
 		return ''
 	})
 
-	const sessionKey = () => JSON.stringify([frame.id, shots.photos, shots.edit])
+	function sessionKey() {
+		return JSON.stringify([frame.id, shots.photos, shots.edit])
+	}
 
 	function remember(result: Share) {
 		try {
@@ -87,7 +105,9 @@
 	function restore() {
 		try {
 			const saved = JSON.parse(sessionStorage.getItem(STORAGE_KEY) ?? 'null')
-			if (saved?.frame !== frame.id || saved.expiresAt <= Date.now()) return false
+			if (saved?.frame !== frame.id || saved.expiresAt <= Date.now()) {
+				return false
+			}
 			share = saved
 			stage = 'done'
 			return true
@@ -102,9 +122,17 @@
 		} catch {}
 	}
 
+	function assetUrl(id: string, output: Output) {
+		return `/p/${id}/${output.key}.${output.kind}`
+	}
+
 	function setLocal(next: typeof local) {
 		const owned = new Set(Object.values(shots.published?.share ?? {}))
-		for (const url of [local.sheet, local.gif]) if (url && !owned.has(url)) URL.revokeObjectURL(url)
+		for (const url of [local.sheet, local.gif]) {
+			if (url && !owned.has(url)) {
+				URL.revokeObjectURL(url)
+			}
+		}
 		local = next
 	}
 
@@ -124,7 +152,7 @@
 			const artwork = edit.color ? await recolor(frame, edit.color) : frame.src
 			outputs = await buildOutputs(
 				{ frame, artwork, photos, bursts, edit },
-				(done, total) => (progress = { done, total })
+				(done, count) => (progress = { done, total: count })
 			)
 		} catch {
 			failure = errors.render()
@@ -132,22 +160,29 @@
 			return
 		}
 
-		const find = (...keys: string[]) => keys.map((k) => outputs.find((o) => o.key === k)).find(Boolean)!
-		const sheetOut = find('frame-filtered', 'frame')
-		const gifOut = find('frame-filtered-gif', 'frame-gif')
-		setLocal({ sheet: URL.createObjectURL(sheetOut.blob), gif: URL.createObjectURL(gifOut.blob) })
+		function find(...keys: string[]) {
+			return keys.map((wanted) => outputs.find((output) => output.key === wanted)).find(Boolean)!
+		}
+		const sheetOutput = find('frame-filtered', 'frame')
+		const gifOutput = find('frame-filtered-gif', 'frame-gif')
+		setLocal({ sheet: URL.createObjectURL(sheetOutput.blob), gif: URL.createObjectURL(gifOutput.blob) })
 
 		stage = 'uploading'
 		try {
-			const result = await uploadShare(shareForm(outputs, frame, getLocale()), (n) => (attempt = n))
-			const asset = (o: Output) => `/p/${result.id}/${o.key}.${o.kind}`
+			const result = await uploadShare(shareForm(outputs, frame, getLocale()), (current) => (attempt = current))
 
 			const stale = shots.published?.share
-			if (stale) for (const url of [stale.sheet, stale.gif]) if (url.startsWith('blob:')) URL.revokeObjectURL(url)
+			if (stale) {
+				for (const url of [stale.sheet, stale.gif]) {
+					if (url.startsWith('blob:')) {
+						URL.revokeObjectURL(url)
+					}
+				}
+			}
 
 			share = { ...result, sheet: local.sheet!, gif: local.gif! }
 			shots.published = { key, share }
-			remember({ ...result, sheet: asset(sheetOut), gif: asset(gifOut) })
+			remember({ ...result, sheet: assetUrl(result.id, sheetOutput), gif: assetUrl(result.id, gifOutput) })
 			stage = 'done'
 		} catch (error) {
 			failure = errors[error instanceof UploadError ? error.reason : 'network']()
@@ -156,17 +191,23 @@
 	}
 
 	async function copy() {
-		if (!share) return
+		if (!share) {
+			return
+		}
 		try {
 			await navigator.clipboard.writeText(share.url)
-			copied = true
-			setTimeout(() => (copied = false), COPIED_MS)
+			isCopied = true
+			setTimeout(() => (isCopied = false), COPIED_MS)
 		} catch {}
 	}
 
 	async function send() {
-		if (!share) return
-		if (!navigator.share) return copy()
+		if (!share) {
+			return
+		}
+		if (!navigator.share) {
+			return copy()
+		}
 		await navigator.share({ title: m['share.meta_title'](), url: share.url }).catch(() => {})
 	}
 
@@ -183,8 +224,11 @@
 		}
 
 		const edit = shots.edit ?? blankEdit(total)
-		if (edit.order.every((shot) => shots.photos[shot])) publish()
-		else if (!restore()) stage = 'empty'
+		if (edit.order.every((shot) => shots.photos[shot])) {
+			publish()
+		} else if (!restore()) {
+			stage = 'empty'
+		}
 	})
 
 	const mono = 'font-mono tracking-[0.14em] uppercase'
@@ -197,10 +241,10 @@
 	<meta name="description" content={m['session.done.meta_description']()} />
 </svelte:head>
 
-{#snippet preview(cls: string)}
+{#snippet preview(className: string)}
 	{@const src = format === 'gif' ? gif : sheet}
 
-	<div class={cn('flex items-center justify-center', cls)} style:--r={SIZES[frame.size].ratio}>
+	<div class={cn('flex items-center justify-center', className)} style:--r={SIZES[frame.size].ratio}>
 		{#if src}
 			<img
 				{src}
@@ -232,19 +276,19 @@
 	</ToggleGroup.Root>
 {/snippet}
 
-{#snippet qr(cls: string, inset: string, size: string, weight: string)}
-	<div class={cn('relative shrink-0 bg-white', cls)}>
+{#snippet qr(className: string, inset: string, size: string, weight: string)}
+	<div class={cn('relative shrink-0 bg-white', className)}>
 		<Corners {inset} {size} {weight} class="text-primary" />
 
-		{#if share && !expired}
+		{#if share && !isExpired}
 			<img src={share.qr} alt={m['session.done.qr_alt']()} class="block size-full" />
 		{:else}
 			<span aria-hidden="true" class="flex size-full items-center justify-center bg-paper-3">
 				<span
 					class={cn(
 						'size-2.5 rounded-full bg-primary',
-						busy && 'animate-rec-blink motion-reduce:animate-none',
-						!busy && 'bg-[#8c8983]'
+						isBusy && 'animate-rec-blink motion-reduce:animate-none',
+						!isBusy && 'bg-[#8c8983]'
 					)}
 				></span>
 			</span>
@@ -252,24 +296,24 @@
 	</div>
 {/snippet}
 
-{#snippet timer(label: string, cls: string)}
+{#snippet timer(label: string, className: string)}
 	<div class="flex flex-col gap-0.5">
 		<span class="{mono} flex items-center gap-2 text-[11px] text-primary-text rail:justify-start">
 			<span
 				aria-hidden="true"
-				class={cn('size-2 rounded-full bg-primary', !expired && 'animate-rec-blink motion-reduce:animate-none')}
+				class={cn('size-2 rounded-full bg-primary', !isExpired && 'animate-rec-blink motion-reduce:animate-none')}
 			></span>
-			{busy || stage === 'failed' || expired ? status : label}
+			{isBusy || stage === 'failed' || isExpired ? status : label}
 		</span>
 
 		<span
 			class={cn(
 				'font-display leading-[1.1] font-black font-stretch-118% tabular-nums',
-				!ready && 'text-muted-foreground',
-				cls
+				!isReady && 'text-muted-foreground',
+				className
 			)}
 		>
-			{share ? hms(remaining) : '24:00:00'}
+			{share ? formatDuration(remaining) : '24:00:00'}
 		</span>
 	</div>
 {/snippet}
@@ -288,7 +332,7 @@
 {/snippet}
 
 {#snippet copyLabel()}
-	{#if copied}
+	{#if isCopied}
 		<RiCheckLine aria-hidden="true" class="size-4.5" />
 		{m['session.done.copied']()}
 	{:else}
@@ -343,7 +387,7 @@
 				<Button
 					href={zip}
 					download
-					disabled={!ready}
+					disabled={!isReady}
 					class="h-13 gap-2.5 font-mono font-medium tracking-widest {disabled}"
 				>
 					<RiDownload2Line aria-hidden="true" class="size-4.5" />
@@ -353,10 +397,10 @@
 				<Button
 					variant="outline"
 					onclick={send}
-					disabled={!ready}
+					disabled={!isReady}
 					class="h-13 gap-2.5 border-[1.5px] border-foreground font-mono font-normal tracking-widest"
 				>
-					{#if copied}
+					{#if isCopied}
 						{@render copyLabel()}
 					{:else}
 						<RiShareForwardLine aria-hidden="true" class="size-4.5" />
@@ -419,7 +463,7 @@
 					<Button
 						href={zip}
 						download
-						disabled={!ready}
+						disabled={!isReady}
 						class="h-13 gap-2.5 bg-paper px-5.5 font-mono font-medium tracking-widest text-ink hover:bg-paper-2 {disabled}"
 					>
 						<RiDownload2Line aria-hidden="true" class="size-4.5" />
@@ -429,7 +473,7 @@
 					<Button
 						variant="outline"
 						onclick={copy}
-						disabled={!ready}
+						disabled={!isReady}
 						class="h-13 gap-2.5 border-[1.5px] border-paper px-5.5 font-mono font-normal tracking-widest"
 					>
 						{@render copyLabel()}
@@ -449,7 +493,7 @@
 						<RiArrowRightLine aria-hidden="true" class="size-4" />
 					</a>
 
-					{#if ready && share}
+					{#if isReady && share}
 						<a
 							href={share.url}
 							target="_blank"
