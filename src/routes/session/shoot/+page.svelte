@@ -6,14 +6,20 @@
 	import RiArrowLeftLine from 'remixicon-svelte/icons/arrow-left-line'
 	import RiArrowRightLine from 'remixicon-svelte/icons/arrow-right-line'
 	import RiCameraSwitchLine from 'remixicon-svelte/icons/camera-switch-line'
+	import RiFlashlightFill from 'remixicon-svelte/icons/flashlight-fill'
+	import RiFlashlightLine from 'remixicon-svelte/icons/flashlight-line'
+	import RiFlipHorizontalLine from 'remixicon-svelte/icons/flip-horizontal-line'
+	import RiVolumeMuteLine from 'remixicon-svelte/icons/volume-mute-line'
+	import RiVolumeUpLine from 'remixicon-svelte/icons/volume-up-line'
+	import RiSettings3Line from 'remixicon-svelte/icons/settings-3-line'
 	import RiTimerLine from 'remixicon-svelte/icons/timer-line'
+	import { Popover } from 'bits-ui'
 	import CameraFeed from '$lib/components/atoms/camera-feed.svelte'
 	import Countdown from '$lib/components/atoms/countdown.svelte'
 	import Flash from '$lib/components/atoms/flash.svelte'
 	import ShutterButton from '$lib/components/atoms/shutter-button.svelte'
 	import Corners from '$lib/components/atoms/corners.svelte'
 	import CameraStatus from '$lib/components/molecules/camera-status.svelte'
-	import TimerPicker from '$lib/components/molecules/timer-picker.svelte'
 	import SessionHeader from '$lib/components/organisms/session-header.svelte'
 	import FrameImage from '$lib/components/atoms/frame-image.svelte'
 	import { Button } from '$lib/components/ui/button'
@@ -28,13 +34,12 @@
 	const TIMERS = [3, 5, 10] as const
 	const TICK_MS = 1000
 	const FLASH_MS = 700
+	const FLASH_LEAD_MS = 300
 
 	const params = page.url.searchParams
 	const requested = pick(PRINT_SIZES, params.get('size')) ?? '2x6'
 	const frame =
-		FRAMES.find((f) => f.id === params.get('frame')) ??
-		FRAMES.find((f) => f.size === requested) ??
-		FRAMES[0]
+		FRAMES.find((f) => f.id === params.get('frame')) ?? FRAMES.find((f) => f.size === requested) ?? FRAMES[0]
 	const size = frame.size
 	const spec = SIZES[size]
 	const query = new URLSearchParams({ size, frame: frame.id })
@@ -48,6 +53,9 @@
 	let video = $state<HTMLVideoElement>()
 	let timer = $state<number>(TIMERS[0])
 	let phase = $state<number | 'flash' | null>(null)
+	let muted = $state(false)
+	let flash = $state(false)
+	let lit = $state(false)
 	let sound: HTMLAudioElement | undefined
 	let alive = true
 
@@ -65,16 +73,26 @@
 	)
 
 	const hud = $derived(
-		[
-			m['session.shoot.shot_hud']({ n: current, total }),
-			camera.mirrored && m['session.shoot.mirror']()
-		]
+		[m['session.shoot.shot_hud']({ n: current, total }), camera.mirrored && m['session.shoot.mirror']()]
 			.filter(Boolean)
 			.join(' · ')
 	)
 
-	const wait = (ms: number) =>
-		new Promise<boolean>((resolve) => setTimeout(() => resolve(alive), ms))
+	let guideWidth = $state(0)
+	let guideHeight = $state(0)
+
+	const view = $derived.by(() => {
+		const slot = frame.slots[taken] ?? { x: 0, y: 0, w: 100, h: 100 }
+		const h = Math.min(guideWidth / ((slot.w / 100) * spec.ratio), guideHeight / (slot.h / 100))
+
+		return {
+			h,
+			x: guideWidth / 2 - ((slot.x + slot.w / 2) / 100) * h * spec.ratio,
+			y: guideHeight / 2 - ((slot.y + slot.h / 2) / 100) * h
+		}
+	})
+
+	const wait = (ms: number) => new Promise<boolean>((resolve) => setTimeout(() => resolve(alive), ms))
 
 	async function shoot() {
 		if (!ready || !video) return
@@ -84,8 +102,14 @@
 			if (!(await wait(TICK_MS))) return
 		}
 
+		if (flash) {
+			if (camera.canTorch) await camera.torch(true)
+			else lit = true
+			await wait(FLASH_LEAD_MS)
+		}
+
 		phase = 'flash'
-		if (sound) {
+		if (sound && !muted) {
 			sound.currentTime = 0
 			sound.play().catch(() => {})
 		}
@@ -96,8 +120,37 @@
 			else URL.revokeObjectURL(url)
 		} catch {}
 
+		if (flash) {
+			lit = false
+			camera.torch(false)
+		}
+
 		if (await wait(FLASH_MS)) phase = null
 	}
+
+	const toggles = $derived([
+		{
+			label: m['session.shoot.mirror_toggle'](),
+			on: camera.mirrored,
+			icon: RiFlipHorizontalLine,
+			locked: true,
+			flip: () => (camera.mirrored = !camera.mirrored)
+		},
+		{
+			label: m['session.shoot.sound'](),
+			on: !muted,
+			icon: muted ? RiVolumeMuteLine : RiVolumeUpLine,
+			locked: false,
+			flip: () => (muted = !muted)
+		},
+		{
+			label: m['session.shoot.flash'](),
+			on: flash,
+			icon: flash ? RiFlashlightFill : RiFlashlightLine,
+			locked: true,
+			flip: () => (flash = !flash)
+		}
+	])
 
 	function cycleTimer() {
 		timer = TIMERS[(TIMERS.indexOf(timer as (typeof TIMERS)[number]) + 1) % TIMERS.length]
@@ -115,6 +168,8 @@
 
 	const mono = 'font-mono tracking-[0.14em] uppercase'
 	const pill = 'flex size-11 items-center justify-center rounded-full bg-ink/45 text-paper'
+	const tile =
+		'flex h-11 min-w-11 items-center justify-center gap-1.5 border-[1.5px] border-foreground px-2.5 font-mono text-[13px] aria-pressed:bg-foreground aria-pressed:text-background disabled:opacity-50'
 </script>
 
 <svelte:head>
@@ -125,28 +180,35 @@
 {#snippet nextButton(cls?: string)}
 	<Button
 		href={next}
-		class={cn(
-			'h-14 w-full gap-2.5 font-display text-[15px] font-extrabold tracking-[0.06em] font-stretch-112%',
-			cls
-		)}
+		class={cn('h-14 w-full gap-2.5 font-display text-[15px] font-extrabold tracking-[0.06em] font-stretch-112%', cls)}
 	>
 		{m['session.shoot.next']()}
 		<RiArrowRightLine aria-hidden="true" class="size-4.5" />
 	</Button>
 {/snippet}
 
-<div
-	class="dark relative isolate flex h-svh flex-col overflow-hidden bg-background text-foreground scheme-dark"
->
-	<div
-		aria-hidden="true"
-		class="absolute inset-0 -z-10 rail:hidden"
-		style:background-color={frame.color}
-	></div>
+{#snippet slotPhoto(i: number)}
+	{#if shots.photos[i]}
+		<img src={shots.photos[i]} alt="" class="absolute inset-0 size-full object-cover" />
+	{:else if i === taken && camera.stream}
+		<CameraFeed
+			stream={camera.stream}
+			mirrored={camera.mirrored}
+			class="absolute inset-0 outline-3 -outline-offset-3 outline-primary"
+		/>
+	{:else}
+		<span class="absolute inset-0 flex items-center justify-center font-display text-[22px] font-black text-[#8c8983]">
+			{i + 1}
+		</span>
+	{/if}
+{/snippet}
+
+<div class="dark relative isolate flex h-svh flex-col overflow-hidden bg-background text-foreground scheme-dark">
+	<div aria-hidden="true" class="absolute inset-0 -z-10 rail:hidden" style:background-color={frame.color}></div>
 
 	<SessionHeader step="shoot" class="hidden rail:flex" />
 
-	<div class="flex h-14 shrink-0 items-center justify-between px-2 rail:hidden">
+	<div class="grid h-14 shrink-0 grid-cols-[1fr_auto_1fr] items-center px-2 rail:hidden">
 		<a href={back} aria-label={m['session.shoot.back']()} class={pill}>
 			<RiArrowLeftLine aria-hidden="true" class="size-5" />
 		</a>
@@ -161,12 +223,10 @@
 				onclick={() => camera.flip()}
 				disabled={phase !== null}
 				aria-label={m['session.shoot.flip']()}
-				class={pill}
+				class={cn(pill, 'justify-self-end disabled:opacity-50')}
 			>
 				<RiCameraSwitchLine aria-hidden="true" class="size-5" />
 			</button>
-		{:else}
-			<span class="size-11"></span>
 		{/if}
 	</div>
 
@@ -184,16 +244,33 @@
 	<div class="flex min-h-0 flex-1 flex-col rail:flex-row rail:gap-6 rail:px-8 rail:pt-5 rail:pb-6">
 		<section
 			aria-label={m['session.shoot.camera_label']()}
-			class="relative mx-5 mt-4 min-h-0 flex-1 overflow-hidden bg-[#262624] rail:m-0 rail:bg-[#232321]"
+			class="relative mx-5 mt-4 mb-4 min-h-0 flex-1 overflow-hidden bg-[#262624] rail:m-0 rail:bg-[#232321]"
 		>
 			{#if camera.status === 'live'}
 				<CameraFeed stream={camera.stream} mirrored={camera.mirrored} bind:video />
+
+				<div
+					aria-hidden="true"
+					bind:clientWidth={guideWidth}
+					bind:clientHeight={guideHeight}
+					class="absolute inset-0 bg-[#262624] rail:hidden"
+				>
+					{#if guideWidth && guideHeight}
+						<div
+							class="transition-transform duration-700 ease-out motion-reduce:transition-none"
+							style:transform="translate({view.x}px, {view.y}px)"
+							style:--h="{view.h}px"
+						>
+							<FrameImage
+								{frame}
+								photo={slotPhoto}
+								class="transition-[width,height] duration-700 ease-out motion-reduce:transition-none"
+							/>
+						</div>
+					{/if}
+				</div>
 			{:else}
-				<CameraStatus
-					status={camera.status}
-					onretry={() => camera.start()}
-					class="absolute inset-0 rail:bottom-32"
-				/>
+				<CameraStatus status={camera.status} onretry={() => camera.start()} class="absolute inset-0 rail:bottom-32" />
 			{/if}
 
 			<div aria-hidden="true" class="pointer-events-none absolute inset-0 hidden rail:block">
@@ -208,24 +285,34 @@
 			{#if camera.status === 'live'}
 				<div
 					aria-hidden="true"
-					class="pointer-events-none absolute top-1/2 left-1/2 h-40 w-35 -translate-1/2 [--af:18px] rail:h-65 rail:w-57.5 rail:[--af:26px]"
+					class="pointer-events-none absolute top-1/2 left-1/2 hidden h-40 w-35 -translate-1/2 [--af:18px] rail:block rail:h-65 rail:w-57.5 rail:[--af:26px]"
 				>
 					<Corners size="var(--af)" weight="2px" class="text-primary" />
 				</div>
 
 				<div
-					class="{mono} absolute inset-x-3 bottom-3 flex items-center gap-1.5 text-[11px] text-paper rail:inset-x-22 rail:top-10 rail:bottom-auto rail:justify-between rail:text-[13px]"
+					class="{mono} absolute inset-x-22 top-10 hidden items-center justify-between text-[13px] text-paper rail:flex"
 				>
 					<span class="flex items-center gap-2">
 						<span
 							aria-hidden="true"
-							class="size-1.75 animate-rec-blink rounded-full bg-primary motion-reduce:animate-none rail:size-2.5"
+							class="size-2.5 animate-rec-blink rounded-full bg-primary motion-reduce:animate-none"
 						></span>
 						{m['session.shoot.live']()}
 					</span>
 
-					<span class="hidden rail:inline">{hud}</span>
+					<span>{hud}</span>
 				</div>
+
+				<span
+					class="{mono} absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 bg-ink/55 px-2.5 py-1.5 text-xs text-paper rail:hidden"
+				>
+					<span
+						aria-hidden="true"
+						class="size-1.75 animate-rec-blink rounded-full bg-primary motion-reduce:animate-none"
+					></span>
+					{m['session.shoot.live']()}
+				</span>
 			{/if}
 
 			{#if typeof phase === 'number'}
@@ -247,22 +334,50 @@
 
 				<div class={cn('w-24 gap-1.5 rail:hidden', complete ? 'hidden' : 'flex')}>
 					{#if taken > 0}
-						<img
-							src={shots.photos[taken - 1]}
-							alt=""
-							class="size-11 border-2 border-paper object-cover"
-						/>
+						<img src={shots.photos[taken - 1]} alt="" class="size-11 border-2 border-paper object-cover" />
 					{/if}
 					<span class="size-11 border-2 border-dashed border-[#8c8983]"></span>
 				</div>
 
-				<TimerPicker
-					bind:value={timer}
-					options={TIMERS}
-					label={m['session.shoot.timer_label']()}
-					disabled={phase !== null}
-					class="hidden rail:flex"
-				/>
+				<div class="hidden flex-1 items-center gap-2 rail:flex">
+					<button
+						type="button"
+						onclick={cycleTimer}
+						disabled={phase !== null}
+						aria-label={m['session.shoot.timer_cycle']({ n: timer })}
+						class={tile}
+					>
+						<RiTimerLine aria-hidden="true" class="size-4.5" />
+						{timer}s
+					</button>
+
+					{#each toggles as item (item.label)}
+						<button
+							type="button"
+							onclick={item.flip}
+							disabled={item.locked && phase !== null}
+							aria-pressed={item.on}
+							aria-label={item.label}
+							title={item.label}
+							class={tile}
+						>
+							<item.icon aria-hidden="true" class="size-4.5" />
+						</button>
+					{/each}
+
+					{#if camera.canFlip}
+						<button
+							type="button"
+							onclick={() => camera.flip()}
+							disabled={phase !== null}
+							aria-label={m['session.shoot.flip']()}
+							title={m['session.shoot.flip']()}
+							class={tile}
+						>
+							<RiCameraSwitchLine aria-hidden="true" class="size-4.5" />
+						</button>
+					{/if}
+				</div>
 
 				<ShutterButton
 					onclick={shoot}
@@ -272,27 +387,61 @@
 				/>
 
 				<div class={cn('w-24 justify-end rail:hidden', complete ? 'hidden' : 'flex')}>
-					<button
-						type="button"
-						onclick={cycleTimer}
-						disabled={phase !== null}
-						aria-label={m['session.shoot.timer_cycle']({ n: timer })}
-						class="flex h-11 items-center gap-1.5 border-[1.5px] border-paper px-3 font-mono text-xs text-paper"
-					>
-						<RiTimerLine aria-hidden="true" class="size-4" />
-						{timer}s
-					</button>
+					<Popover.Root>
+						<Popover.Trigger
+							aria-label={m['session.shoot.settings']()}
+							class="flex h-11 items-center gap-1.5 border-[1.5px] border-paper px-3 font-mono text-xs text-paper"
+						>
+							<RiSettings3Line aria-hidden="true" class="size-4" />
+							{timer}s
+						</Popover.Trigger>
+
+						<Popover.Content
+							side="top"
+							align="end"
+							sideOffset={16}
+							class="z-40 flex gap-1 rounded-2xl bg-ink/92 p-2 text-paper shadow-lg outline-none"
+						>
+							<button
+								type="button"
+								onclick={cycleTimer}
+								disabled={phase !== null}
+								aria-label={m['session.shoot.timer_cycle']({ n: timer })}
+								class="group flex w-16 flex-col items-center gap-1 py-1 disabled:opacity-50"
+							>
+								<span class="grid size-11 place-items-center rounded-full bg-paper text-ink">
+									<RiTimerLine aria-hidden="true" class="size-5" />
+								</span>
+								<span class="{mono} text-[10px]">{timer}s</span>
+							</button>
+
+							{#each toggles as item (item.label)}
+								<button
+									type="button"
+									onclick={item.flip}
+									disabled={item.locked && phase !== null}
+									aria-pressed={item.on}
+									aria-label={item.label}
+									class="group flex w-16 flex-col items-center gap-1 py-1 disabled:opacity-50"
+								>
+									<span
+										class="grid size-11 place-items-center rounded-full bg-paper/12 group-aria-pressed:bg-paper group-aria-pressed:text-ink"
+									>
+										<item.icon aria-hidden="true" class="size-5" />
+									</span>
+									<span class="{mono} text-[10px]">{item.label}</span>
+								</button>
+							{/each}
+						</Popover.Content>
+					</Popover.Root>
 				</div>
 
-				<div class="hidden w-60 flex-col items-end gap-1 rail:flex">
+				<div class="hidden flex-1 flex-col items-end gap-1 desktop:flex">
 					<span class="font-display text-3xl leading-none font-black font-stretch-118%">
 						{m['session.shoot.shot']({ n: current, total })}
 					</span>
 
-					<span
-						aria-hidden="true"
-						class="{mono} text-[11px] tracking-[0.12em] text-muted-foreground"
-					>
+					<span aria-hidden="true" class="{mono} text-[11px] tracking-[0.12em] text-muted-foreground">
 						{hint}
 					</span>
 				</div>
@@ -300,22 +449,6 @@
 		</section>
 
 		<p class="sr-only" aria-live="polite">{hint}</p>
-
-		<div
-			class="flex flex-col items-center gap-1 py-4 text-center rail:hidden"
-			style:color={frame.ink}
-		>
-			<span class="font-display text-3xl font-black tracking-[0.06em] uppercase font-stretch-115%">
-				{m['common.brand']()}
-			</span>
-			<span class="{mono} text-[10px] tracking-[0.16em]">
-				{m['session.shoot.frame_meta']({
-					brand: m['common.brand'](),
-					size: spec.label,
-					name: frame.name
-				})}
-			</span>
-		</div>
 
 		<div aria-hidden="true" class="h-42 shrink-0 rail:hidden"></div>
 
@@ -332,34 +465,7 @@
 				class="flex min-h-0 flex-1 items-center"
 				style:--h="min(588px, calc(100svh - 250px), calc(var(--w) / {spec.ratio}))"
 			>
-				<FrameImage {frame}>
-					{#snippet photo(i)}
-						{#if shots.photos[i]}
-							<img src={shots.photos[i]} alt="" class="absolute inset-0 size-full object-cover" />
-						{:else if i === taken && camera.stream}
-							<CameraFeed
-								stream={camera.stream}
-								mirrored={camera.mirrored}
-								class="absolute inset-0 outline-3 -outline-offset-3 outline-primary"
-							/>
-
-							<span
-								class="absolute top-1.5 left-1.5 flex items-center gap-1 bg-ink px-1.5 py-0.5 font-mono text-[10px] tracking-widest text-paper uppercase"
-							>
-								<span
-									class="size-1.5 animate-rec-blink rounded-full bg-primary motion-reduce:animate-none"
-								></span>
-								{m['session.shoot.live']()}
-							</span>
-						{:else}
-							<span
-								class="absolute inset-0 flex items-center justify-center font-display text-[22px] font-black text-[#8c8983]"
-							>
-								{i + 1}
-							</span>
-						{/if}
-					{/snippet}
-				</FrameImage>
+				<FrameImage {frame} photo={slotPhoto} />
 			</div>
 
 			{#if complete}
@@ -371,4 +477,8 @@
 			{/if}
 		</aside>
 	</div>
+
+	{#if lit}
+		<div aria-hidden="true" class="pointer-events-none fixed inset-0 z-50 bg-white"></div>
+	{/if}
 </div>

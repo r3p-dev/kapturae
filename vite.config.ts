@@ -12,6 +12,11 @@ export default defineConfig({
 		__LEGAL_UPDATED__: JSON.stringify(legalUpdated() ?? null)
 	},
 
+	server: {
+		host: true,
+		allowedHosts: ['kapturae-tes.r3p.dev']
+	},
+
 	plugins: [
 		frames(),
 		tailwindcss(),

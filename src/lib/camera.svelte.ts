@@ -6,8 +6,8 @@ export class Camera {
 	status = $state<CameraStatus>('idle')
 	facing = $state<Facing>('user')
 	canFlip = $state(false)
-
-	mirrored = $derived(this.facing === 'user')
+	canTorch = $state(false)
+	mirrored = $state(true)
 
 	async start() {
 		this.stop()
@@ -31,6 +31,7 @@ export class Camera {
 
 			this.stream = stream
 			this.status = 'live'
+			this.canTorch = 'torch' in (stream.getVideoTracks()[0]?.getCapabilities?.() ?? {})
 
 			const devices = await navigator.mediaDevices.enumerateDevices()
 			this.canFlip = devices.filter((device) => device.kind === 'videoinput').length > 1
@@ -49,11 +50,20 @@ export class Camera {
 		this.stream?.getTracks().forEach((track) => track.stop())
 		this.stream = null
 		this.status = 'idle'
+		this.canTorch = false
 	}
 
 	flip() {
 		this.facing = this.facing === 'user' ? 'environment' : 'user'
+		this.mirrored = this.facing === 'user'
 		return this.start()
+	}
+
+	async torch(on: boolean) {
+		const track = this.stream?.getVideoTracks()[0]
+		if (!this.canTorch || !track) return
+
+		await track.applyConstraints({ advanced: [{ torch: on } as MediaTrackConstraintSet] }).catch(() => {})
 	}
 
 	async capture(video: HTMLVideoElement): Promise<string> {
