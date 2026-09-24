@@ -566,7 +566,7 @@
 		>
 		<label
 			class={cn(
-				'flex h-11 items-center bg-paper px-5 font-mono text-xs font-medium tracking-[0.1em] text-ink uppercase hover:bg-paper-2 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-paper',
+				'tracking-widests flex h-11 items-center bg-paper px-5 font-mono text-xs font-medium text-ink uppercase hover:bg-paper-2 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-paper',
 				replacing ? 'pointer-events-none opacity-50' : 'cursor-pointer'
 			)}
 		>
@@ -575,7 +575,7 @@
 		</label>
 	</Dropzone>
 
-	<span class="{mono} text-[11px] tracking-[0.1em] text-muted-foreground">
+	<span class="{mono} text-[11px] tracking-widest text-muted-foreground">
 		{m['session.upload.formats']()} · {m['session.upload.max_size']({ n: UPLOAD_MAX_MB })}
 	</span>
 
@@ -768,7 +768,7 @@
 							{#each [['camera', RiRestartLine, m['session.replace.camera']()], ['upload', RiUploadLine, m['session.replace.upload']()]] as const as [value, Icon, label] (value)}
 								<ToggleGroup.Item
 									{value}
-									class="h-12 w-full justify-start gap-2.5 border-[1.5px] border-paper px-3.5 font-mono text-xs font-medium tracking-[0.1em] hover:bg-paper/10 data-[state=on]:bg-paper data-[state=on]:text-ink"
+									class="h-12 w-full justify-start gap-2.5 border-[1.5px] border-paper px-3.5 font-mono text-xs font-medium tracking-widest hover:bg-paper/10 data-[state=on]:bg-paper data-[state=on]:text-ink"
 								>
 									<Icon aria-hidden="true" class="size-4" />
 									{label}
@@ -1178,7 +1178,7 @@
 						<RiCameraLine aria-hidden="true" class="size-5" />
 					</span>
 					<span class="flex flex-col gap-0.5">
-						<span class="{mono} text-xs font-medium tracking-[0.1em]">{m['session.replace.camera']()}</span>
+						<span class="{mono} text-xs font-medium tracking-widest">{m['session.replace.camera']()}</span>
 						<span class="text-[13px] text-muted-foreground">{m['session.replace.camera_hint']()}</span>
 					</span>
 				</a>
@@ -1194,7 +1194,7 @@
 						<RiImageLine aria-hidden="true" class="size-5" />
 					</span>
 					<span class="flex flex-col gap-0.5">
-						<span class="{mono} text-xs font-medium tracking-[0.1em]">
+						<span class="{mono} text-xs font-medium tracking-widest">
 							{replacing ? m['session.upload.loading']() : m['session.replace.gallery']()}
 						</span>
 						<span class="text-[13px] text-muted-foreground">

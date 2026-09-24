@@ -329,7 +329,7 @@
 
 				<div class="flex flex-col items-center gap-2.5">
 					{@render qr('size-41.5 p-2', '-7px', '14px', '2px')}
-					<span class="max-w-42.5 font-mono text-[10px] tracking-[0.1em] text-muted-foreground uppercase">
+					<span class="max-w-42.5 font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
 						{m['session.done.scan_short']()}
 					</span>
 				</div>
@@ -344,7 +344,7 @@
 					href={zip}
 					download
 					disabled={!ready}
-					class="h-13 gap-2.5 font-mono font-medium tracking-[0.1em] {disabled}"
+					class="h-13 gap-2.5 font-mono font-medium tracking-widest {disabled}"
 				>
 					<RiDownload2Line aria-hidden="true" class="size-4.5" />
 					{m['session.done.download_short']()}
@@ -354,7 +354,7 @@
 					variant="outline"
 					onclick={send}
 					disabled={!ready}
-					class="h-13 gap-2.5 border-[1.5px] border-foreground font-mono font-normal tracking-[0.1em]"
+					class="h-13 gap-2.5 border-[1.5px] border-foreground font-mono font-normal tracking-widest"
 				>
 					{#if copied}
 						{@render copyLabel()}
@@ -420,7 +420,7 @@
 						href={zip}
 						download
 						disabled={!ready}
-						class="h-13 gap-2.5 bg-paper px-5.5 font-mono font-medium tracking-[0.1em] text-ink hover:bg-paper-2 {disabled}"
+						class="h-13 gap-2.5 bg-paper px-5.5 font-mono font-medium tracking-widest text-ink hover:bg-paper-2 {disabled}"
 					>
 						<RiDownload2Line aria-hidden="true" class="size-4.5" />
 						{m['session.done.download']()}
@@ -430,14 +430,14 @@
 						variant="outline"
 						onclick={copy}
 						disabled={!ready}
-						class="h-13 gap-2.5 border-[1.5px] border-paper px-5.5 font-mono font-normal tracking-[0.1em]"
+						class="h-13 gap-2.5 border-[1.5px] border-paper px-5.5 font-mono font-normal tracking-widest"
 					>
 						{@render copyLabel()}
 					</Button>
 				</div>
 
 				<div class="flex items-start gap-3 border border-[#3a3936] px-4 py-3.5">
-					<span class="pt-0.5 font-mono text-[11px] tracking-[0.1em] text-primary-text uppercase">
+					<span class="pt-0.5 font-mono text-[11px] tracking-widest text-primary-text uppercase">
 						{m['session.done.important']()}
 					</span>
 					<p class="m-0 text-[13px] leading-[1.55] text-body">{m['session.done.note']()}</p>

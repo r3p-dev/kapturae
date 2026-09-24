@@ -334,7 +334,7 @@
 		>
 			<span class="font-display text-[22px] font-black">{i + 1}</span>
 			{#if waiting}
-				<span class="font-mono text-[10px] tracking-[0.1em] text-body uppercase">
+				<span class="font-mono text-[10px] tracking-widest text-body uppercase">
 					{source === 'upload' ? m['session.upload.waiting']() : m['session.upload.next']()}
 				</span>
 			{/if}
@@ -358,7 +358,7 @@
 	{#if item.status === 'error'}
 		<span class="text-xs leading-snug text-body">{UPLOAD_PROBLEMS[item.problem ?? 'unreadable']()}</span>
 	{:else}
-		<span class="{mono} flex items-center gap-1.5 text-[11px] tracking-[0.1em] text-body">
+		<span class="{mono} flex items-center gap-1.5 text-[11px] tracking-widest text-body">
 			{#if item.status === 'placed'}
 				<RiCheckLine aria-hidden="true" class="size-3.5 text-paper" />
 				{m['session.upload.placed']({ n: item.slot ?? 0 })}
@@ -497,7 +497,7 @@
 							{m['session.upload.pick']()}
 						</label>
 
-						<div class="{mono} flex flex-wrap justify-center gap-2 text-[11px] tracking-[0.1em] text-muted-foreground">
+						<div class="{mono} flex flex-wrap justify-center gap-2 text-[11px] tracking-widest text-muted-foreground">
 							<span class={chip}>{m['session.upload.formats']()}</span>
 							<span class={chip}>{m['session.upload.max_size']({ n: UPLOAD_MAX_MB })}</span>
 							<span class={chip}>{m['session.upload.min_side']({ n: UPLOAD_MIN_SIDE })}</span>
@@ -569,7 +569,7 @@
 							</p>
 						{/if}
 
-						<div class="{mono} flex flex-col items-center gap-1.5 text-[10px] tracking-[0.1em] text-muted-foreground">
+						<div class="{mono} flex flex-col items-center gap-1.5 text-[10px] tracking-widest text-muted-foreground">
 							<span>{m['session.upload.formats']()} · {m['session.upload.max_size']({ n: UPLOAD_MAX_MB })}</span>
 							<span>{m['session.upload.auto_crop']()}</span>
 						</div>
