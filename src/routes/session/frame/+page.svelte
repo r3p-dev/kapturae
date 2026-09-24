@@ -19,9 +19,7 @@
 	const initialSize = initialFrame?.size ?? pick(PRINT_SIZES, params.get('size')) ?? '2x6'
 
 	let browse = $state<PrintSize>(initialSize)
-	let selected = $state<Selection | undefined>(
-		initialFrame && { size: initialFrame.size, frame: initialFrame.id }
-	)
+	let selected = $state<Selection | undefined>(initialFrame && { size: initialFrame.size, frame: initialFrame.id })
 
 	export const snapshot: Snapshot<{ browse: PrintSize; selected?: Selection }> = {
 		capture: () => ({ browse, selected }),
@@ -40,17 +38,13 @@
 	const spec = $derived(SIZES[shown])
 	const facts = $derived([
 		[m['session.frame.size'](), `${spec.label} · ${spec.cm}`],
-		[
-			m['session.frame.shots_label'](),
-			m['session.frame.shots']({ n: chosen?.slots.length ?? spec.shots })
-		],
+		[m['session.frame.shots_label'](), m['session.frame.shots']({ n: chosen?.slots.length ?? spec.shots })],
 		[m['session.frame.theme'](), chosen?.name ?? '—']
 	])
 	const next = $derived(selected && localizeHref(`/session/shoot?${new URLSearchParams(selected)}`))
 
 	const bracket = 'h-3.5 w-1.75 border-2 border-current'
-	const focus =
-		'has-focus-visible:ring-2 has-focus-visible:ring-foreground has-focus-visible:ring-offset-2'
+	const focus = 'has-focus-visible:ring-2 has-focus-visible:ring-foreground has-focus-visible:ring-offset-2'
 </script>
 
 <svelte:head>
@@ -86,9 +80,7 @@
 		<main
 			class="flex min-w-0 flex-1 flex-col gap-4.5 px-4 pt-5 pb-4 rail:gap-5.5 rail:overflow-y-auto rail:px-8 rail:py-9 desktop:px-14"
 		>
-			<p
-				class="m-0 hidden items-center gap-2.5 font-mono text-xs tracking-[0.16em] uppercase rail:flex"
-			>
+			<p class="m-0 hidden items-center gap-2.5 font-mono text-xs tracking-[0.16em] uppercase rail:flex">
 				<span aria-hidden="true" class="{bracket} border-r-0"></span>
 				{m['session.frame.eyebrow'](step)}
 				<span aria-hidden="true" class="{bracket} border-l-0"></span>
@@ -132,14 +124,10 @@
 				{/each}
 			</fieldset>
 
-			<div
-				class="relative flex h-72.5 shrink-0 items-center justify-center bg-[#151514] rail:hidden"
-			>
+			<div class="relative flex h-72.5 shrink-0 items-center justify-center bg-[#151514] rail:hidden">
 				<Corners inset="10px" size="18px" weight="2px" class="text-[#5e5c57]" />
 				{@render preview('[--h:250px]')}
-				<span
-					class="absolute bottom-2.5 left-10 font-mono text-[10px] tracking-widest text-muted-foreground"
-				>
+				<span class="absolute bottom-2.5 left-10 font-mono text-[10px] tracking-widest text-muted-foreground">
 					{spec.cm}
 				</span>
 			</div>
@@ -193,16 +181,12 @@
 
 			<div class="relative flex h-[min(420px,48svh)] shrink-0 items-center justify-center">
 				<Corners size="22px" weight="2px" class="text-[#5e5c57]" />
-				{@render preview(
-					'[--h:min(320px,calc(48svh_-_20px))] desktop:[--h:min(400px,calc(48svh_-_20px))]'
-				)}
+				{@render preview('[--h:min(320px,calc(48svh_-_20px))] desktop:[--h:min(400px,calc(48svh_-_20px))]')}
 			</div>
 
 			<dl class="m-0 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
 				{#each facts as [term, value] (term)}
-					<dt
-						class="pt-0.5 font-mono text-[11px] tracking-[0.12em] text-muted-foreground uppercase"
-					>
+					<dt class="pt-0.5 font-mono text-[11px] tracking-[0.12em] text-muted-foreground uppercase">
 						{term}
 					</dt>
 					<dd class="m-0">{value}</dd>
@@ -217,9 +201,7 @@
 		</aside>
 	</div>
 
-	<div
-		class="sticky bottom-0 flex shrink-0 flex-col gap-2.5 border-t border-[#2a2a28] bg-background p-4 rail:hidden"
-	>
+	<div class="sticky bottom-0 flex shrink-0 flex-col gap-2.5 border-t border-[#2a2a28] bg-background p-4 rail:hidden">
 		{#if !selected}
 			<p class="m-0 text-center text-[13px] text-muted-foreground">
 				{m['session.frame.pick_first']()}

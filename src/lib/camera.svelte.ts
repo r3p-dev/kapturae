@@ -81,9 +81,7 @@ export class Camera {
 
 		ctx.drawImage(video, 0, 0)
 
-		const blob = await new Promise<Blob | null>((resolve) =>
-			canvas.toBlob(resolve, 'image/jpeg', 0.92)
-		)
+		const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', 0.92))
 		if (!blob) throw new Error('Capture failed')
 
 		return URL.createObjectURL(blob)

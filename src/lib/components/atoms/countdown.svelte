@@ -1,19 +1,12 @@
 <script lang="ts">
 	import { cn } from '$lib/utils'
 
-	let {
-		value,
-		class: className,
-		digitClass
-	}: { value: number; class?: string; digitClass?: string } = $props()
+	let { value, class: className, digitClass }: { value: number; class?: string; digitClass?: string } = $props()
 </script>
 
 <div
 	aria-hidden="true"
-	class={cn(
-		'pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-ink/72',
-		className
-	)}
+	class={cn('pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-ink/72', className)}
 >
 	<span
 		class={cn(

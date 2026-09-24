@@ -41,21 +41,13 @@
 
 		<div class="flex flex-wrap justify-center gap-3">
 			<Button onclick={onretry} class="h-11 px-5">{m['session.shoot.camera.retry']()}</Button>
-			<Button
-				href={localizeHref('/legal/camera')}
-				variant="outline"
-				class="h-11 border-foreground px-5"
-			>
+			<Button href={localizeHref('/legal/camera')} variant="outline" class="h-11 border-foreground px-5">
 				{m['session.shoot.camera.help']()}
 			</Button>
 		</div>
 	{:else}
-		<span
-			class="flex items-center gap-2 font-mono text-xs tracking-[0.14em] text-muted-foreground uppercase"
-		>
-			<span
-				aria-hidden="true"
-				class="size-2 animate-rec-blink rounded-full bg-primary motion-reduce:animate-none"
+		<span class="flex items-center gap-2 font-mono text-xs tracking-[0.14em] text-muted-foreground uppercase">
+			<span aria-hidden="true" class="size-2 animate-rec-blink rounded-full bg-primary motion-reduce:animate-none"
 			></span>
 			{m['session.shoot.camera.pending']()}
 		</span>
