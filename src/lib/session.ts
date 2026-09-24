@@ -9,6 +9,7 @@ export type PrintSize = (typeof PRINT_SIZES)[number]
 export type SizeSpec = {
 	label: string
 	cm: string
+	inches: [number, number]
 	shots: number
 	ratio: number
 	pad: number
@@ -22,6 +23,7 @@ export const SIZES: Record<PrintSize, SizeSpec> = {
 	'2x6': {
 		label: '2×6"',
 		cm: '5 × 15 cm',
+		inches: [2, 6],
 		shots: 4,
 		ratio: 1 / 3,
 		pad: 0.08,
@@ -33,6 +35,7 @@ export const SIZES: Record<PrintSize, SizeSpec> = {
 	'4x6': {
 		label: '4×6"',
 		cm: '10 × 15 cm',
+		inches: [4, 6],
 		shots: 4,
 		ratio: 2 / 3,
 		pad: 0.05,
@@ -44,6 +47,7 @@ export const SIZES: Record<PrintSize, SizeSpec> = {
 	'5x7': {
 		label: '5×7"',
 		cm: '13 × 18 cm',
+		inches: [5, 7],
 		shots: 3,
 		ratio: 5 / 7,
 		pad: 0.05,

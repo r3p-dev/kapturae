@@ -28,6 +28,7 @@
 	import {
 		ADJUSTMENTS,
 		FILTER_IDS,
+		FILTER_KEYS,
 		FONTS,
 		FRAME_COLORS,
 		History,
@@ -40,8 +41,10 @@
 		filterTint,
 		type Adjustment,
 		type Edit,
+		type FilterId,
 		type Font,
 		type Item,
+		type SlotEdit,
 		type Tool
 	} from '$lib/editor.svelte'
 	import { FRAMES } from '$lib/frames'
@@ -92,6 +95,12 @@
 	const shown = $derived({ ...frame, src })
 	const photos = $derived(edit.order.map((shot) => shots.photos[shot]))
 	const current = $derived(slot === null ? undefined : edit.slots[slot])
+	const look = $derived(
+		current ??
+			(edit.slots.every((s) => s.filter === edit.slots[0].filter && s.intensity === edit.slots[0].intensity)
+				? edit.slots[0]
+				: undefined)
+	)
 	const hasPhoto = $derived(slot !== null && Boolean(photos[slot]))
 	const preview = $derived((slot !== null && photos[slot]) || photos.find(Boolean))
 	const missing = $derived(shots.photos.length < total)
@@ -145,10 +154,15 @@
 		for (const target of applyAll ? edit.slots : [current]) target[key] = value
 	}
 
+	function setLook<K extends (typeof FILTER_KEYS)[number]>(key: K, value: SlotEdit[K]) {
+		for (const target of applyAll || !current ? edit.slots : [current]) target[key] = value
+	}
+
 	function setApplyAll(on: boolean) {
 		applyAll = on
 		if (!on || !current) return
-		for (const target of edit.slots) for (const key of ADJUSTMENTS) target[key] = current[key]
+		const keys: readonly (keyof SlotEdit)[] = tool === 'filter' ? FILTER_KEYS : ADJUSTMENTS
+		for (const target of edit.slots) for (const key of keys) Object.assign(target, { [key]: current[key] })
 		commit()
 	}
 
@@ -455,6 +469,18 @@
 	</div>
 {/snippet}
 
+{#snippet applyAllToggle()}
+	<label class="flex min-h-11 items-center gap-2.5 text-[13px] text-body">
+		<input
+			type="checkbox"
+			checked={applyAll}
+			onchange={(e) => setApplyAll(e.currentTarget.checked)}
+			class="size-4.5 accent-primary"
+		/>
+		{m['session.edit.apply_all']()}
+	</label>
+{/snippet}
+
 {#snippet removeButton()}
 	<Button variant="outline" onclick={removeItem} class={outline}>
 		<RiDeleteBinLine aria-hidden="true" class="size-4" />
@@ -708,34 +734,36 @@
 						{/each}
 					{/if}
 
-					<label class="flex min-h-11 items-center gap-2.5 text-[13px] text-body">
-						<input
-							type="checkbox"
-							checked={applyAll}
-							onchange={(e) => setApplyAll(e.currentTarget.checked)}
-							class="size-4.5 accent-primary"
-						/>
-						{m['session.edit.apply_all']()}
-					</label>
+					{@render applyAllToggle()}
 				{:else if tool === 'filter'}
-					{@render panelHead(m['session.edit.filter_title']())}
+					{@const filterTitle =
+						slot === null ? m['session.edit.filter_title']() : m['session.edit.filter_title_slot']({ n: slot + 1 })}
+					{@const intensity = look?.intensity ?? 100}
+
+					{@render panelHead(filterTitle)}
+
+					{#if slot === null}
+						<p class="m-0 text-[13px] leading-normal text-muted-foreground">
+							{m['session.edit.filter_pick_slot']()}
+						</p>
+					{/if}
 
 					<ToggleGroup.Root
 						type="single"
 						spacing={2}
-						aria-label={m['session.edit.filter_title']()}
+						aria-label={filterTitle}
 						bind:value={
-							() => edit.filter,
+							() => look?.filter ?? '',
 							(next) => {
 								if (!next) return
-								edit.filter = next as Edit['filter']
+								setLook('filter', next as FilterId)
 								commit()
 							}
 						}
 						class="grid w-full grid-cols-4 gap-2 rail:grid-cols-3 rail:gap-2.5"
 					>
 						{#each FILTER_IDS as id (id)}
-							{@const tint = filterTint(id, edit.intensity)}
+							{@const tint = filterTint(id, intensity)}
 
 							<ToggleGroup.Item
 								value={id}
@@ -743,15 +771,10 @@
 							>
 								<span
 									class="relative block h-14 overflow-hidden bg-[#8a7560] outline-offset-2 outline-primary group-data-[state=on]/toggle:outline-2 rail:h-18"
-									style:filter={preview ? undefined : filterCss(id, edit.intensity)}
+									style:filter={preview ? undefined : filterCss(id, intensity)}
 								>
 									{#if preview}
-										<img
-											src={preview}
-											alt=""
-											class="size-full object-cover"
-											style:filter={filterCss(id, edit.intensity)}
-										/>
+										<img src={preview} alt="" class="size-full object-cover" style:filter={filterCss(id, intensity)} />
 									{/if}
 
 									{#if tint}
@@ -767,17 +790,15 @@
 						{/each}
 					</ToggleGroup.Root>
 
-					{@render range(
-						m['session.edit.intensity'](),
-						String(edit.intensity),
-						edit.intensity,
-						(v) => (edit.intensity = v),
-						{
-							min: 0,
-							max: 100,
-							disabled: edit.filter === 'original'
-						}
-					)}
+					{@render range(m['session.edit.intensity'](), String(intensity), intensity, (v) => setLook('intensity', v), {
+						min: 0,
+						max: 100,
+						disabled: !look || look.filter === 'original'
+					})}
+
+					{#if slot !== null}
+						{@render applyAllToggle()}
+					{/if}
 
 					<p class="m-0 text-xs leading-normal text-muted-foreground">{m['session.edit.filter_note']()}</p>
 				{:else if tool === 'sticker'}

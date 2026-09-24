@@ -22,6 +22,7 @@
 	import CameraStatus from '$lib/components/molecules/camera-status.svelte'
 	import SessionHeader from '$lib/components/organisms/session-header.svelte'
 	import FrameImage from '$lib/components/atoms/frame-image.svelte'
+	import { BurstRecorder } from '$lib/burst'
 	import { Camera } from '$lib/camera.svelte'
 	import { m } from '$lib/paraglide/messages'
 	import { localizeHref } from '$lib/paraglide/runtime'
@@ -30,7 +31,7 @@
 	import { shots, useShots } from '$lib/shots.svelte'
 	import { cn } from '$lib/utils'
 
-	const TIMERS = [3, 5, 10] as const
+	const TIMERS = [3, 5] as const
 	const TICK_MS = 1000
 	const FLASH_MS = 700
 	const FLASH_LEAD_MS = 300
@@ -48,6 +49,7 @@
 	if (browser) useShots(size, frame.id)
 
 	const camera = new Camera()
+	const burst = new BurstRecorder()
 
 	let video = $state<HTMLVideoElement>()
 	let timer = $state<number>(TIMERS[0])
@@ -108,12 +110,20 @@
 	}
 
 	async function snap() {
+		if (video) burst.start(video, camera.mirrored)
+
 		for (let n = timer; n > 0; n--) {
 			phase = n
-			if (!(await wait(TICK_MS))) return false
+			if (!(await wait(TICK_MS))) {
+				burst.cancel()
+				return false
+			}
 		}
 
-		if (camera.status !== 'live' || !video) return false
+		if (camera.status !== 'live' || !video) {
+			burst.cancel()
+			return false
+		}
 
 		if (flash) {
 			if (camera.canTorch) await camera.torch(true)
@@ -128,15 +138,22 @@
 		}
 
 		try {
+			burst.grab()
+			const frames = burst.stop()
 			const url = await camera.capture(video)
 			if (!alive) URL.revokeObjectURL(url)
-			else if (retake === null) shots.photos.push(url)
-			else {
+			else if (retake === null) {
+				shots.photos.push(url)
+				shots.bursts.push(frames)
+			} else {
 				URL.revokeObjectURL(shots.photos[retake])
 				shots.photos[retake] = url
+				shots.bursts[retake] = frames
 				retaken = true
 			}
-		} catch {}
+		} catch {
+			burst.cancel()
+		}
 
 		if (flash) {
 			lit = false
@@ -180,6 +197,7 @@
 
 		return () => {
 			alive = false
+			burst.cancel()
 			camera.stop()
 		}
 	})

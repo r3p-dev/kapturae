@@ -12,6 +12,8 @@ export type SlotEdit = Record<Adjustment, number> & {
 	zoom: number
 	x: number
 	y: number
+	filter: FilterId
+	intensity: number
 }
 
 export const FONTS = ['bold', 'mono', 'serif'] as const
@@ -31,8 +33,6 @@ export type Stroke = { color: string; width: number; points: number[] }
 
 export type Edit = {
 	color: string | null
-	filter: FilterId
-	intensity: number
 	order: number[]
 	slots: SlotEdit[]
 	items: Item[]
@@ -152,6 +152,8 @@ export const blankSlot = (): SlotEdit => ({
 	zoom: ZOOM.min,
 	x: 0,
 	y: 0,
+	filter: 'original',
+	intensity: 100,
 	brightness: 0,
 	contrast: 0,
 	saturation: 0,
@@ -161,13 +163,20 @@ export const blankSlot = (): SlotEdit => ({
 
 export const blankEdit = (slots: number): Edit => ({
 	color: null,
-	filter: 'original',
-	intensity: 100,
 	order: Array.from({ length: slots }, (_, i) => i),
 	slots: Array.from({ length: slots }, blankSlot),
 	items: [],
 	strokes: []
 })
+
+export const GRAIN = `data:image/svg+xml,${encodeURIComponent(
+	'<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>'
+)}`
+
+export const FILTER_KEYS = ['filter', 'intensity'] as const
+
+export const isFiltered = (slot: SlotEdit) =>
+	(slot.filter !== 'original' && slot.intensity > 0) || ADJUSTMENTS.some((key) => slot[key] !== 0)
 
 export function filterCss(filter: FilterId, intensity: number, slot?: SlotEdit) {
 	const k = intensity / 100
@@ -194,6 +203,11 @@ export function panTransform({ zoom, x, y }: SlotEdit) {
 	const z = zoom / 100
 	const t = (v: number) => ((v * (z - 1)) / (2 * z)) * 100
 	return `scale(${z}) translate(${t(x)}%, ${t(y)}%)`
+}
+
+export function panOffset({ zoom, x, y }: SlotEdit) {
+	const z = zoom / 100
+	return { zoom: z, dx: (x * (z - 1)) / 2, dy: (y * (z - 1)) / 2 }
 }
 
 export const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v))

@@ -16,6 +16,10 @@
 	--foreground: var(--ink);
 	--body: #3d3b37;
 	--card: var(--paper);
+	--popover: var(--paper);
+	--popover-foreground: var(--ink);
+	--accent: var(--paper-2);
+	--accent-foreground: var(--ink);
 	--primary: var(--shutter);
 	--primary-foreground: #ffffff;
 	--primary-text: #b02316;
@@ -36,6 +40,10 @@
 	--foreground: var(--paper);
 	--body: #c9c6bf;
 	--card: #1b1b19;
+	--popover: #1b1b19;
+	--popover-foreground: var(--paper);
+	--accent: #262624;
+	--accent-foreground: var(--paper);
 	--secondary: #2e2e2b;
 	--secondary-foreground: var(--paper);
 	--muted: #262624;
@@ -134,6 +142,10 @@
 	--color-primary: var(--primary);
 	--color-primary-text: var(--primary-text);
 	--color-card: var(--card);
+	--color-popover: var(--popover);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
 	--color-foreground: var(--foreground);
 	--color-background: var(--background);
 	--radius-sm: calc(var(--radius) * 0.6);

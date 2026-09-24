@@ -6,6 +6,7 @@
 	import FrameImage from '$lib/components/atoms/frame-image.svelte'
 	import { m } from '$lib/paraglide/messages'
 	import {
+		GRAIN,
 		ITEM_SIZE,
 		ZOOM,
 		clamp,
@@ -50,9 +51,6 @@
 		class?: string
 	} = $props()
 
-	const GRAIN = `url("data:image/svg+xml,${encodeURIComponent(
-		'<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>'
-	)}")`
 	const PAN_STEP = 0.1
 	const MIN_STEP = 0.4
 	const DRAG_SLOP = 4
@@ -70,8 +68,6 @@
 	let carry: { id: number; x: number; y: number; travelled: boolean; picking: boolean } | null = null
 	let ghost = $state<{ x: number; y: number } | null>(null)
 	let resize: { id: number; cx: number; cy: number; dist: number; size: number } | null = null
-
-	const tint = $derived(filterTint(edit.filter, edit.intensity))
 
 	function spread() {
 		const [a, b] = [...pointers.values()]
@@ -341,6 +337,7 @@
 {#snippet photo(i: number)}
 	{#if photos[i]}
 		{@const s = edit.slots[i]}
+		{@const tint = filterTint(s.filter, s.intensity)}
 
 		<img
 			src={photos[i]}
@@ -348,7 +345,7 @@
 			draggable="false"
 			class="absolute inset-0 size-full object-cover"
 			style:transform={panTransform(s)}
-			style:filter={filterCss(edit.filter, edit.intensity, s)}
+			style:filter={filterCss(s.filter, s.intensity, s)}
 		/>
 
 		{#if tint}
@@ -370,7 +367,7 @@
 		{#if s.grain}
 			<span
 				class="absolute inset-0 mix-blend-overlay"
-				style:background-image={GRAIN}
+				style:background-image={`url("${GRAIN}")`}
 				style:opacity={(s.grain / 100) * 0.6}
 			></span>
 		{/if}

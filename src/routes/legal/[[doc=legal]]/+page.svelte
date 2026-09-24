@@ -4,6 +4,7 @@
 	import { resolve } from '$app/paths'
 	import LangSwitch from '$lib/components/molecules/lang-switch.svelte'
 	import Logo from '$lib/components/atoms/logo.svelte'
+	import * as Select from '$lib/components/ui/select'
 	import { LEGAL_DOCS, type LegalDoc } from '$lib/legal'
 	import { m } from '$lib/paraglide/messages'
 	import { localizeHref } from '$lib/paraglide/runtime'
@@ -94,9 +95,9 @@
 	const doc = $derived(docs[slug])
 	const count = $derived(m['legal.count']({ n: pad(LEGAL_DOCS.indexOf(slug) + 1), total: pad(LEGAL_DOCS.length) }))
 
-	function pick(event: Event & { currentTarget: HTMLSelectElement }) {
-		const next = event.currentTarget.value as LegalDoc
-		goto(resolve(href(next) as Pathname), { keepFocus: true, noScroll: true })
+	function pick(next: string) {
+		if (next === slug) return
+		goto(resolve(href(next as LegalDoc) as Pathname), { noScroll: true })
 	}
 
 	const updated = __LEGAL_UPDATED__
@@ -155,20 +156,27 @@
 
 		<main class="flex max-w-230 min-w-0 flex-1 flex-col gap-4.5 px-5 py-6 rail:gap-6 rail:px-20 rail:py-12">
 			<div class="flex flex-col gap-4.5 rail:hidden">
-				<label for="legal-doc" class="font-mono text-[11px] tracking-[0.14em] uppercase">
+				<span id="legal-doc" class="font-mono text-[11px] tracking-[0.14em] uppercase">
 					{m['legal.pick']()}
-				</label>
+				</span>
 
-				<select
-					id="legal-doc"
-					value={slug}
-					onchange={pick}
-					class="h-12 rounded-none border-2 border-ink bg-paper px-3 text-base text-foreground"
-				>
-					{#each LEGAL_DOCS as key (key)}
-						<option value={key}>{docs[key].title()}</option>
-					{/each}
-				</select>
+				<Select.Root type="single" value={slug} onValueChange={pick}>
+					<Select.Trigger
+						aria-labelledby="legal-doc"
+						class="h-12! w-full border-2 border-ink bg-paper px-3 text-base text-foreground focus-visible:border-ink focus-visible:ring-2 focus-visible:ring-ring [&_svg]:size-5! [&_svg]:text-foreground"
+					>
+						{doc.title()}
+					</Select.Trigger>
+
+					<Select.Content class="border-2 border-ink ring-0">
+						{#each LEGAL_DOCS as key, i (key)}
+							<Select.Item value={key} label={docs[key].title()} class="min-h-11 gap-3 text-base">
+								<span class="font-mono text-xs tracking-widest text-muted-foreground">{pad(i + 1)}</span>
+								{docs[key].title()}
+							</Select.Item>
+						{/each}
+					</Select.Content>
+				</Select.Root>
 			</div>
 
 			<p class="m-0 flex items-center gap-2.5 font-mono text-[11px] tracking-[0.16em] uppercase rail:text-xs">

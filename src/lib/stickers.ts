@@ -43,9 +43,10 @@ export function isStickerId(sticker: string): sticker is StickerId {
 	return sticker in SVG
 }
 
-export function stickerSrc(sticker: string) {
+export function stickerSrc(sticker: string, px?: number) {
+	const size = px ? ` width="${px}" height="${px}"` : ''
 	return isStickerId(sticker)
-		? `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">${SVG[sticker]}</svg>`)}`
+		? `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg"${size} viewBox="0 0 24 24">${SVG[sticker]}</svg>`)}`
 		: sticker
 }
 

@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
 	import RiCloseLine from 'remixicon-svelte/icons/close-line'
-	import LangSwitch from '$lib/components/molecules/lang-switch.svelte'
 	import Logo from '$lib/components/atoms/logo.svelte'
 	import { m } from '$lib/paraglide/messages'
 	import { localizeHref } from '$lib/paraglide/runtime'
@@ -77,12 +76,10 @@
 		</ol>
 	</nav>
 
-	<div class="flex items-center gap-3 desktop:w-70 desktop:justify-end">
+	<div class="flex min-w-11 items-center justify-end gap-3 desktop:w-70">
 		{#if action}
 			<div class="rail:hidden">{@render action()}</div>
 		{/if}
-
-		<LangSwitch class={cn('text-xs', action && 'hidden rail:flex')} />
 
 		<a
 			href={home}
