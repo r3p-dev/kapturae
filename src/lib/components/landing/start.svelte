@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button } from '$lib/components/ui/button'
+	import SessionShutter from '$lib/components/organisms/session-shutter.svelte'
 	import { m } from '$lib/paraglide/messages'
 	import Corners from './corners.svelte'
 	import SectionHeading from './section-heading.svelte'
@@ -25,18 +25,9 @@
 		titleClass="leading-[0.9] rail:text-[96px]"
 	/>
 
-	<Button
-		href="#start"
-		variant="ghost"
-		aria-label={m['landing.cta.aria']()}
-		class="size-55 rounded-full border-4 border-ink p-0 hover:bg-transparent"
-	>
-		<span
-			class="flex size-44 items-center justify-center rounded-full bg-primary font-display text-[26px] font-black tracking-[0.06em] text-primary-foreground uppercase font-stretch-118% transition-transform group-hover/button:scale-95"
-		>
-			{m['landing.cta.button']()}
-		</span>
-	</Button>
+	<SessionShutter size="lg" label={m['landing.cta.aria']()} hideStatus>
+		{m['landing.cta.button']()}
+	</SessionShutter>
 
 	<dl class="grid w-full max-w-280 gap-8 tablet:grid-cols-2 tablet:gap-12 rail:grid-cols-4">
 		{#each facts as fact, i (i)}

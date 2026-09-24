@@ -17,6 +17,10 @@
 			"roll": "End of roll · 36/36 · © {year}",
 			"legal": "Legal",
 			"made_by": "Made by"
+		},
+		"shutter": {
+			"loading": "GETTING READY…",
+			"busy": "SHOOTING…"
 		}
 	},
 	"landing": {
@@ -33,9 +37,7 @@
 			"keep": "Results kept 24 hours · Reopen via QR · Then deleted",
 			"shutter_aria": "Try the shutter",
 			"shutter_idle": "PRESS TO TRY",
-			"shutter_busy": "SHOOTING…",
-			"free": "FREE · $0",
-			"click": "CLICK."
+			"free": "FREE · $0"
 		},
 		"flow": {
 			"label": "How it works",
@@ -362,6 +364,52 @@
 				"title": "Operator",
 				"body": "Muhamad Repiyan Riski, Indonesia."
 			}
+		}
+	},
+	"session": {
+		"exit": "Leave session",
+		"steps_aria": "Session steps",
+		"step": "{n} / {total} · {name}",
+		"steps": {
+			"frame": "Frame",
+			"shoot": "Photo",
+			"edit": "Edit",
+			"done": "Done"
+		},
+		"sizes": {
+			"strip": "Strip",
+			"postcard": "Postcard",
+			"portrait": "Portrait"
+		},
+		"frames": {
+			"classic": "Classic White",
+			"film": "Black Film",
+			"christmas": "Christmas",
+			"birthday": "Birthday",
+			"lines": "Minimal Lines",
+			"accent": "Accent Color",
+			"christmas_label": "Merry Christmas",
+			"birthday_label": "Happy Birthday",
+			"lines_label": "[Your text]"
+		},
+		"frame": {
+			"meta_title": "Choose a frame | Kapturae",
+			"meta_description": "Pick a print size and a frame theme before the camera turns on.",
+			"eyebrow": "Step {n} / {total} · Choose a frame",
+			"title": "Size first, then",
+			"title_short": "Size, then",
+			"title_accent": "frame.",
+			"sizes_label": "Print size",
+			"frames_label": "Frame theme",
+			"photos": "{n} photos",
+			"selected": "Selected",
+			"preview": "Preview",
+			"size": "Size",
+			"shots_label": "Photos",
+			"shots": "{n} shots",
+			"theme": "Theme",
+			"cta": "Turn on camera",
+			"note": "The frame locks once the photos are taken. You can still change its color in the editor."
 		}
 	}
 }

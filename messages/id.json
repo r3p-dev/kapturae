@@ -17,6 +17,10 @@
 			"roll": "Rol habis · 36/36 · © {year}",
 			"legal": "Legal",
 			"made_by": "Dibuat oleh"
+		},
+		"shutter": {
+			"loading": "MENYIAPKAN…",
+			"busy": "MEMOTRET…"
 		}
 	},
 	"landing": {
@@ -33,9 +37,7 @@
 			"keep": "Hasil disimpan 24 jam · Buka lagi via QR · Lalu dihapus",
 			"shutter_aria": "Coba jepret",
 			"shutter_idle": "TEKAN UNTUK MENCOBA",
-			"shutter_busy": "MEMOTRET…",
-			"free": "GRATIS · RP0",
-			"click": "KLIK."
+			"free": "GRATIS · RP0"
 		},
 		"flow": {
 			"label": "Cara kerja",
@@ -362,6 +364,52 @@
 				"title": "Pengelola",
 				"body": "Muhamad Repiyan Riski, Indonesia."
 			}
+		}
+	},
+	"session": {
+		"exit": "Keluar dari sesi",
+		"steps_aria": "Tahapan sesi",
+		"step": "{n} / {total} · {name}",
+		"steps": {
+			"frame": "Frame",
+			"shoot": "Foto",
+			"edit": "Edit",
+			"done": "Selesai"
+		},
+		"sizes": {
+			"strip": "Strip",
+			"postcard": "Kartu pos",
+			"portrait": "Potret"
+		},
+		"frames": {
+			"classic": "Klasik Putih",
+			"film": "Film Hitam",
+			"christmas": "Natal",
+			"birthday": "Ulang Tahun",
+			"lines": "Garis Minimal",
+			"accent": "Warna Aksen",
+			"christmas_label": "Selamat Natal",
+			"birthday_label": "Happy Birthday",
+			"lines_label": "[Teks kamu]"
+		},
+		"frame": {
+			"meta_title": "Pilih frame | Kapturae",
+			"meta_description": "Pilih ukuran cetak dan tema frame sebelum kamera menyala.",
+			"eyebrow": "Langkah {n} / {total} · Pilih frame",
+			"title": "Ukuran dulu, lalu",
+			"title_short": "Ukuran, lalu",
+			"title_accent": "frame.",
+			"sizes_label": "Ukuran cetak",
+			"frames_label": "Tema frame",
+			"photos": "{n} foto",
+			"selected": "Dipilih",
+			"preview": "Pratinjau",
+			"size": "Ukuran",
+			"shots_label": "Jumlah foto",
+			"shots": "{n} jepretan",
+			"theme": "Tema",
+			"cta": "Nyalakan kamera",
+			"note": "Frame terkunci setelah foto diambil. Warnanya masih bisa diganti di editor."
 		}
 	}
 }

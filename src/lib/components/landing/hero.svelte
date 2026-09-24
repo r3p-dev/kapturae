@@ -1,27 +1,11 @@
 <script lang="ts">
-	import { onDestroy } from 'svelte'
 	import RiBatteryFill from 'remixicon-svelte/icons/battery-fill'
-	import { Button } from '$lib/components/ui/button'
 	import LangSwitch from '$lib/components/lang-switch.svelte'
 	import Logo from '$lib/components/logo.svelte'
+	import SessionShutter from '$lib/components/organisms/session-shutter.svelte'
 	import { m } from '$lib/paraglide/messages'
 	import Corners from './corners.svelte'
 	import { FRAME_COUNT } from './section-heading.svelte'
-
-	type Phase = 3 | 2 | 1 | 'flash' | null
-
-	const STEP_MS = 700
-
-	let phase = $state<Phase>(null)
-	let timers: ReturnType<typeof setTimeout>[] = []
-
-	function shoot() {
-		if (phase !== null) return
-		const sequence: Phase[] = [3, 2, 1, 'flash', null]
-		timers = sequence.map((next, i) => setTimeout(() => (phase = next), i * STEP_MS))
-	}
-
-	onDestroy(() => timers.forEach(clearTimeout))
 
 	const dial = [
 		{ href: '#flow', stop: '-2', label: m['common.nav.flow'] },
@@ -97,21 +81,7 @@
 			{m['landing.hero.keep']()}
 		</a>
 
-		<div class="flex flex-col items-center gap-3">
-			<Button
-				onclick={shoot}
-				aria-label={m['landing.hero.shutter_aria']()}
-				aria-disabled={phase !== null}
-				variant="ghost"
-				class="size-22 rounded-full border-3 border-foreground p-0 hover:bg-transparent"
-			>
-				<span class="block size-16 rounded-full bg-primary transition-transform group-active/button:scale-90"></span>
-			</Button>
-
-			<span aria-live="polite" class="font-mono text-xs tracking-[0.16em] text-muted-foreground">
-				{phase === null ? m['landing.hero.shutter_idle']() : m['landing.hero.shutter_busy']()}
-			</span>
-		</div>
+		<SessionShutter label={m['landing.hero.shutter_aria']()} idle={m['landing.hero.shutter_idle']()} />
 	</div>
 
 	<footer
@@ -155,26 +125,4 @@
 
 		<span class="hidden pb-5.5 text-right rail:block">FRAME 01 / {String(FRAME_COUNT).padStart(2, '0')}</span>
 	</footer>
-
-	{#if typeof phase === 'number'}
-		<div
-			aria-hidden="true"
-			class="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-ink/72"
-		>
-			<span
-				class="font-display text-[clamp(10rem,26vw,23.75rem)] leading-none font-black text-primary font-stretch-125%"
-			>
-				{phase}
-			</span>
-		</div>
-	{:else if phase === 'flash'}
-		<div
-			aria-hidden="true"
-			class="pointer-events-none absolute inset-0 z-20 flex animate-shutter-flash items-center justify-center bg-white text-ink motion-reduce:animate-none motion-reduce:opacity-90"
-		>
-			<span class="font-display text-[clamp(6rem,14vw,12.5rem)] leading-none font-black font-stretch-125%">
-				{m['landing.hero.click']()}
-			</span>
-		</div>
-	{/if}
 </section>
