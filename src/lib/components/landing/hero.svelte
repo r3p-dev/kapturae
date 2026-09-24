@@ -1,19 +1,16 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte'
-	import { page } from '$app/state'
 	import RiBatteryFill from 'remixicon-svelte/icons/battery-fill'
 	import { Button } from '$lib/components/ui/button'
+	import LangSwitch from '$lib/components/lang-switch.svelte'
 	import Logo from '$lib/components/logo.svelte'
 	import { m } from '$lib/paraglide/messages'
-	import { getLocale, localizeHref, type Locale } from '$lib/paraglide/runtime'
-	import { cn } from '$lib/utils'
 	import Corners from './corners.svelte'
 	import { FRAME_COUNT } from './section-heading.svelte'
 
 	type Phase = 3 | 2 | 1 | 'flash' | null
 
 	const STEP_MS = 700
-	const languages: Locale[] = ['id', 'en']
 
 	let phase = $state<Phase>(null)
 	let timers: ReturnType<typeof setTimeout>[] = []
@@ -62,33 +59,9 @@
 		<span class="flex items-center gap-3.5">
 			<span class="hidden rail:inline">ISO 100 · f/5.6</span>
 
-			<span role="group" aria-label={m['common.lang_label']()} class="flex items-center">
+			<LangSwitch>
 				<span class="mr-2 text-[11px] text-muted-foreground">LANG</span>
-
-				{#each languages as locale (locale)}
-					{@const active = getLocale() === locale}
-
-					<Button
-						href={localizeHref(page.url.pathname, { locale })}
-						data-sveltekit-reload
-						hreflang={locale}
-						lang={locale}
-						aria-current={active ? 'true' : undefined}
-						variant="ghost"
-						size="icon-lg"
-						class="font-mono font-normal tracking-widest hover:bg-transparent"
-					>
-						<span
-							class={cn(
-								'border-[1.5px] border-foreground px-2 py-1 transition-colors',
-								active ? 'bg-foreground text-background' : 'text-foreground hover:bg-foreground/15'
-							)}
-						>
-							{locale.toUpperCase()}
-						</span>
-					</Button>
-				{/each}
-			</span>
+			</LangSwitch>
 
 			<RiBatteryFill aria-hidden="true" class="size-6 mobile:hidden" />
 		</span>
@@ -100,7 +73,7 @@
 			<Logo label={m['common.logo_label']()} class="size-18 text-paper" />
 		</div>
 
-		<span class="-mt-3 font-mono text-xs tracking-[0.2em] text-primary">{m['landing.hero.af']()} </span>
+		<span class="-mt-3 font-mono text-xs tracking-[0.2em] text-primary-text">{m['landing.hero.af']()} </span>
 
 		<h1
 			class="m-0 font-display text-[clamp(3rem,11vw,6.5rem)] leading-[0.88] font-black tracking-[-0.01em] uppercase font-stretch-118%"
@@ -152,7 +125,7 @@
 					{#if stop}
 						<a
 							href={stop.href}
-							class="flex min-h-11 flex-col items-center justify-end gap-0.5 text-foreground no-underline hover:text-primary"
+							class="flex min-h-11 flex-col items-center justify-end gap-0.5 text-foreground no-underline hover:text-primary-text"
 						>
 							<span class="text-[11px] text-muted-foreground">{stop.stop}</span>
 							<span class="text-[13px] tracking-widest">{stop.label()}</span>
@@ -160,7 +133,7 @@
 					{:else}
 						<span
 							aria-hidden="true"
-							class="ml-px flex min-h-11 flex-col items-center justify-end gap-0.5 tracking-normal text-primary"
+							class="ml-px flex min-h-11 flex-col items-center justify-end gap-0.5 tracking-normal text-primary-text"
 						>
 							<span class="text-[11px]">0</span>
 							<span class="text-[13px]">●</span>

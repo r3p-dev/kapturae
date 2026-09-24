@@ -14,7 +14,8 @@
 	const home = localizeHref('/').replace(/(.)\/$/, '$1')
 	const start = `${home}#start`
 	const privacy = `${home}#data`
-	const contact = 'https://instagram.com'
+	const contact = localizeHref('/legal/contact')
+	const deletion = localizeHref('/legal/deletion')
 
 	const bars = ['#6e6c67', '#c9962e', '#2e7d7a', '#2f6b3a', '#7a4a86', '#8e1b12', '#1b2e55']
 
@@ -36,7 +37,7 @@
 				title: m['error.gone.title'](),
 				body: m['error.gone.body'](),
 				primary: { label: m['error.gone.primary'](), href: start },
-				secondary: { label: m['error.gone.secondary'](), href: privacy }
+				secondary: { label: m['error.gone.secondary'](), href: deletion }
 			}
 
 		return {
@@ -56,7 +57,7 @@
 	const meta = $derived([m['error.code']({ status }), time, page.error?.id].filter(Boolean).join(' · '))
 
 	const nav = [
-		{ href: contact, label: m['common.footer.instagram'] },
+		{ href: contact, label: m['legal.contact.title'] },
 		{ href: privacy, label: m['common.footer.privacy'] },
 		{ href: home, label: m['error.nav_home'] }
 	]

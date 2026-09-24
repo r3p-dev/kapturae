@@ -12,10 +12,11 @@
 			"gif": "GIF"
 		},
 		"footer": {
-			"instagram": "Instagram",
 			"how": "How it works",
 			"privacy": "Privacy",
-			"roll": "End of roll · 36/36 · © {year}"
+			"roll": "End of roll · 36/36 · © {year}",
+			"legal": "Legal",
+			"made_by": "Made by"
 		}
 	},
 	"landing": {
@@ -210,6 +211,157 @@
 			"body": "Result links only last 24 hours. That time has passed, so every file has been permanently deleted and can't be recovered.",
 			"primary": "Shoot again, free",
 			"secondary": "Deletion policy"
+		}
+	},
+	"legal": {
+		"meta_title": "{doc} | Kapturae",
+		"meta_description": "Kapturae's privacy policy, terms of service, data deletion, camera permission, and contact details.",
+		"hud": "Legal center",
+		"nav_aria": "Legal documents",
+		"pick": "Legal center · Choose a document",
+		"count": "Document {n} / {total}",
+		"summary": "Summary",
+		"updated": "Updated {date}",
+		"ask": "Still have questions? Contact us",
+		"privacy": {
+			"title": "Privacy Policy",
+			"summary": "We only process the photos you take to make your session results. No account needed. Files and QR codes are deleted automatically after 24 hours.",
+			"processed": {
+				"title": "Data we process",
+				"body": "The photos and GIF frames you take during a session, your frame choice, and your edit settings. We never ask for your name, email, or phone number, and we don't keep technical logs."
+			},
+			"purpose": {
+				"title": "What it's used for",
+				"body": "Placing your photos in a frame, applying your edits, making the GIF, and providing the link and QR code to download your results."
+			},
+			"retention": {
+				"title": "How long it's kept",
+				"body": "Session results uploaded for the QR code are kept for up to 24 hours after the session ends, then deleted automatically. We don't make backups or keep logs, so no copy is left after that."
+			},
+			"sharing": {
+				"title": "Sharing with others",
+				"body": "We don't sell data. Files are stored temporarily on our own server (VPS), rented from WL-Cloud. Anyone who has your QR code or link can open your results while it's active, so share it carefully."
+			},
+			"rights": {
+				"title": "Your rights",
+				"body": "You can delete your results sooner (see the Deletion Policy) or ask us anything through the Contact page."
+			}
+		},
+		"terms": {
+			"title": "Terms of Service",
+			"summary": "Free to use for personal photos. Don't photograph other people without permission or make content that breaks the law.",
+			"service": {
+				"title": "The service",
+				"body": "Kapturae is a free online photobooth. We work to keep it running, but we can't promise it will always be available without interruption."
+			},
+			"prohibited": {
+				"title": "What's not allowed",
+				"body": "Photographing people without their consent, making illegal, explicit, or harassing content, and trying to disrupt or abuse the system."
+			},
+			"ownership": {
+				"title": "Ownership",
+				"body": "The photos you take are yours. Frame designs, stickers, and the site's look belong to Kapturae and may be used for personal purposes. For commercial use, contact us first."
+			},
+			"liability": {
+				"title": "Limitation of liability",
+				"body": "Results you haven't downloaded are gone after 24 hours, and we can't recover them."
+			},
+			"changes": {
+				"title": "Changes & governing law",
+				"body": "These terms may be updated at any time; the date of the latest update is shown above. These terms are governed by the laws of the Republic of Indonesia."
+			}
+		},
+		"deletion": {
+			"title": "Deletion Policy",
+			"summary": "All session files are deleted automatically 24 hours after the session ends. Want it sooner? You can.",
+			"auto": {
+				"title": "Automatic deletion",
+				"body": "Exactly 24 hours after the session ends, every file on the server is deleted and the QR code and link stop working. Deleted files can't be recovered."
+			},
+			"now": {
+				"title": "Delete now",
+				"body": "The results (QR) page has a \"Delete now\" button. Once you confirm, every version of your photos and GIF is deleted right away."
+			},
+			"excluded": {
+				"title": "What isn't deleted",
+				"body": "Files you've already downloaded or shared elsewhere are outside our control. Nothing is left on our server, because we don't keep technical logs or backups."
+			},
+			"manual": {
+				"title": "Manual requests",
+				"body": "If you can't open the results page, contact us and include the session code shown on the results page."
+			}
+		},
+		"camera": {
+			"title": "Camera Permission",
+			"summary": "The camera is only on during a photo session. You can revoke permission at any time in your browser settings.",
+			"why": {
+				"title": "Why we need the camera",
+				"body": "No camera, no photos. Your browser will ask for permission when you reach the Shoot step."
+			},
+			"when": {
+				"title": "When the camera is on",
+				"body": "Only on the photo session page. Your browser or device camera indicator lights up too, and the camera turns off as soon as you leave that page."
+			},
+			"recording": {
+				"title": "Is video recorded?",
+				"body": "No. The live preview is processed on your device and never sent to the server. Only the shots you take are used."
+			},
+			"manage": {
+				"title": "How to allow or revoke it",
+				"body": "Chrome: click the icon to the left of the site address, then change the Camera permission. Safari on iPhone: open Settings, find Safari, then change Camera. Reload the page after changing the permission."
+			},
+			"denied": {
+				"title": "If permission is denied",
+				"body": "The session can't start. We'll show a short guide to turn it back on."
+			}
+		},
+		"data": {
+			"title": "Data Handling",
+			"summary": "Your photo's journey, from camera to deletion.",
+			"capture": {
+				"title": "1 · Preview & shoot",
+				"body": "The camera image is shown and captured right in your browser. Nothing is sent to the server at this step."
+			},
+			"edit": {
+				"title": "2 · Edit",
+				"body": "Filters, stickers, text, and frame colors are applied on your device. The original version is kept so it's available on the results page."
+			},
+			"finish": {
+				"title": "3 · Done",
+				"body": "When the session ends, your results are uploaded over an encrypted connection (HTTPS) to our server (VPS) at WL-Cloud, where your GIF, download file, and QR code are prepared and served to you."
+			},
+			"expiry": {
+				"title": "4 · 24 hours",
+				"body": "The link contains a random code that's hard to guess and isn't indexed by search engines. After 24 hours, everything is deleted."
+			},
+			"cookies": {
+				"title": "Cookies",
+				"body": "We don't use cookies right now. If we ever do, they'll only be functional ones, for example to remember your language. No ads or third-party trackers."
+			}
+		},
+		"contact": {
+			"title": "Contact",
+			"summary": "Questions, abuse reports, or deletion requests? We read every one.",
+			"email": {
+				"title": "Email",
+				"body": "r3p.dev@gmail.com"
+			},
+			"website": {
+				"title": "Website",
+				"body": "r3p.dev"
+			},
+			"deletion": {
+				"title": "Deletion requests",
+				"body": "Include the session code from the results page so we can find your files quickly."
+			},
+			"response": {
+				"title": "Response time",
+				"body": "Usually within 1–2 business days."
+			},
+			"operator": {
+				"title": "Operator",
+				"body": "Muhamad Repiyan Riski, Indonesia."
+			}
 		}
 	}
 }

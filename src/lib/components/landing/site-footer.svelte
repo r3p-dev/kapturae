@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Logo from '$lib/components/logo.svelte'
 	import { m } from '$lib/paraglide/messages'
+	import { localizeHref } from '$lib/paraglide/runtime'
 
 	const year = new Date().getFullYear()
 	const link = 'text-foreground underline underline-offset-4 hover:text-white'
@@ -16,12 +17,13 @@
 	</span>
 
 	<nav class="flex flex-wrap justify-center gap-x-8 gap-y-2 font-mono text-[13px] tracking-[0.12em] uppercase">
-		<a href="https://instagram.com" class={link}>{m['common.footer.instagram']()}</a>
 		<a href="#flow" class={link}>{m['common.footer.how']()}</a>
 		<a href="#data" class={link}>{m['common.footer.privacy']()}</a>
+		<a href={localizeHref('/legal')} class={link}>{m['common.footer.legal']()}</a>
 	</nav>
 
 	<span class="font-mono text-xs tracking-[0.14em] text-muted-foreground uppercase">
-		{m['common.footer.roll']({ year })}
+		{m['common.footer.roll']({ year })} · {m['common.footer.made_by']()}
+		<a href="https://r3p.dev" class={link}>R3P</a>
 	</span>
 </footer>

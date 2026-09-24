@@ -81,7 +81,7 @@
 			<Button
 				href="#frames"
 				variant="ghost"
-				class="h-11 gap-2 px-0 font-mono font-normal tracking-widest hover:bg-transparent hover:text-primary mobile:w-11"
+				class="h-11 gap-2 px-0 font-mono font-normal tracking-widest hover:bg-transparent hover:text-primary-text mobile:w-11"
 			>
 				<RiArrowLeftSLine class="size-4.5 mobile:size-5" />
 				<span class="mobile:sr-only">{m['landing.editor.change_frame']()}</span>
@@ -132,7 +132,7 @@
 				{#each tools as item (item.value)}
 					<ToggleGroup.Item
 						value={item.value}
-						class="h-14 w-13 shrink-0 flex-col gap-1 px-0 font-mono text-[9px] font-normal tracking-[0.06em] text-body hover:bg-secondary data-[state=on]:bg-secondary data-[state=on]:text-primary tablet:w-17 tablet:text-[10px]"
+						class="h-14 w-13 shrink-0 flex-col gap-1 px-0 font-mono text-[9px] font-normal tracking-[0.06em] text-body hover:bg-secondary data-[state=on]:bg-secondary data-[state=on]:text-primary-text tablet:w-17 tablet:text-[10px]"
 					>
 						<item.icon aria-hidden="true" class="size-5" />
 						{item.label()}
@@ -233,7 +233,7 @@
 					{#each filters as item (item.value)}
 						<ToggleGroup.Item
 							value={item.value}
-							class="h-auto min-w-0 flex-col items-stretch gap-1 px-0 font-mono text-[10px] font-normal tracking-normal text-body hover:bg-transparent data-[state=on]:bg-transparent data-[state=on]:text-primary"
+							class="h-auto min-w-0 flex-col items-stretch gap-1 px-0 font-mono text-[10px] font-normal tracking-normal text-body hover:bg-transparent data-[state=on]:bg-transparent data-[state=on]:text-primary-text"
 						>
 							<span
 								class="block h-11 outline-offset-2 outline-primary group-data-[state=on]/toggle:outline-2"

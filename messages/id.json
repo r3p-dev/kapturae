@@ -12,10 +12,11 @@
 			"gif": "GIF"
 		},
 		"footer": {
-			"instagram": "Instagram",
 			"how": "Cara pakai",
 			"privacy": "Privasi",
-			"roll": "Rol habis · 36/36 · © {year}"
+			"roll": "Rol habis · 36/36 · © {year}",
+			"legal": "Legal",
+			"made_by": "Dibuat oleh"
 		}
 	},
 	"landing": {
@@ -210,6 +211,157 @@
 			"body": "Tautan hasil hanya berlaku 24 jam. Waktunya sudah lewat, jadi semua file sudah dihapus permanen dan tidak bisa dipulihkan.",
 			"primary": "Foto lagi, gratis",
 			"secondary": "Kebijakan penghapusan"
+		}
+	},
+	"legal": {
+		"meta_title": "{doc} | Kapturae",
+		"meta_description": "Kebijakan privasi, ketentuan layanan, penghapusan data, izin kamera, dan kontak Kapturae.",
+		"hud": "Pusat legal",
+		"nav_aria": "Dokumen legal",
+		"pick": "Pusat legal · Pilih dokumen",
+		"count": "Dokumen {n} / {total}",
+		"summary": "Ringkasan",
+		"updated": "Diperbarui {date}",
+		"ask": "Masih ada pertanyaan? Hubungi kami",
+		"privacy": {
+			"title": "Kebijakan Privasi",
+			"summary": "Kami hanya memproses foto yang kamu ambil untuk membuat hasil sesimu. Tanpa akun. File dan QR terhapus otomatis setelah 24 jam.",
+			"processed": {
+				"title": "Data yang kami proses",
+				"body": "Foto dan rangkaian GIF yang kamu ambil selama sesi, pilihan frame, serta pengaturan edit. Kami tidak meminta nama, email, atau nomor telepon, dan tidak mencatat log teknis."
+			},
+			"purpose": {
+				"title": "Untuk apa data dipakai",
+				"body": "Menyusun foto ke dalam frame, menerapkan editanmu, membuat GIF, dan menyediakan tautan serta QR untuk mengunduh hasil."
+			},
+			"retention": {
+				"title": "Berapa lama disimpan",
+				"body": "Hasil sesi yang diunggah untuk QR disimpan paling lama 24 jam sejak sesi selesai, lalu dihapus otomatis. Kami tidak membuat cadangan dan tidak menyimpan log, jadi setelah itu tidak ada salinan yang tersisa."
+			},
+			"sharing": {
+				"title": "Berbagi dengan pihak lain",
+				"body": "Kami tidak menjual data. File disimpan sementara di server (VPS) kami sendiri yang disewa dari WL-Cloud. Siapa pun yang memegang QR atau tautanmu bisa membuka hasil selama masih berlaku, jadi bagikan dengan hati-hati."
+			},
+			"rights": {
+				"title": "Hak kamu",
+				"body": "Kamu bisa menghapus hasil lebih cepat (lihat Kebijakan Penghapusan) atau bertanya lewat halaman Kontak."
+			}
+		},
+		"terms": {
+			"title": "Ketentuan Layanan",
+			"summary": "Gratis dipakai untuk foto pribadi. Jangan mengambil foto orang lain tanpa izin atau membuat konten yang melanggar hukum.",
+			"service": {
+				"title": "Layanan",
+				"body": "Kapturae adalah photobooth online gratis. Kami berusaha menjaganya tetap berjalan, tetapi tidak menjamin layanan selalu tersedia tanpa gangguan."
+			},
+			"prohibited": {
+				"title": "Yang tidak boleh",
+				"body": "Memotret orang lain tanpa persetujuan mereka, membuat konten ilegal, eksplisit, atau yang melecehkan, serta mencoba mengganggu atau menyalahgunakan sistem."
+			},
+			"ownership": {
+				"title": "Kepemilikan",
+				"body": "Foto yang kamu ambil adalah milikmu. Desain frame, stiker, dan tampilan situs milik Kapturae dan boleh dipakai untuk keperluan pribadi. Untuk pemakaian komersial, hubungi kami dulu."
+			},
+			"liability": {
+				"title": "Batasan tanggung jawab",
+				"body": "Hasil yang belum diunduh akan hilang setelah 24 jam dan tidak bisa kami pulihkan."
+			},
+			"changes": {
+				"title": "Perubahan & hukum yang berlaku",
+				"body": "Ketentuan ini bisa diperbarui sewaktu-waktu; tanggal pembaruan tertera di atas. Ketentuan ini tunduk pada hukum Republik Indonesia."
+			}
+		},
+		"deletion": {
+			"title": "Kebijakan Penghapusan",
+			"summary": "Semua file sesi terhapus otomatis 24 jam setelah sesi selesai. Ingin lebih cepat? Bisa.",
+			"auto": {
+				"title": "Penghapusan otomatis",
+				"body": "Tepat 24 jam setelah sesi selesai, semua file di server dihapus dan QR serta tautan berhenti berfungsi. File yang sudah terhapus tidak bisa dipulihkan."
+			},
+			"now": {
+				"title": "Hapus sekarang",
+				"body": "Di halaman hasil (QR) ada tombol \"Hapus sekarang\". Setelah dikonfirmasi, semua versi foto dan GIF langsung dihapus."
+			},
+			"excluded": {
+				"title": "Yang tidak ikut terhapus",
+				"body": "File yang sudah kamu unduh atau bagikan ke tempat lain berada di luar kendali kami. Di server kami tidak ada yang tersisa, karena kami tidak menyimpan log teknis maupun cadangan."
+			},
+			"manual": {
+				"title": "Permintaan manual",
+				"body": "Jika tidak bisa membuka halaman hasil, hubungi kami dan sertakan kode sesi yang tertera di halaman hasil."
+			}
+		},
+		"camera": {
+			"title": "Izin Kamera",
+			"summary": "Kamera hanya aktif selama sesi potret berlangsung. Kamu bisa mencabut izinnya kapan saja lewat pengaturan browser.",
+			"why": {
+				"title": "Kenapa kami butuh kamera",
+				"body": "Tanpa kamera, tidak ada foto. Browser akan menanyakan izin saat kamu masuk ke langkah Foto."
+			},
+			"when": {
+				"title": "Kapan kamera menyala",
+				"body": "Hanya di halaman sesi potret. Indikator kamera di browser atau perangkat ikut menyala, dan kamera dimatikan begitu kamu meninggalkan halaman itu."
+			},
+			"recording": {
+				"title": "Apakah video direkam?",
+				"body": "Tidak. Pratinjau langsung diproses di perangkatmu dan tidak pernah dikirim ke server. Hanya gambar yang kamu jepret yang dipakai."
+			},
+			"manage": {
+				"title": "Cara mengizinkan atau mencabut",
+				"body": "Chrome: klik ikon di sebelah kiri alamat situs, lalu atur izin Kamera. Safari di iPhone: buka Pengaturan, cari Safari, lalu atur Kamera. Setelah mengubah izin, muat ulang halaman."
+			},
+			"denied": {
+				"title": "Kalau izin ditolak",
+				"body": "Sesi tidak bisa dimulai. Kami akan menampilkan panduan singkat untuk mengaktifkannya kembali."
+			}
+		},
+		"data": {
+			"title": "Penanganan Data",
+			"summary": "Perjalanan fotomu, dari kamera sampai terhapus.",
+			"capture": {
+				"title": "1 · Pratinjau & jepret",
+				"body": "Gambar dari kamera ditampilkan dan dijepret langsung di browsermu. Belum ada yang dikirim ke server di tahap ini."
+			},
+			"edit": {
+				"title": "2 · Edit",
+				"body": "Filter, stiker, teks, dan warna frame diterapkan di perangkatmu. Versi asli tetap disimpan agar tersedia di halaman hasil."
+			},
+			"finish": {
+				"title": "3 · Selesai",
+				"body": "Saat sesi selesai, hasil diunggah lewat koneksi terenkripsi (HTTPS) ke server (VPS) kami di WL-Cloud. Di sana GIF, file unduhan, dan QR disiapkan lalu disajikan untukmu."
+			},
+			"expiry": {
+				"title": "4 · 24 jam",
+				"body": "Tautan berisi kode acak yang sulit ditebak dan tidak diindeks mesin pencari. Setelah 24 jam, semuanya dihapus."
+			},
+			"cookies": {
+				"title": "Cookie",
+				"body": "Saat ini kami tidak memakai cookie. Kalau nanti dipakai, hanya cookie fungsional, misalnya untuk mengingat pilihan bahasa. Tidak ada iklan atau pelacak pihak ketiga."
+			}
+		},
+		"contact": {
+			"title": "Kontak",
+			"summary": "Ada pertanyaan, laporan penyalahgunaan, atau permintaan hapus? Kami baca semuanya.",
+			"email": {
+				"title": "Email",
+				"body": "r3p.dev@gmail.com"
+			},
+			"website": {
+				"title": "Situs",
+				"body": "r3p.dev"
+			},
+			"deletion": {
+				"title": "Permintaan penghapusan",
+				"body": "Sertakan kode sesi dari halaman hasil agar kami bisa menemukan filenya dengan cepat."
+			},
+			"response": {
+				"title": "Waktu respons",
+				"body": "Biasanya dalam 1–2 hari kerja."
+			},
+			"operator": {
+				"title": "Pengelola",
+				"body": "Muhamad Repiyan Riski, Indonesia."
+			}
 		}
 	}
 }

@@ -18,6 +18,7 @@
 	--card: var(--paper);
 	--primary: var(--shutter);
 	--primary-foreground: #ffffff;
+	--primary-text: #b02316;
 	--secondary: var(--paper-2);
 	--secondary-foreground: var(--ink);
 	--muted: var(--paper-2);
@@ -25,6 +26,7 @@
 	--destructive: oklch(0.577 0.245 27.325);
 	--border: var(--ink);
 	--input: #c9c6bf;
+	--rule: #d8d4cc;
 	--ring: var(--shutter);
 	--radius: 0rem;
 }
@@ -40,6 +42,8 @@
 	--muted-foreground: #a3a09a;
 	--border: #3a3936;
 	--input: #3a3936;
+	--rule: #3a3936;
+	--primary-text: #f47464;
 }
 
 @custom-variant dark (&:is(.dark *));
@@ -84,6 +88,7 @@
 	--color-paper-3: var(--paper-3);
 	--color-ink: var(--ink);
 	--color-body: var(--body);
+	--color-rule: var(--rule);
 	--animate-shutter-flash: shutter-flash 0.7s ease-out forwards;
 	--animate-gif-frame: gif-frame 2s steps(1, end) infinite;
 	--animate-rec-blink: rec-blink 1.2s ease-in-out infinite;
@@ -127,6 +132,7 @@
 	--color-secondary: var(--secondary);
 	--color-primary-foreground: var(--primary-foreground);
 	--color-primary: var(--primary);
+	--color-primary-text: var(--primary-text);
 	--color-card: var(--card);
 	--color-foreground: var(--foreground);
 	--color-background: var(--background);

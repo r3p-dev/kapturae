@@ -60,7 +60,7 @@
 				<span
 					class={cn(
 						'absolute top-2.5 left-3 font-mono text-[11px] tablet:top-3.5 tablet:left-4 tablet:text-xs tablet:tracking-[0.12em]',
-						last && 'text-primary'
+						last && 'text-primary-text'
 					)}
 				>
 					{String(i + 1).padStart(2, '0')}

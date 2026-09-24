@@ -48,7 +48,7 @@
 			<span>T+00:00</span>
 			<span class="h-2.5 grow bg-[repeating-linear-gradient(90deg,var(--ink)_0_1px,transparent_1px_12px)] opacity-50"
 			></span>
-			<span class="text-primary">T+24:00</span>
+			<span class="text-primary-text">T+24:00</span>
 		</div>
 
 		<ol
@@ -86,7 +86,7 @@
 
 			<li class="{card} border-2 border-dashed border-ink">
 				<div class="flex items-center justify-between gap-3">
-					<span class="{time} text-primary">{m['landing.data.deleted.time']()}</span>
+					<span class="{time} text-primary-text">{m['landing.data.deleted.time']()}</span>
 					<RiDeleteBinLine aria-hidden="true" class="size-7 shrink-0" />
 				</div>
 				<h3 class={heading}>{m['landing.data.deleted.title']()}</h3>

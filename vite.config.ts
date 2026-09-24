@@ -4,8 +4,13 @@ import adapter from 'svelte-adapter-bun'
 import { sveltekit } from '@sveltejs/kit/vite'
 import { defineConfig } from 'vite'
 import { paraglideConfig } from './paraglide.config.ts'
+import { legalUpdated } from './scripts/legal-updated.ts'
 
 export default defineConfig({
+	define: {
+		__LEGAL_UPDATED__: JSON.stringify(legalUpdated() ?? null)
+	},
+
 	plugins: [
 		tailwindcss(),
 		sveltekit({
