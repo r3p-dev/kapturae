@@ -66,6 +66,12 @@ export type Frame = {
 	slots: FrameSlot[]
 }
 
+export const INK = { light: '#f4f2ee', dark: '#0e0e0d' }
+
+export function inkOn([r, g, b]: number[]) {
+	return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255 > 0.5 ? INK.dark : INK.light
+}
+
 export function pick<T extends string>(list: readonly T[], value: string | null): T | undefined {
 	return list.find((item) => item === value)
 }

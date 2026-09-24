@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte'
 	import RiCloseLine from 'remixicon-svelte/icons/close-line'
 	import LangSwitch from '$lib/components/molecules/lang-switch.svelte'
 	import Logo from '$lib/components/atoms/logo.svelte'
@@ -8,7 +9,15 @@
 	import { STEP_LABELS } from '$lib/session-messages'
 	import { cn } from '$lib/utils'
 
-	let { step, class: className }: { step: SessionStep; class?: string } = $props()
+	let {
+		step,
+		action,
+		class: className
+	}: {
+		step: SessionStep
+		action?: Snippet
+		class?: string
+	} = $props()
 
 	const home = localizeHref('/').replace(/(.)\/$/, '$1')
 	const pad = (n: number) => String(n).padStart(2, '0')
@@ -31,14 +40,9 @@
 		<RiCloseLine aria-hidden="true" class="size-5" />
 	</a>
 
-	<a
-		href={home}
-		class="hidden items-center gap-3 text-foreground no-underline rail:flex desktop:w-70"
-	>
+	<a href={home} class="hidden items-center gap-3 text-foreground no-underline rail:flex desktop:w-70">
 		<Logo class="size-9 shrink-0 text-paper" />
-		<span
-			class="font-display text-base font-extrabold tracking-[0.04em] uppercase font-stretch-118%"
-		>
+		<span class="font-display text-base font-extrabold tracking-[0.04em] uppercase font-stretch-118%">
 			{m['common.brand']()}
 		</span>
 	</a>
@@ -74,7 +78,11 @@
 	</nav>
 
 	<div class="flex items-center gap-3 desktop:w-70 desktop:justify-end">
-		<LangSwitch class="text-xs" />
+		{#if action}
+			<div class="rail:hidden">{@render action()}</div>
+		{/if}
+
+		<LangSwitch class={cn('text-xs', action && 'hidden rail:flex')} />
 
 		<a
 			href={home}

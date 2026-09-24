@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
 	import { browser } from '$app/environment'
+	import { goto } from '$app/navigation'
 	import { asset } from '$app/paths'
 	import { page } from '$app/state'
 	import RiArrowLeftLine from 'remixicon-svelte/icons/arrow-left-line'
-	import RiArrowRightLine from 'remixicon-svelte/icons/arrow-right-line'
 	import RiCameraSwitchLine from 'remixicon-svelte/icons/camera-switch-line'
 	import RiFlashlightFill from 'remixicon-svelte/icons/flashlight-fill'
 	import RiFlashlightLine from 'remixicon-svelte/icons/flashlight-line'
@@ -22,7 +22,6 @@
 	import CameraStatus from '$lib/components/molecules/camera-status.svelte'
 	import SessionHeader from '$lib/components/organisms/session-header.svelte'
 	import FrameImage from '$lib/components/atoms/frame-image.svelte'
-	import { Button } from '$lib/components/ui/button'
 	import { Camera } from '$lib/camera.svelte'
 	import { m } from '$lib/paraglide/messages'
 	import { localizeHref } from '$lib/paraglide/runtime'
@@ -43,8 +42,8 @@
 	const size = frame.size
 	const spec = SIZES[size]
 	const query = new URLSearchParams({ size, frame: frame.id })
-	const back = localizeHref(`/session/frame?${query}`)
 	const next = localizeHref(`/session/edit?${query}`)
+	const redo = params.has('retake') ? Number(params.get('retake')) : NaN
 
 	if (browser) useShots(size, frame.id)
 
@@ -61,15 +60,17 @@
 
 	const total = frame.slots.length
 	const taken = $derived(shots.photos.length)
-	const complete = $derived(taken >= total)
-	const current = $derived(Math.min(taken + 1, total))
-	const ready = $derived(camera.status === 'live' && phase === null && !complete)
+	const retake = $derived(Number.isInteger(redo) && redo >= 0 && redo < taken ? redo : null)
+	const target = $derived(retake ?? taken)
+	const shotAt = (i: number) => shots.edit?.order[i] ?? i
+	let retaken = $state(false)
+	const complete = $derived(retake === null ? taken >= total : retaken)
+	const current = $derived(Math.min(target + 1, total))
+	const back = $derived(retake === null ? localizeHref(`/session/frame?${query}`) : next)
+	const busy = $derived(phase !== null)
+	const ready = $derived(camera.status === 'live' && !busy && !complete)
 	const hint = $derived(
-		complete
-			? m['session.shoot.hint_done']()
-			: phase !== null
-				? m['session.shoot.hint_busy']()
-				: m['session.shoot.hint_idle']()
+		complete ? m['session.shoot.hint_done']() : busy ? m['session.shoot.hint_busy']() : m['session.shoot.hint_idle']()
 	)
 
 	const hud = $derived(
@@ -82,7 +83,7 @@
 	let guideHeight = $state(0)
 
 	const view = $derived.by(() => {
-		const slot = frame.slots[taken] ?? { x: 0, y: 0, w: 100, h: 100 }
+		const slot = frame.slots[target] ?? { x: 0, y: 0, w: 100, h: 100 }
 		const h = Math.min(guideWidth / ((slot.w / 100) * spec.ratio), guideHeight / (slot.h / 100))
 
 		return {
@@ -95,12 +96,24 @@
 	const wait = (ms: number) => new Promise<boolean>((resolve) => setTimeout(() => resolve(alive), ms))
 
 	async function shoot() {
-		if (!ready || !video) return
+		if (!ready) return
 
+		if (!(await snap()) || !complete) {
+			phase = null
+			return
+		}
+
+		// eslint-disable-next-line svelte/no-navigation-without-resolve
+		goto(next, { replaceState: true })
+	}
+
+	async function snap() {
 		for (let n = timer; n > 0; n--) {
 			phase = n
-			if (!(await wait(TICK_MS))) return
+			if (!(await wait(TICK_MS))) return false
 		}
+
+		if (camera.status !== 'live' || !video) return false
 
 		if (flash) {
 			if (camera.canTorch) await camera.torch(true)
@@ -116,8 +129,13 @@
 
 		try {
 			const url = await camera.capture(video)
-			if (alive) shots.photos.push(url)
-			else URL.revokeObjectURL(url)
+			if (!alive) URL.revokeObjectURL(url)
+			else if (retake === null) shots.photos.push(url)
+			else {
+				URL.revokeObjectURL(shots.photos[retake])
+				shots.photos[retake] = url
+				retaken = true
+			}
 		} catch {}
 
 		if (flash) {
@@ -125,7 +143,7 @@
 			camera.torch(false)
 		}
 
-		if (await wait(FLASH_MS)) phase = null
+		return wait(FLASH_MS)
 	}
 
 	const toggles = $derived([
@@ -177,25 +195,17 @@
 	<meta name="description" content={m['session.shoot.meta_description']()} />
 </svelte:head>
 
-{#snippet nextButton(cls?: string)}
-	<Button
-		href={next}
-		class={cn('h-14 w-full gap-2.5 font-display text-[15px] font-extrabold tracking-[0.06em] font-stretch-112%', cls)}
-	>
-		{m['session.shoot.next']()}
-		<RiArrowRightLine aria-hidden="true" class="size-4.5" />
-	</Button>
-{/snippet}
-
 {#snippet slotPhoto(i: number)}
-	{#if shots.photos[i]}
-		<img src={shots.photos[i]} alt="" class="absolute inset-0 size-full object-cover" />
-	{:else if i === taken && camera.stream}
+	{@const shot = shotAt(i)}
+
+	{#if shot === target && !complete && camera.stream}
 		<CameraFeed
 			stream={camera.stream}
 			mirrored={camera.mirrored}
 			class="absolute inset-0 outline-3 -outline-offset-3 outline-primary"
 		/>
+	{:else if shots.photos[shot]}
+		<img src={shots.photos[shot]} alt="" class="absolute inset-0 size-full object-cover" />
 	{:else}
 		<span class="absolute inset-0 flex items-center justify-center font-display text-[22px] font-black text-[#8c8983]">
 			{i + 1}
@@ -209,7 +219,11 @@
 	<SessionHeader step="shoot" class="hidden rail:flex" />
 
 	<div class="grid h-14 shrink-0 grid-cols-[1fr_auto_1fr] items-center px-2 rail:hidden">
-		<a href={back} aria-label={m['session.shoot.back']()} class={pill}>
+		<a
+			href={back}
+			aria-label={retake === null ? m['session.shoot.back']() : m['session.shoot.back_editor']()}
+			class={pill}
+		>
 			<RiArrowLeftLine aria-hidden="true" class="size-5" />
 		</a>
 
@@ -221,7 +235,7 @@
 			<button
 				type="button"
 				onclick={() => camera.flip()}
-				disabled={phase !== null}
+				disabled={busy}
 				aria-label={m['session.shoot.flip']()}
 				class={cn(pill, 'justify-self-end disabled:opacity-50')}
 			>
@@ -234,9 +248,9 @@
 		{#each { length: total }, i (i)}
 			<span
 				class="h-1 w-10"
-				style:background-color={i === taken && !complete
+				style:background-color={shotAt(i) === target && !complete
 					? 'var(--primary)'
-					: `color-mix(in srgb, ${frame.ink} ${i < taken ? 100 : 30}%, transparent)`}
+					: `color-mix(in srgb, ${frame.ink} ${shots.photos[shotAt(i)] ? 100 : 30}%, transparent)`}
 			></span>
 		{/each}
 	</div>
@@ -284,13 +298,6 @@
 
 			{#if camera.status === 'live'}
 				<div
-					aria-hidden="true"
-					class="pointer-events-none absolute top-1/2 left-1/2 hidden h-40 w-35 -translate-1/2 [--af:18px] rail:block rail:h-65 rail:w-57.5 rail:[--af:26px]"
-				>
-					<Corners size="var(--af)" weight="2px" class="text-primary" />
-				</div>
-
-				<div
 					class="{mono} absolute inset-x-22 top-10 hidden items-center justify-between text-[13px] text-paper rail:flex"
 				>
 					<span class="flex items-center gap-2">
@@ -328,11 +335,7 @@
 			<div
 				class="fixed inset-x-0 bottom-0 z-20 flex h-42 items-center justify-between gap-4 bg-ink/82 px-6 pb-4 rail:absolute rail:h-32 rail:bg-ink/78 rail:px-10 rail:pb-0"
 			>
-				{#if complete}
-					<div class="flex-1 rail:hidden">{@render nextButton()}</div>
-				{/if}
-
-				<div class={cn('w-24 gap-1.5 rail:hidden', complete ? 'hidden' : 'flex')}>
+				<div class="flex w-24 gap-1.5 rail:hidden">
 					{#if taken > 0}
 						<img src={shots.photos[taken - 1]} alt="" class="size-11 border-2 border-paper object-cover" />
 					{/if}
@@ -343,7 +346,7 @@
 					<button
 						type="button"
 						onclick={cycleTimer}
-						disabled={phase !== null}
+						disabled={busy}
 						aria-label={m['session.shoot.timer_cycle']({ n: timer })}
 						class={tile}
 					>
@@ -355,7 +358,7 @@
 						<button
 							type="button"
 							onclick={item.flip}
-							disabled={item.locked && phase !== null}
+							disabled={item.locked && busy}
 							aria-pressed={item.on}
 							aria-label={item.label}
 							title={item.label}
@@ -369,7 +372,7 @@
 						<button
 							type="button"
 							onclick={() => camera.flip()}
-							disabled={phase !== null}
+							disabled={busy}
 							aria-label={m['session.shoot.flip']()}
 							title={m['session.shoot.flip']()}
 							class={tile}
@@ -383,10 +386,10 @@
 					onclick={shoot}
 					aria-label={m['session.shoot.shutter']()}
 					aria-disabled={!ready}
-					class={cn('shrink-0 aria-disabled:opacity-50', complete && 'hidden rail:inline-flex')}
+					class="shrink-0 aria-disabled:opacity-50"
 				/>
 
-				<div class={cn('w-24 justify-end rail:hidden', complete ? 'hidden' : 'flex')}>
+				<div class="flex w-24 justify-end rail:hidden">
 					<Popover.Root>
 						<Popover.Trigger
 							aria-label={m['session.shoot.settings']()}
@@ -405,7 +408,7 @@
 							<button
 								type="button"
 								onclick={cycleTimer}
-								disabled={phase !== null}
+								disabled={busy}
 								aria-label={m['session.shoot.timer_cycle']({ n: timer })}
 								class="group flex w-16 flex-col items-center gap-1 py-1 disabled:opacity-50"
 							>
@@ -419,7 +422,7 @@
 								<button
 									type="button"
 									onclick={item.flip}
-									disabled={item.locked && phase !== null}
+									disabled={item.locked && busy}
 									aria-pressed={item.on}
 									aria-label={item.label}
 									class="group flex w-16 flex-col items-center gap-1 py-1 disabled:opacity-50"
@@ -468,13 +471,9 @@
 				<FrameImage {frame} photo={slotPhoto} />
 			</div>
 
-			{#if complete}
-				{@render nextButton()}
-			{:else}
-				<p class="m-0 self-stretch text-center text-[13px] leading-normal text-muted-foreground">
-					{m['session.shoot.note']()}
-				</p>
-			{/if}
+			<p class="m-0 self-stretch text-center text-[13px] leading-normal text-muted-foreground">
+				{m['session.shoot.note']()}
+			</p>
 		</aside>
 	</div>
 

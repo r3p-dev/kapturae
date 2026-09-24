@@ -2,7 +2,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { PNG } from 'pngjs'
 import type { Plugin } from 'vite'
-import { PRINT_SIZES, type Frame, type FrameSlot, type PrintSize } from '../src/lib/session.ts'
+import { PRINT_SIZES, inkOn, type Frame, type FrameSlot, type PrintSize } from '../src/lib/session.ts'
 
 const DIR = resolve('static/frames')
 const ID = 'virtual:frames'
@@ -13,8 +13,6 @@ const MIN_PIECE = 0.0005
 const MIN_SLOT = 0.01
 const MERGE_OVERLAP = 0.25
 const ROW = 0.05
-
-const INK = { light: '#f4f2ee', dark: '#0e0e0d' }
 
 type Box = { x0: number; y0: number; x1: number; y1: number }
 
@@ -49,12 +47,7 @@ function holes({ width, height, data }: PNG) {
 			box.x1 = Math.max(box.x1, x + 1)
 			box.y1 = Math.max(box.y1, y + 1)
 
-			for (const q of [
-				x > 0 && p - 1,
-				x < width - 1 && p + 1,
-				y > 0 && p - width,
-				y < height - 1 && p + width
-			]) {
+			for (const q of [x > 0 && p - 1, x < width - 1 && p + 1, y > 0 && p - width, y < height - 1 && p + width]) {
 				if (q !== false && open(q)) {
 					seen[q] = 1
 					stack[top++] = q
@@ -73,9 +66,7 @@ function slots(png: PNG): FrameSlot[] {
 	const total = width * height
 
 	const boxes = holes(png).filter(
-		(box) =>
-			box.area >= total * MIN_PIECE &&
-			!(box.x1 - box.x0 >= width * 0.9 && box.y1 - box.y0 >= height * 0.9)
+		(box) => box.area >= total * MIN_PIECE && !(box.x1 - box.x0 >= width * 0.9 && box.y1 - box.y0 >= height * 0.9)
 	)
 
 	for (let merged = true; merged;) {
@@ -124,11 +115,10 @@ function baseColor({ data }: PNG) {
 
 	const key = counts.reduce((best, count, k) => (count > counts[best] ? k : best), 0)
 	const rgb = [0, 1, 2].map((c) => Math.round(sums[key * 3 + c] / Math.max(counts[key], 1)))
-	const [r, g, b] = rgb.map((v) => v / 255)
 
 	return {
 		color: `#${rgb.map((v) => v.toString(16).padStart(2, '0')).join('')}`,
-		ink: 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.5 ? INK.dark : INK.light
+		ink: inkOn(rgb)
 	}
 }
 
@@ -181,8 +171,7 @@ export function frames(): Plugin {
 	function scan(warn: (message: string) => void) {
 		const folders = new Set(readdirSync(DIR))
 		for (const folder of folders) {
-			if (!PRINT_SIZES.includes(folder as PrintSize))
-				warn(`frames/${folder}: not a print size, skipping`)
+			if (!PRINT_SIZES.includes(folder as PrintSize)) warn(`frames/${folder}: not a print size, skipping`)
 		}
 
 		return PRINT_SIZES.filter((size) => folders.has(size)).flatMap((size) =>
