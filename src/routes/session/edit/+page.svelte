@@ -602,7 +602,7 @@
 	<span class="{mono} flex min-w-0 items-center gap-1.5 text-[11px] tracking-[0.08em] text-body">
 		{#if photo.source === 'upload'}
 			<RiUploadLine aria-hidden="true" class="size-3.25 shrink-0" />
-			<span class="truncate">{m['session.source.upload']()}{photo.name ? ` · ${photo.name}` : ''}</span>
+			<span class="truncate">{m['session.source.from_upload']()}{photo.name ? ` · ${photo.name}` : ''}</span>
 		{:else}
 			<RiCameraLine aria-hidden="true" class="size-3.25 shrink-0" />
 			<span class="truncate">{m['session.source.camera']()}</span>

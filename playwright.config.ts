@@ -22,9 +22,9 @@ export default defineConfig({
 	},
 
 	webServer: {
-		command: 'bun build/index.js',
-		url: `http://127.0.0.1:${PORT}/health`,
-		env: { PORT: String(PORT), HOST: '127.0.0.1' },
+		command: 'bun scripts/serve_build.ts',
+		url: `http://127.0.0.1:${PORT}/`,
+		env: { PORT: String(PORT) },
 		reuseExistingServer: !process.env.CI,
 		timeout: 30_000
 	}

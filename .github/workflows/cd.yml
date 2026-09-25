@@ -1,0 +1,73 @@
+name: CD
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+
+    permissions:
+      contents: read
+
+    env:
+      TARGET: apps/kapturae
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          fetch-depth: 0
+
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Install
+        run: bun install --frozen-lockfile
+
+      - name: Build
+        run: bun run build
+
+      - name: Join tailnet
+        uses: tailscale/github-action@v4
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+          ping: ${{ secrets.VPS_HOST }}
+
+      - name: Set up SSH
+        env:
+          HOST: ${{ secrets.VPS_HOST }}
+        run: |
+          install -m 700 -d ~/.ssh
+          cat > ~/.ssh/config <<EOF
+          Host vps
+            HostName $HOST
+            User deploy
+            StrictHostKeyChecking accept-new
+            ServerAliveInterval 15
+          EOF
+
+      - name: Upload hashed assets
+        run: |
+          ssh vps "mkdir -p ~/$TARGET/_app"
+          rsync -rtz --chmod=D755,F644 build/_app/immutable vps:$TARGET/_app/
+
+      - name: Upload pages and service worker
+        run: rsync -rtz --chmod=D755,F644 --delete --exclude '/_app/immutable/' build/ vps:$TARGET/
+
+      - name: Prune assets from old builds
+        run: ssh vps "find ~/$TARGET/_app/immutable -type f -mtime +30 -delete"

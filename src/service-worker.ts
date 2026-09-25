@@ -2,20 +2,23 @@
 /// <reference lib="esnext" />
 /// <reference lib="webworker" />
 /// <reference types="@sveltejs/kit" />
-import { build, files, version } from '$service-worker'
+import { build, files, prerendered, version } from '$service-worker'
 
 const worker = self as unknown as ServiceWorkerGlobalScope
-const CACHE = `kapturae-${version}`
-const SKIPPED = /\.woff$|-(cyrillic|cyrillic-ext|greek|vietnamese)-|^\/og-|\.(br|gz)$/
 
-const PRECACHE = [...build, ...files].filter((path) => !SKIPPED.test(path))
-const PRECACHED = new Set(PRECACHE)
+// `version` changes with every build, so each deploy gets a cache of its own and the previous one is deleted on
+// activate. Nothing from an older build is ever served once a new worker takes over.
+const CACHE = `kapturae-${version}`
+const SKIPPED = /\.woff$|-(cyrillic|cyrillic-ext|greek|vietnamese)-|\/og-|\.(br|gz)$/
+
+const ASSETS = new Set([...build, ...files].filter((path) => !SKIPPED.test(path)))
+const PAGES = new Set(prerendered)
 
 worker.addEventListener('install', (event) => {
 	event.waitUntil(
 		caches
 			.open(CACHE)
-			.then((cache) => cache.addAll(PRECACHE))
+			.then((cache) => cache.addAll([...ASSETS, ...PAGES]))
 			.then(() => worker.skipWaiting())
 	)
 })
@@ -29,7 +32,7 @@ worker.addEventListener('activate', (event) => {
 	)
 })
 
-async function fromNetwork(request: Request) {
+async function networkFirst(request: Request, fallback: string) {
 	const cache = await caches.open(CACHE)
 	try {
 		const response = await fetch(request)
@@ -38,12 +41,18 @@ async function fromNetwork(request: Request) {
 		}
 		return response
 	} catch (error) {
-		const cached = await cache.match(request)
+		const cached = (await cache.match(request)) ?? (await cache.match(fallback))
 		if (cached) {
 			return cached
 		}
 		throw error
 	}
+}
+
+async function cacheFirst(request: Request, path: string) {
+	const cache = await caches.open(CACHE)
+	const cached = await cache.match(path)
+	return cached ?? fetch(request)
 }
 
 worker.addEventListener('fetch', (event) => {
@@ -54,10 +63,10 @@ worker.addEventListener('fetch', (event) => {
 		return
 	}
 
-	if (PRECACHED.has(url.pathname)) {
-		event.respondWith(caches.match(url.pathname).then((cached) => cached ?? fetch(request)))
+	if (ASSETS.has(url.pathname)) {
+		event.respondWith(cacheFirst(request, url.pathname))
 		return
 	}
 
-	event.respondWith(fromNetwork(request))
+	event.respondWith(networkFirst(request, url.pathname))
 })

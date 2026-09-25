@@ -2,13 +2,19 @@ import type { Handle, HandleServerError } from '@sveltejs/kit'
 import { getTextDirection } from '$lib/paraglide/runtime'
 import { paraglideMiddleware } from '$lib/paraglide/server'
 
+const NOT_INDEXED = /^\/(id\/)?session\/|^\/\[fallback\]$/
+
 const handleParaglide: Handle = function ({ event, resolve }) {
+	const isIndexed = !NOT_INDEXED.test(event.url.pathname)
+
 	return paraglideMiddleware(event.request, ({ request, locale }) => {
 		event.request = request
 
 		return resolve(event, {
-			transformPageChunk: ({ html }) =>
-				html.replace('%paraglide.lang%', locale).replace('%paraglide.dir%', getTextDirection(locale))
+			transformPageChunk: ({ html }) => {
+				const page = html.replace('%paraglide.lang%', locale).replace('%paraglide.dir%', getTextDirection(locale))
+				return isIndexed ? page : page.replace('</head>', '\t<meta name="robots" content="noindex" />\n\t</head>')
+			}
 		})
 	})
 }

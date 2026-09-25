@@ -354,7 +354,7 @@
 				{:else}
 					<RiCameraLine aria-hidden="true" class="size-2.75" />
 				{/if}
-				{photo.source === 'upload' ? m['session.source.upload']() : m['session.source.camera']()}
+				{photo.source === 'upload' ? m['session.source.from_upload']() : m['session.source.camera']()}
 			</span>
 		{/if}
 	{:else}

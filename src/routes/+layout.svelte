@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte'
 	import { m } from '$lib/paraglide/messages'
 	import { getLocale, locales } from '$lib/paraglide/runtime'
 	import { SITE, absoluteUrl } from '$lib/seo'
@@ -8,6 +9,10 @@
 
 	const locale = getLocale()
 	const ogLocale = { en: 'en_US', id: 'id_ID' }
+	onMount(() => {
+		import('$lib/session-store').then((store) => store.removeAbandonedSessions()).catch(() => {})
+	})
+
 	const ogAlt = `${SITE.name}: ${[m['landing.hero.title_1'](), m['landing.hero.title_2'](), m['landing.hero.title_3']()].join(' ')}`
 </script>
 

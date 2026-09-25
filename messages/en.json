@@ -219,86 +219,110 @@
 		"ask": "Still have questions? Contact us",
 		"privacy": {
 			"title": "Privacy Policy",
-			"summary": "We only process the photos you take to make your session results. No account needed. Files and QR codes are deleted automatically after 24 hours.",
-			"processed": {
-				"title": "Data we process",
-				"body": "The photos and GIF frames you take during a session, your frame choice, and your edit settings. We never ask for your name, email, or phone number, and we don't keep technical logs."
+			"summary": "Your photos never leave your device. Kapturae has no accounts, no cookies and no trackers, and our web server is set up not to keep access logs.",
+			"device": {
+				"title": "Your photos stay on your device",
+				"body": "Taking photos, editing them, and making the final print, GIF and ZIP all happen inside your browser. No photo, GIF frame or sticker is ever uploaded to Kapturae's servers."
 			},
-			"purpose": {
-				"title": "What it's used for",
-				"body": "Placing your photos in a frame, applying your edits, making the GIF, and providing the link and QR code to download your results."
+			"camera": {
+				"title": "Camera",
+				"body": "Camera access is used only inside your browser, to show the preview and take your photos. The camera image isn't sent anywhere. The Camera Permission page has the details."
 			},
-			"retention": {
-				"title": "How long it's kept",
-				"body": "Session results uploaded for the QR code are kept for up to 24 hours after the session ends, then deleted automatically. We don't make backups or keep logs, so no copy is left after that."
+			"storage": {
+				"title": "Browser storage",
+				"body": "So a reload doesn't lose your work, the current session (your photos, the short bursts used for the GIF, stickers you add and your edits) is kept in this site's storage in your browser: session storage and IndexedDB. The browser also keeps a copy of the app's own files so it works offline. None of this is sent to us."
 			},
-			"sharing": {
-				"title": "Sharing with others",
-				"body": "We don't sell data. Files are stored temporarily on our own server (VPS), rented from WL-Cloud. Anyone who has your QR code or link can open your results while it's active, so share it carefully."
+			"clearing": {
+				"title": "Clearing your data",
+				"body": "Starting a new session, or leaving one with the close button, clears its data. Closing the tab ends the session, and anything it left behind is removed the next time you open Kapturae in the same browser. You can clear everything at any time by deleting this site's data in your browser settings. The Deleting Your Data page explains how."
+			},
+			"server": {
+				"title": "Our server",
+				"body": "Kapturae is hosted on a server (VPS) we rent from WLJ-Cloud. It only sends the app's files to your browser. As with any website, your browser sends your IP address and browser details to receive those files. Our web server is set up not to keep access logs, so we don't record them. The connection passes through WLJ-Cloud's network, which we don't control."
+			},
+			"third_parties": {
+				"title": "Third parties",
+				"body": "Kapturae uses no analytics, advertising, error tracking or payment services, and loads nothing from other websites: fonts and icons come from our own server. When you use Share, the file goes to the app you choose, and that app's own policy applies."
 			},
 			"rights": {
 				"title": "Your rights",
-				"body": "You can delete your results sooner (see the Deletion Policy) or ask us anything through the Contact page."
+				"body": "We don't collect your photos or any personal data, so there is nothing of yours on our side to access, correct or delete. If you have a question about your privacy, contact us."
+			},
+			"changes": {
+				"title": "Changes",
+				"body": "If the way Kapturae handles data changes, this page is updated first and the date above changes with it."
 			}
 		},
 		"terms": {
 			"title": "Terms of Service",
-			"summary": "Free to use for personal photos. Don't photograph other people without permission or make content that breaks the law.",
+			"summary": "Kapturae is free to use. Your photos are yours, and so is the responsibility for them. Don't use it to harm anyone or to break the law.",
 			"service": {
 				"title": "The service",
-				"body": "Kapturae is a free online photobooth. We work to keep it running, but we can't promise it will always be available without interruption."
+				"body": "Kapturae is a free photo booth that runs in your browser. We try to keep it available, but it may change, pause or stop at any time."
+			},
+			"responsibility": {
+				"title": "Your photos, your responsibility",
+				"body": "You own the photos you take, save and share with Kapturae, and you alone are responsible for them. That includes getting consent from everyone who appears in a photo before you take, keep or share it."
+			},
+			"access": {
+				"title": "We can't see your photos",
+				"body": "Kapturae has no access to your photos. They are made and kept on your device, so we can't view, moderate or delete them, including photos you have shared elsewhere."
+			},
+			"watermark": {
+				"title": "The Kapturae name on frames",
+				"body": "Some frames show the Kapturae name as part of their design. It does not mean that Kapturae created, approved or endorses a photo, or is connected with what it shows."
 			},
 			"prohibited": {
 				"title": "What's not allowed",
-				"body": "Photographing people without their consent, making illegal, explicit, or harassing content, and trying to disrupt or abuse the system."
+				"body": "Don't use Kapturae to make or share content that is unlawful, harasses or threatens anyone, or infringes other people's rights, including their privacy, likeness or copyright. Don't try to disrupt or abuse the service."
 			},
-			"ownership": {
-				"title": "Ownership",
-				"body": "The photos you take are yours. Frame designs, stickers, and the site's look belong to Kapturae and may be used for personal purposes. For commercial use, contact us first."
+			"designs": {
+				"title": "Frames and stickers",
+				"body": "Frame designs, stickers and the look of the site belong to Kapturae. You may use them in your own photos for personal purposes. For commercial use, contact us first."
 			},
-			"liability": {
-				"title": "Limitation of liability",
-				"body": "Results you haven't downloaded are gone after 24 hours, and we can't recover them."
+			"warranty": {
+				"title": "No warranty",
+				"body": "Kapturae is provided “as is”, without warranties of any kind. To the extent permitted by applicable law, we are not liable for any loss or damage that comes from using it, including lost photos or edits."
 			},
-			"changes": {
+			"law": {
 				"title": "Changes & governing law",
-				"body": "These terms may be updated at any time; the date of the latest update is shown above. These terms are governed by the laws of the Republic of Indonesia."
+				"body": "These terms may be updated at any time; the date of the latest update is shown above. They are governed by the laws of the Republic of Indonesia."
 			}
 		},
 		"deletion": {
-			"title": "Deletion Policy",
-			"summary": "All session files are deleted automatically 24 hours after the session ends. Want it sooner? You can.",
-			"auto": {
-				"title": "Automatic deletion",
-				"body": "Exactly 24 hours after the session ends, every file on the server is deleted and the QR code and link stop working. Deleted files can't be recovered."
+			"title": "Deleting Your Data",
+			"summary": "Nothing of yours is on our server. Your session lives in your browser, and you decide when it goes.",
+			"cleared": {
+				"title": "When it's cleared for you",
+				"body": "Starting a new session, or leaving one with the close button, clears its photos and edits right away. Closing the tab ends the session; whatever it left behind is removed the next time you open Kapturae in the same browser."
 			},
-			"now": {
-				"title": "Delete now",
-				"body": "The results (QR) page has a \"Delete now\" button. Once you confirm, every version of your photos and GIF is deleted right away."
+			"yourself": {
+				"title": "Clear it yourself",
+				"body": "Delete this site's data in your browser to remove everything at once. Chrome: click the icon to the left of the address, open Site settings, then Delete data. Safari on iPhone: Settings → Apps → Safari → Advanced → Website Data. Firefox: click the padlock, then Clear cookies and site data."
 			},
-			"excluded": {
-				"title": "What isn't deleted",
-				"body": "Files you've already downloaded or shared elsewhere are outside our control. Nothing is left on our server, because we don't keep technical logs or backups."
+			"elsewhere": {
+				"title": "Photos you saved or shared",
+				"body": "Files you downloaded, or sent to another app with Share, are outside Kapturae. Delete them on your device or in that app; we have no way to reach them."
 			},
-			"manual": {
-				"title": "Manual requests",
-				"body": "If you can't open the results page, contact us and include the session code shown on the results page."
+			"requests": {
+				"title": "Asking us to delete something",
+				"body": "We hold no photos and no personal data, so there is nothing for us to delete. You're still welcome to ask us anything through the Contact page."
 			}
 		},
 		"camera": {
 			"title": "Camera Permission",
-			"summary": "The camera is only on during a photo session. You can revoke permission at any time in your browser settings.",
+			"summary": "The camera is only on while you take photos, and its image never leaves your browser. You can revoke permission at any time in your browser settings.",
 			"why": {
 				"title": "Why we need the camera",
-				"body": "No camera, no photos. Your browser will ask for permission when you reach the Shoot step."
+				"body": "No camera, no photos from it. Your browser asks for permission when you reach the Shoot step."
 			},
 			"when": {
 				"title": "When the camera is on",
-				"body": "Only on the photo session page. Your browser or device camera indicator lights up too, and the camera turns off as soon as you leave that page."
+				"body": "Only on the Shoot step, or in the editor while you retake a single photo. Your browser or device shows its camera indicator, and the camera turns off as soon as you leave."
 			},
 			"recording": {
 				"title": "Is video recorded?",
-				"body": "No. The live preview is processed on your device and never sent to the server. Only the shots you take are used."
+				"body": "Not as a video. While the countdown runs, Kapturae keeps a short burst of small frames, up to three seconds, to make the GIF. The burst and the photo stay on your device and are never sent to a server."
 			},
 			"manage": {
 				"title": "How to allow or revoke it",
@@ -306,36 +330,36 @@
 			},
 			"denied": {
 				"title": "If permission is denied",
-				"body": "The session can't start. We'll show a short guide to turn it back on."
+				"body": "The camera can't start, and we show a short guide to turn it back on. You can still add photos from your device instead."
 			}
 		},
 		"data": {
 			"title": "Data Handling",
-			"summary": "Your photo's journey, from camera to deletion.",
+			"summary": "Your photo's journey, from camera to download. It never leaves your device.",
 			"capture": {
 				"title": "1 · Preview & shoot",
-				"body": "The camera image is shown and captured right in your browser. Nothing is sent to the server at this step."
+				"body": "The camera image is shown and captured right in your browser, together with a short burst of frames for the GIF. Nothing is sent to a server."
 			},
 			"edit": {
 				"title": "2 · Edit",
-				"body": "Filters, stickers, text, and frame colors are applied on your device. The original version is kept so it's available on the results page."
+				"body": "Filters, stickers, text and frame colours are applied on your device. The unedited photos are kept too, for the ZIP download."
 			},
 			"finish": {
-				"title": "3 · Done",
-				"body": "When the session ends, your results are uploaded over an encrypted connection (HTTPS) to our server (VPS) at WL-Cloud, where your GIF, download file, and QR code are prepared and served to you."
+				"title": "3 · Download & share",
+				"body": "Your print, GIF and ZIP are put together in your browser and saved straight to your device. Share hands the file to an app you choose. No copy goes to Kapturae."
 			},
-			"expiry": {
-				"title": "4 · 24 hours",
-				"body": "The link contains a random code that's hard to guess and isn't indexed by search engines. After 24 hours, everything is deleted."
+			"storage": {
+				"title": "4 · Until you're done",
+				"body": "While the session is open it's kept in browser storage, so a reload doesn't lose it. A new session, leaving the session or closing the tab clears it. See Deleting Your Data."
 			},
 			"cookies": {
-				"title": "Cookies",
-				"body": "We don't use cookies right now. If we ever do, they'll only be functional ones, for example to remember your language. No ads or third-party trackers."
+				"title": "Cookies & storage",
+				"body": "Kapturae sets no cookies and uses no ads or third-party trackers. Besides the session data above, your browser keeps a copy of the app's own files so it works offline. That copy holds no photos."
 			}
 		},
 		"contact": {
 			"title": "Contact",
-			"summary": "Questions, abuse reports, or deletion requests? We read every one.",
+			"summary": "Questions, feedback, or something not working? We read every message.",
 			"email": {
 				"title": "Email",
 				"body": "r3p.dev@gmail.com"
@@ -344,9 +368,9 @@
 				"title": "Website",
 				"body": "r3p.dev"
 			},
-			"deletion": {
-				"title": "Deletion requests",
-				"body": "Include the session code from the results page so we can find your files quickly."
+			"shared": {
+				"title": "Photos posted online",
+				"body": "We can't see, moderate or remove photos made with Kapturae, because they never reach us. To report a photo posted somewhere, contact the site or app where it appears."
 			},
 			"response": {
 				"title": "Response time",
@@ -409,7 +433,7 @@
 			"hint_busy": "Hold the pose…",
 			"hint_done": "All slots filled",
 			"in_frame": "In the frame",
-			"note": "Mix freely: each slot can come from the camera or an upload. Everything can still be swapped in the editor.",
+			"note": "Mix freely: each slot can come from the camera or from your device. Everything can still be swapped in the editor.",
 			"camera": {
 				"pending": "Starting camera…",
 				"denied_title": "Camera blocked",
@@ -486,7 +510,7 @@
 			"sticker_title": "Stickers",
 			"sticker_add": "Add sticker: {name}",
 			"sticker_upload": "Your sticker",
-			"sticker_upload_add": "Upload a sticker",
+			"sticker_upload_add": "Add sticker from device",
 			"sticker_upload_note": "Add your own image as a sticker. You can crop it and remove the background. It stays on this device.",
 			"sticker_upload_error": "Couldn't read that image. Try a PNG or JPG.",
 			"stickers": {
@@ -616,15 +640,15 @@
 		"source": {
 			"label": "Photo source",
 			"camera": "Camera",
-			"upload": "Upload",
+			"upload": "Add from device",
 			"gallery": "Gallery",
 			"from_camera": "From the camera",
-			"from_upload": "Uploaded"
+			"from_upload": "From device"
 		},
 		"upload": {
-			"label": "Upload photos",
+			"label": "Add photos from device",
 			"filling": "Filling slot",
-			"waiting": "Waiting for upload",
+			"waiting": "Waiting for photos",
 			"next": "Next",
 			"drop_title": "Drop photos here",
 			"drop_body": "Or choose from your device. Several at once is fine — empty slots are filled in order.",
@@ -640,7 +664,7 @@
 			"auto_crop": "Auto-cropped to the slot",
 			"retention": "Photos you add stay in this browser. Nothing is uploaded.",
 			"auto_delete": "Stays on this device",
-			"uploads": "Uploads",
+			"uploads": "From device",
 			"loading": "Processing…",
 			"loading_file": "Processing {name}",
 			"placed": "In slot {n}",
@@ -671,10 +695,10 @@
 			"fill": "Fill this slot",
 			"short": "Replace",
 			"camera": "Retake",
-			"upload": "Upload another",
+			"upload": "Add from device",
 			"note": "Only this slot changes. Other slots and filters stay as they are.",
 			"camera_title": "Replace slot {n} · retake",
-			"upload_title": "Replace slot {n} · upload",
+			"upload_title": "Replace slot {n} · from device",
 			"shutter": "Retake slot {n}",
 			"camera_note": "The camera turns on just for slot {n}. The old photo can still be picked again.",
 			"pick_file": "Choose file",

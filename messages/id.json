@@ -219,86 +219,110 @@
 		"ask": "Masih ada pertanyaan? Hubungi kami",
 		"privacy": {
 			"title": "Kebijakan Privasi",
-			"summary": "Kami hanya memproses foto yang kamu ambil untuk membuat hasil sesimu. Tanpa akun. File dan QR terhapus otomatis setelah 24 jam.",
-			"processed": {
-				"title": "Data yang kami proses",
-				"body": "Foto dan rangkaian GIF yang kamu ambil selama sesi, pilihan frame, serta pengaturan edit. Kami tidak meminta nama, email, atau nomor telepon, dan tidak mencatat log teknis."
+			"summary": "Fotomu tidak pernah meninggalkan perangkatmu. Kapturae tanpa akun, tanpa cookie, tanpa pelacak, dan server web kami diatur untuk tidak menyimpan log akses.",
+			"device": {
+				"title": "Fotomu tetap di perangkatmu",
+				"body": "Mengambil foto, mengeditnya, sampai membuat hasil cetak, GIF, dan ZIP, semuanya terjadi di dalam browsermu. Tidak ada foto, frame GIF, atau stiker yang pernah diunggah ke server Kapturae."
 			},
-			"purpose": {
-				"title": "Untuk apa data dipakai",
-				"body": "Menyusun foto ke dalam frame, menerapkan editanmu, membuat GIF, dan menyediakan tautan serta QR untuk mengunduh hasil."
+			"camera": {
+				"title": "Kamera",
+				"body": "Akses kamera hanya dipakai di dalam browsermu, untuk menampilkan pratinjau dan mengambil foto. Gambar kamera tidak dikirim ke mana pun. Rinciannya ada di halaman Izin Kamera."
 			},
-			"retention": {
-				"title": "Berapa lama disimpan",
-				"body": "Hasil sesi yang diunggah untuk QR disimpan paling lama 24 jam sejak sesi selesai, lalu dihapus otomatis. Kami tidak membuat cadangan dan tidak menyimpan log, jadi setelah itu tidak ada salinan yang tersisa."
+			"storage": {
+				"title": "Penyimpanan browser",
+				"body": "Supaya hasil kerjamu tidak hilang saat halaman dimuat ulang, sesi yang sedang berjalan (foto, rangkaian gambar singkat untuk GIF, stiker yang kamu tambahkan, dan editanmu) disimpan di penyimpanan situs ini di browsermu: session storage dan IndexedDB. Browser juga menyimpan salinan file aplikasi agar tetap bisa dipakai tanpa internet. Semua ini tidak dikirim ke kami."
 			},
-			"sharing": {
-				"title": "Berbagi dengan pihak lain",
-				"body": "Kami tidak menjual data. File disimpan sementara di server (VPS) kami sendiri yang disewa dari WL-Cloud. Siapa pun yang memegang QR atau tautanmu bisa membuka hasil selama masih berlaku, jadi bagikan dengan hati-hati."
+			"clearing": {
+				"title": "Menghapus datamu",
+				"body": "Memulai sesi baru, atau keluar dari sesi lewat tombol tutup, akan menghapus datanya. Menutup tab mengakhiri sesi, dan sisa datanya dihapus saat kamu membuka Kapturae lagi di browser yang sama. Kamu juga bisa menghapus semuanya kapan saja dengan menghapus data situs ini lewat pengaturan browser. Caranya ada di halaman Menghapus Datamu."
+			},
+			"server": {
+				"title": "Server kami",
+				"body": "Kapturae berjalan di server (VPS) yang kami sewa dari WLJ-Cloud. Server itu hanya mengirim file aplikasi ke browsermu. Seperti di situs mana pun, browsermu mengirim alamat IP dan info browser untuk menerima file tersebut. Server web kami diatur untuk tidak menyimpan log akses, jadi kami tidak mencatatnya. Koneksi melewati jaringan WLJ-Cloud, yang tidak kami kendalikan."
+			},
+			"third_parties": {
+				"title": "Pihak ketiga",
+				"body": "Kapturae tidak memakai layanan analitik, iklan, pelacak error, atau pembayaran, dan tidak memuat apa pun dari situs lain: font dan ikon dikirim dari server kami sendiri. Saat kamu memakai tombol Bagikan, file dikirim ke aplikasi yang kamu pilih, dan kebijakan aplikasi itu yang berlaku."
 			},
 			"rights": {
 				"title": "Hak kamu",
-				"body": "Kamu bisa menghapus hasil lebih cepat (lihat Kebijakan Penghapusan) atau bertanya lewat halaman Kontak."
+				"body": "Kami tidak mengumpulkan foto maupun data pribadimu, jadi tidak ada data milikmu di pihak kami untuk diakses, diperbaiki, atau dihapus. Kalau ada pertanyaan soal privasi, hubungi kami."
+			},
+			"changes": {
+				"title": "Perubahan",
+				"body": "Kalau cara Kapturae menangani data berubah, halaman ini diperbarui lebih dulu dan tanggal di atas ikut berubah."
 			}
 		},
 		"terms": {
 			"title": "Ketentuan Layanan",
-			"summary": "Gratis dipakai untuk foto pribadi. Jangan mengambil foto orang lain tanpa izin atau membuat konten yang melanggar hukum.",
+			"summary": "Kapturae gratis dipakai. Fotomu milikmu, begitu pula tanggung jawabnya. Jangan dipakai untuk merugikan orang lain atau melanggar hukum.",
 			"service": {
 				"title": "Layanan",
-				"body": "Kapturae adalah photobooth online gratis. Kami berusaha menjaganya tetap berjalan, tetapi tidak menjamin layanan selalu tersedia tanpa gangguan."
+				"body": "Kapturae adalah photobooth gratis yang berjalan di browser. Kami berusaha menjaganya tetap tersedia, tetapi layanan bisa berubah, berhenti sementara, atau dihentikan kapan saja."
+			},
+			"responsibility": {
+				"title": "Fotomu, tanggung jawabmu",
+				"body": "Foto yang kamu ambil, simpan, dan bagikan dengan Kapturae adalah milikmu, dan sepenuhnya menjadi tanggung jawabmu. Termasuk meminta persetujuan setiap orang yang ada di foto sebelum kamu mengambil, menyimpan, atau membagikannya."
+			},
+			"access": {
+				"title": "Kami tidak bisa melihat fotomu",
+				"body": "Kapturae tidak punya akses ke fotomu. Foto dibuat dan disimpan di perangkatmu, jadi kami tidak bisa melihat, memoderasi, atau menghapusnya, termasuk foto yang sudah kamu bagikan ke tempat lain."
+			},
+			"watermark": {
+				"title": "Nama Kapturae di frame",
+				"body": "Beberapa frame menampilkan nama Kapturae sebagai bagian dari desainnya. Itu tidak berarti Kapturae membuat, menyetujui, atau mendukung sebuah foto, atau terkait dengan isi foto tersebut."
 			},
 			"prohibited": {
 				"title": "Yang tidak boleh",
-				"body": "Memotret orang lain tanpa persetujuan mereka, membuat konten ilegal, eksplisit, atau yang melecehkan, serta mencoba mengganggu atau menyalahgunakan sistem."
+				"body": "Jangan memakai Kapturae untuk membuat atau menyebarkan konten yang melanggar hukum, melecehkan atau mengancam orang lain, atau melanggar hak orang lain, termasuk privasi, citra diri, atau hak cipta mereka. Jangan mencoba mengganggu atau menyalahgunakan layanan."
 			},
-			"ownership": {
-				"title": "Kepemilikan",
-				"body": "Foto yang kamu ambil adalah milikmu. Desain frame, stiker, dan tampilan situs milik Kapturae dan boleh dipakai untuk keperluan pribadi. Untuk pemakaian komersial, hubungi kami dulu."
+			"designs": {
+				"title": "Frame dan stiker",
+				"body": "Desain frame, stiker, dan tampilan situs milik Kapturae. Kamu boleh memakainya di fotomu sendiri untuk keperluan pribadi. Untuk pemakaian komersial, hubungi kami dulu."
 			},
-			"liability": {
-				"title": "Batasan tanggung jawab",
-				"body": "Hasil yang belum diunduh akan hilang setelah 24 jam dan tidak bisa kami pulihkan."
+			"warranty": {
+				"title": "Tanpa jaminan",
+				"body": "Kapturae disediakan “sebagaimana adanya”, tanpa jaminan apa pun. Sejauh diizinkan oleh hukum yang berlaku, kami tidak bertanggung jawab atas kerugian atau kerusakan apa pun akibat pemakaiannya, termasuk foto atau editan yang hilang."
 			},
-			"changes": {
+			"law": {
 				"title": "Perubahan & hukum yang berlaku",
-				"body": "Ketentuan ini bisa diperbarui sewaktu-waktu; tanggal pembaruan tertera di atas. Ketentuan ini tunduk pada hukum Republik Indonesia."
+				"body": "Ketentuan ini bisa diperbarui sewaktu-waktu; tanggal pembaruan terakhir tertera di atas. Ketentuan ini tunduk pada hukum Republik Indonesia."
 			}
 		},
 		"deletion": {
-			"title": "Kebijakan Penghapusan",
-			"summary": "Semua file sesi terhapus otomatis 24 jam setelah sesi selesai. Ingin lebih cepat? Bisa.",
-			"auto": {
-				"title": "Penghapusan otomatis",
-				"body": "Tepat 24 jam setelah sesi selesai, semua file di server dihapus dan QR serta tautan berhenti berfungsi. File yang sudah terhapus tidak bisa dipulihkan."
+			"title": "Menghapus Datamu",
+			"summary": "Tidak ada data milikmu di server kami. Sesimu ada di browser, dan kamu yang menentukan kapan dihapus.",
+			"cleared": {
+				"title": "Kapan dihapus otomatis",
+				"body": "Memulai sesi baru, atau keluar dari sesi lewat tombol tutup, langsung menghapus foto dan editannya. Menutup tab mengakhiri sesi; sisa datanya dihapus saat kamu membuka Kapturae lagi di browser yang sama."
 			},
-			"now": {
-				"title": "Hapus sekarang",
-				"body": "Di halaman hasil (QR) ada tombol \"Hapus sekarang\". Setelah dikonfirmasi, semua versi foto dan GIF langsung dihapus."
+			"yourself": {
+				"title": "Hapus sendiri",
+				"body": "Hapus data situs ini di browsermu untuk menghapus semuanya sekaligus. Chrome: klik ikon di sebelah kiri alamat, buka Setelan situs, lalu Hapus data. Safari di iPhone: Pengaturan → App → Safari → Lanjutan → Data Situs Web. Firefox: klik ikon gembok, lalu Hapus cookie dan data situs."
 			},
-			"excluded": {
-				"title": "Yang tidak ikut terhapus",
-				"body": "File yang sudah kamu unduh atau bagikan ke tempat lain berada di luar kendali kami. Di server kami tidak ada yang tersisa, karena kami tidak menyimpan log teknis maupun cadangan."
+			"elsewhere": {
+				"title": "Foto yang sudah disimpan atau dibagikan",
+				"body": "File yang sudah kamu unduh, atau kirim ke aplikasi lain lewat Bagikan, berada di luar Kapturae. Hapus di perangkatmu atau di aplikasi itu; kami tidak punya cara untuk menjangkaunya."
 			},
-			"manual": {
-				"title": "Permintaan manual",
-				"body": "Jika tidak bisa membuka halaman hasil, hubungi kami dan sertakan kode sesi yang tertera di halaman hasil."
+			"requests": {
+				"title": "Meminta kami menghapus sesuatu",
+				"body": "Kami tidak menyimpan foto maupun data pribadi, jadi tidak ada yang perlu kami hapus. Kamu tetap boleh bertanya apa saja lewat halaman Kontak."
 			}
 		},
 		"camera": {
 			"title": "Izin Kamera",
-			"summary": "Kamera hanya aktif selama sesi potret berlangsung. Kamu bisa mencabut izinnya kapan saja lewat pengaturan browser.",
+			"summary": "Kamera hanya menyala saat kamu memotret, dan gambarnya tidak pernah keluar dari browsermu. Kamu bisa mencabut izinnya kapan saja lewat pengaturan browser.",
 			"why": {
 				"title": "Kenapa kami butuh kamera",
-				"body": "Tanpa kamera, tidak ada foto. Browser akan menanyakan izin saat kamu masuk ke langkah Foto."
+				"body": "Tanpa kamera, tidak ada foto darinya. Browser akan menanyakan izin saat kamu masuk ke langkah Foto."
 			},
 			"when": {
 				"title": "Kapan kamera menyala",
-				"body": "Hanya di halaman sesi potret. Indikator kamera di browser atau perangkat ikut menyala, dan kamera dimatikan begitu kamu meninggalkan halaman itu."
+				"body": "Hanya di langkah Foto, atau di editor saat kamu mengulang satu foto. Indikator kamera di browser atau perangkat ikut menyala, dan kamera mati begitu kamu meninggalkan halaman itu."
 			},
 			"recording": {
 				"title": "Apakah video direkam?",
-				"body": "Tidak. Pratinjau langsung diproses di perangkatmu dan tidak pernah dikirim ke server. Hanya gambar yang kamu jepret yang dipakai."
+				"body": "Tidak sebagai video. Selama hitung mundur, Kapturae menyimpan rangkaian gambar kecil yang singkat, paling lama tiga detik, untuk membuat GIF. Rangkaian gambar dan fotonya tetap di perangkatmu dan tidak pernah dikirim ke server."
 			},
 			"manage": {
 				"title": "Cara mengizinkan atau mencabut",
@@ -306,36 +330,36 @@
 			},
 			"denied": {
 				"title": "Kalau izin ditolak",
-				"body": "Sesi tidak bisa dimulai. Kami akan menampilkan panduan singkat untuk mengaktifkannya kembali."
+				"body": "Kamera tidak bisa dinyalakan, dan kami menampilkan panduan singkat untuk mengaktifkannya kembali. Kamu tetap bisa menambahkan foto dari perangkat."
 			}
 		},
 		"data": {
 			"title": "Penanganan Data",
-			"summary": "Perjalanan fotomu, dari kamera sampai terhapus.",
+			"summary": "Perjalanan fotomu, dari kamera sampai diunduh. Tidak pernah keluar dari perangkatmu.",
 			"capture": {
 				"title": "1 · Pratinjau & jepret",
-				"body": "Gambar dari kamera ditampilkan dan dijepret langsung di browsermu. Belum ada yang dikirim ke server di tahap ini."
+				"body": "Gambar kamera ditampilkan dan dijepret langsung di browsermu, bersama rangkaian gambar singkat untuk GIF. Tidak ada yang dikirim ke server."
 			},
 			"edit": {
 				"title": "2 · Edit",
-				"body": "Filter, stiker, teks, dan warna frame diterapkan di perangkatmu. Versi asli tetap disimpan agar tersedia di halaman hasil."
+				"body": "Filter, stiker, teks, dan warna frame diterapkan di perangkatmu. Foto yang belum diedit juga tetap disimpan untuk unduhan ZIP."
 			},
 			"finish": {
-				"title": "3 · Selesai",
-				"body": "Saat sesi selesai, hasil diunggah lewat koneksi terenkripsi (HTTPS) ke server (VPS) kami di WL-Cloud. Di sana GIF, file unduhan, dan QR disiapkan lalu disajikan untukmu."
+				"title": "3 · Unduh & bagikan",
+				"body": "Hasil cetak, GIF, dan ZIP disusun di browsermu dan langsung disimpan ke perangkatmu. Tombol Bagikan mengirim file ke aplikasi yang kamu pilih. Tidak ada salinan yang dikirim ke Kapturae."
 			},
-			"expiry": {
-				"title": "4 · 24 jam",
-				"body": "Tautan berisi kode acak yang sulit ditebak dan tidak diindeks mesin pencari. Setelah 24 jam, semuanya dihapus."
+			"storage": {
+				"title": "4 · Sampai kamu selesai",
+				"body": "Selama sesi berjalan, datanya disimpan di penyimpanan browser supaya tidak hilang saat halaman dimuat ulang. Sesi baru, keluar dari sesi, atau menutup tab akan menghapusnya. Lihat Menghapus Datamu."
 			},
 			"cookies": {
-				"title": "Cookie",
-				"body": "Saat ini kami tidak memakai cookie. Kalau nanti dipakai, hanya cookie fungsional, misalnya untuk mengingat pilihan bahasa. Tidak ada iklan atau pelacak pihak ketiga."
+				"title": "Cookie & penyimpanan",
+				"body": "Kapturae tidak memasang cookie dan tidak memakai iklan atau pelacak pihak ketiga. Selain data sesi di atas, browsermu menyimpan salinan file aplikasi agar tetap bisa dipakai tanpa internet. Salinan itu tidak berisi foto."
 			}
 		},
 		"contact": {
 			"title": "Kontak",
-			"summary": "Ada pertanyaan, laporan penyalahgunaan, atau permintaan hapus? Kami baca semuanya.",
+			"summary": "Ada pertanyaan, masukan, atau sesuatu yang tidak berjalan? Kami baca semua pesan.",
 			"email": {
 				"title": "Email",
 				"body": "r3p.dev@gmail.com"
@@ -344,9 +368,9 @@
 				"title": "Situs",
 				"body": "r3p.dev"
 			},
-			"deletion": {
-				"title": "Permintaan penghapusan",
-				"body": "Sertakan kode sesi dari halaman hasil agar kami bisa menemukan filenya dengan cepat."
+			"shared": {
+				"title": "Foto yang diunggah ke internet",
+				"body": "Kami tidak bisa melihat, memoderasi, atau menghapus foto yang dibuat dengan Kapturae, karena foto itu tidak pernah sampai ke kami. Untuk melaporkan foto yang diunggah di suatu tempat, hubungi situs atau aplikasi tempat foto itu muncul."
 			},
 			"response": {
 				"title": "Waktu respons",
@@ -409,7 +433,7 @@
 			"hint_busy": "Tahan pose…",
 			"hint_done": "Semua slot terisi",
 			"in_frame": "Di dalam frame",
-			"note": "Boleh campur: tiap slot bisa dari kamera atau upload. Semuanya tetap bisa diganti di editor.",
+			"note": "Boleh campur: tiap slot bisa dari kamera atau dari perangkat. Semuanya tetap bisa diganti di editor.",
 			"camera": {
 				"pending": "Menyalakan kamera…",
 				"denied_title": "Kamera diblokir",
@@ -486,7 +510,7 @@
 			"sticker_title": "Stiker",
 			"sticker_add": "Tambah stiker: {name}",
 			"sticker_upload": "Stiker kamu",
-			"sticker_upload_add": "Unggah stiker",
+			"sticker_upload_add": "Tambah stiker dari perangkat",
 			"sticker_upload_note": "Pakai gambarmu sendiri sebagai stiker. Kamu bisa memotongnya dan menghapus latarnya. Gambarnya tetap di perangkat ini.",
 			"sticker_upload_error": "Gambar itu tidak bisa dibaca. Coba PNG atau JPG.",
 			"stickers": {
@@ -616,15 +640,15 @@
 		"source": {
 			"label": "Sumber foto",
 			"camera": "Kamera",
-			"upload": "Upload",
+			"upload": "Tambah dari perangkat",
 			"gallery": "Galeri",
 			"from_camera": "Dari kamera",
-			"from_upload": "Dari upload"
+			"from_upload": "Dari perangkat"
 		},
 		"upload": {
-			"label": "Upload foto",
+			"label": "Tambah foto dari perangkat",
 			"filling": "Mengisi slot",
-			"waiting": "Menunggu upload",
+			"waiting": "Menunggu foto",
 			"next": "Berikutnya",
 			"drop_title": "Seret foto ke sini",
 			"drop_body": "Atau pilih dari perangkatmu. Bisa beberapa sekaligus — slot yang masih kosong diisi berurutan.",
@@ -640,7 +664,7 @@
 			"auto_crop": "Dipotong otomatis ke rasio slot",
 			"retention": "Foto yang kamu tambahkan tetap di browser ini. Tidak ada yang diunggah.",
 			"auto_delete": "Tetap di perangkat ini",
-			"uploads": "Unggahan",
+			"uploads": "Dari perangkat",
 			"loading": "Memproses…",
 			"loading_file": "Memproses {name}",
 			"placed": "Masuk slot {n}",
@@ -671,10 +695,10 @@
 			"fill": "Isi slot ini",
 			"short": "Ganti foto",
 			"camera": "Jepret ulang",
-			"upload": "Upload foto lain",
+			"upload": "Tambah dari perangkat",
 			"note": "Hanya slot ini yang berganti. Slot lain dan filter tetap aman.",
 			"camera_title": "Ganti slot {n} · jepret ulang",
-			"upload_title": "Ganti slot {n} · upload",
+			"upload_title": "Ganti slot {n} · dari perangkat",
 			"shutter": "Jepret ulang slot {n}",
 			"camera_note": "Kamera menyala lagi hanya untuk slot {n}. Foto yang lama tetap bisa dipilih kembali.",
 			"pick_file": "Pilih file",

@@ -36,10 +36,11 @@ describe('network surface', () => {
 		expect(external).toEqual([])
 	})
 
-	test('the only server endpoints are the health check and the sitemap', () => {
-		const endpoints = [...new Glob('src/routes/**/+{server,page.server,layout.server}.ts').scanSync()].sort()
+	test('the only endpoint is the sitemap, rendered at build time', () => {
+		const endpoints = [...new Glob('src/routes/**/+{server,page.server,layout.server}.ts').scanSync()]
 
-		expect(endpoints).toEqual(['src/routes/health/+server.ts', 'src/routes/sitemap.xml/+server.ts'])
+		expect(endpoints).toEqual(['src/routes/sitemap.xml/+server.ts'])
+		expect(readFileSync(endpoints[0], 'utf8')).toContain('export const prerender = true')
 	})
 
 	test('no endpoint accepts uploads', () => {

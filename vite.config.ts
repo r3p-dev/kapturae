@@ -1,11 +1,24 @@
 import { paraglideVitePlugin } from '@inlang/paraglide-js'
 import tailwindcss from '@tailwindcss/vite'
-import adapter from 'svelte-adapter-bun'
+import adapter from '@sveltejs/adapter-static'
 import { sveltekit } from '@sveltejs/kit/vite'
 import { defineConfig } from 'vite'
 import { paraglideConfiguration } from './paraglide.config.ts'
 import { frames } from './scripts/frames.ts'
 import { legalUpdated } from './scripts/legal_updated.ts'
+import { LEGAL_DOCUMENTS } from './src/lib/legal.ts'
+
+type Path = `/${string}`
+
+const PAGES: Path[] = [
+	'/',
+	'/legal',
+	...LEGAL_DOCUMENTS.map((document): Path => `/legal/${document}`),
+	'/session/frame',
+	'/session/shoot',
+	'/session/edit',
+	'/session/done'
+]
 
 export default defineConfig({
 	define: {
@@ -31,7 +44,9 @@ export default defineConfig({
 				}
 			},
 
-			adapter: adapter(),
+			adapter: adapter({ fallback: '404.html', precompress: true, strict: true }),
+
+			version: { pollInterval: 5 * 60 * 1000 },
 
 			csp: {
 				mode: 'auto',
@@ -47,12 +62,12 @@ export default defineConfig({
 					'manifest-src': ['self'],
 					'object-src': ['none'],
 					'base-uri': ['self'],
-					'form-action': ['self'],
-					'frame-ancestors': ['none']
+					'form-action': ['self']
 				}
 			},
 
 			prerender: {
+				entries: [...PAGES, ...PAGES.map((path): Path => (path === '/' ? '/id' : `/id${path}`)), '/sitemap.xml'],
 				handleHttpError: 'fail',
 				handleMissingId: 'fail'
 			}

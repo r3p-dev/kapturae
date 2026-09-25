@@ -25,11 +25,14 @@
 			title: m['legal.privacy.title'],
 			summary: m['legal.privacy.summary'],
 			sections: [
-				[m['legal.privacy.processed.title'], m['legal.privacy.processed.body']],
-				[m['legal.privacy.purpose.title'], m['legal.privacy.purpose.body']],
-				[m['legal.privacy.retention.title'], m['legal.privacy.retention.body']],
-				[m['legal.privacy.sharing.title'], m['legal.privacy.sharing.body']],
-				[m['legal.privacy.rights.title'], m['legal.privacy.rights.body']]
+				[m['legal.privacy.device.title'], m['legal.privacy.device.body']],
+				[m['legal.privacy.camera.title'], m['legal.privacy.camera.body']],
+				[m['legal.privacy.storage.title'], m['legal.privacy.storage.body']],
+				[m['legal.privacy.clearing.title'], m['legal.privacy.clearing.body']],
+				[m['legal.privacy.server.title'], m['legal.privacy.server.body']],
+				[m['legal.privacy.third_parties.title'], m['legal.privacy.third_parties.body']],
+				[m['legal.privacy.rights.title'], m['legal.privacy.rights.body']],
+				[m['legal.privacy.changes.title'], m['legal.privacy.changes.body']]
 			]
 		},
 		terms: {
@@ -37,20 +40,23 @@
 			summary: m['legal.terms.summary'],
 			sections: [
 				[m['legal.terms.service.title'], m['legal.terms.service.body']],
+				[m['legal.terms.responsibility.title'], m['legal.terms.responsibility.body']],
+				[m['legal.terms.access.title'], m['legal.terms.access.body']],
+				[m['legal.terms.watermark.title'], m['legal.terms.watermark.body']],
 				[m['legal.terms.prohibited.title'], m['legal.terms.prohibited.body']],
-				[m['legal.terms.ownership.title'], m['legal.terms.ownership.body']],
-				[m['legal.terms.liability.title'], m['legal.terms.liability.body']],
-				[m['legal.terms.changes.title'], m['legal.terms.changes.body']]
+				[m['legal.terms.designs.title'], m['legal.terms.designs.body']],
+				[m['legal.terms.warranty.title'], m['legal.terms.warranty.body']],
+				[m['legal.terms.law.title'], m['legal.terms.law.body']]
 			]
 		},
 		deletion: {
 			title: m['legal.deletion.title'],
 			summary: m['legal.deletion.summary'],
 			sections: [
-				[m['legal.deletion.auto.title'], m['legal.deletion.auto.body']],
-				[m['legal.deletion.now.title'], m['legal.deletion.now.body']],
-				[m['legal.deletion.excluded.title'], m['legal.deletion.excluded.body']],
-				[m['legal.deletion.manual.title'], m['legal.deletion.manual.body']]
+				[m['legal.deletion.cleared.title'], m['legal.deletion.cleared.body']],
+				[m['legal.deletion.yourself.title'], m['legal.deletion.yourself.body']],
+				[m['legal.deletion.elsewhere.title'], m['legal.deletion.elsewhere.body']],
+				[m['legal.deletion.requests.title'], m['legal.deletion.requests.body']]
 			]
 		},
 		camera: {
@@ -71,7 +77,7 @@
 				[m['legal.data.capture.title'], m['legal.data.capture.body']],
 				[m['legal.data.edit.title'], m['legal.data.edit.body']],
 				[m['legal.data.finish.title'], m['legal.data.finish.body']],
-				[m['legal.data.expiry.title'], m['legal.data.expiry.body']],
+				[m['legal.data.storage.title'], m['legal.data.storage.body']],
 				[m['legal.data.cookies.title'], m['legal.data.cookies.body']]
 			]
 		},
@@ -81,7 +87,7 @@
 			sections: [
 				[m['legal.contact.email.title'], m['legal.contact.email.body'], `mailto:${m['legal.contact.email.body']()}`],
 				[m['legal.contact.website.title'], m['legal.contact.website.body'], 'https://r3p.dev'],
-				[m['legal.contact.deletion.title'], m['legal.contact.deletion.body']],
+				[m['legal.contact.shared.title'], m['legal.contact.shared.body']],
 				[m['legal.contact.response.title'], m['legal.contact.response.body']],
 				[m['legal.contact.operator.title'], m['legal.contact.operator.body']]
 			]

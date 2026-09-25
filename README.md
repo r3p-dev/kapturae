@@ -19,11 +19,11 @@ leave the device: capture, editing and export all happen in the browser. The ser
 
 ## How photos stay on the device
 
-- No server route accepts data. The only endpoints are `/health` and `/sitemap.xml`.
+- There is no server code. The site is static files served by Caddy, so nothing can receive a photo.
 - While a session is open, its state is kept in `sessionStorage`, and the photos themselves in IndexedDB, so a reload
   doesn't lose work. Starting a new session or leaving it clears both. If a tab is closed mid-session, whatever it left
   in IndexedDB is deleted the next time the site is opened. Web Locks tell open tabs apart from closed ones.
-- The Content Security Policy sets `connect-src 'self'`.
+- Every page carries a Content Security Policy with `connect-src 'self'`.
 - A service worker caches the app's own files, so once the page has loaded a whole session works offline. It never
   touches photos.
 
@@ -42,11 +42,12 @@ bun run dev
 | Command              | What it does                                                                                         |
 | -------------------- | ---------------------------------------------------------------------------------------------------- |
 | `bun run dev`        | Dev server                                                                                           |
-| `bun run build`      | Production build into `build/`                                                                       |
+| `bun run build`      | Static site in `build/`                                                                              |
+| `bun run serve`      | Serve `build/` on port 4173 with the same routing and headers as production                          |
 | `bun run check`      | Type-check Svelte, TypeScript and the build scripts                                                  |
 | `bun run lint`       | Prettier and ESLint                                                                                  |
 | `bun run test`       | Unit tests                                                                                           |
-| `bun run test:build` | Build, then test the running server: headers, SEO tags, sitemap, JavaScript budget                   |
+| `bun run test:build` | Build, then test the output: CSP, SEO tags, sitemap, caching, JavaScript budget                      |
 | `bun run test:e2e`   | Build, then run Playwright with a fake camera (install once with `bunx playwright install chromium`) |
 
 The home page has to stay under 96 KB of gzipped JavaScript. `test:build` measures every route and fails when one grows
@@ -71,13 +72,29 @@ Put a PNG in `static/frames/2x6`, `4x6` or `5x7`. Photos go wherever the image i
 finds those areas at build time, orders them top to bottom and left to right, and takes the frame's name from the file
 name. No list to update.
 
-## Running in production
+## Deployment
 
-`bun run build` produces a Bun server in `build/`. Start it with `bun build/index.js`. It listens on `PORT` (default 3000) and `HOST`. The `Dockerfile` builds the same thing into an image. The server keeps no files, so the container
-needs no volume.
+`bun run build` writes a static site to `build/`: prerendered pages for the landing page and legal documents, and a
+client-rendered page for each session step. Pushes to `main` that pass CI are deployed by `.github/workflows/cd.yml`,
+which builds and copies `build/` over SSH to `~/apps/kapturae` on the VPS. Hashed assets are copied first and kept for
+30 days, so a tab still running the previous build can finish its session.
 
-The "last updated" date on the legal pages comes from git history. When building without it, pass `LEGAL_UPDATED`
-(`YYYY-MM-DD`).
+Caddy serves the directory with the site block in `deploy/Caddyfile`. The Content Security Policy lives in a `<meta>`
+tag on each page, with hashes for SvelteKit's inline scripts. Caddy adds only what a `<meta>` tag can't carry
+(`frame-ancestors`), plus the other security and cache headers. `bun run serve` applies the same rules locally, and
+`test:build` checks that the two stay in sync.
+
+The workflow needs these repository secrets:
+
+| Secret            | Value                                                                          |
+| ----------------- | ------------------------------------------------------------------------------ |
+| `VPS_HOST`        | The server's hostname or IP                                                    |
+| `VPS_PORT`        | SSH port (22 if left empty)                                                    |
+| `VPS_SSH_KEY`     | Private key for the `deploy` user                                              |
+| `VPS_KNOWN_HOSTS` | Output of `ssh-keyscan -p <port> <host>`, pinned so the connection is verified |
+
+The "last updated" date on the legal pages comes from git history, which is why CI and CD check out the full history.
+When building without it, pass `LEGAL_UPDATED` (`YYYY-MM-DD`).
 
 ## Getting found on Google
 

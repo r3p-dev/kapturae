@@ -156,7 +156,7 @@ test('work survives a reload and is cleared by a new session', async ({ page }) 
 	expect(await mediaCount(page)).toBe(0)
 })
 
-test('media left by a closed tab is removed on the next visit', async ({ context }) => {
+test('media left by a closed tab is removed on the next visit to any page', async ({ context }) => {
 	const first = await context.newPage()
 	await first.goto('/session/frame')
 	await pickFrame(first)
@@ -166,6 +166,27 @@ test('media left by a closed tab is removed on the next visit', async ({ context
 	await first.close()
 
 	const second = await context.newPage()
-	await second.goto('/session/frame')
+	await second.goto('/')
 	await expect.poll(() => mediaCount(second)).toBe(0)
+})
+
+test('the service worker keeps one cache per build and deletes older ones', async ({ page }) => {
+	await page.goto('/')
+	await waitForServiceWorker(page)
+
+	await page.evaluate(async () => {
+		await caches.open('kapturae-stale-build')
+		const registrations = await navigator.serviceWorker.getRegistrations()
+		await Promise.all(registrations.map((registration) => registration.unregister()))
+	})
+
+	await page.reload()
+	await waitForServiceWorker(page)
+
+	const { version, keys } = await page.evaluate(async () => {
+		const response = await fetch('/_app/version.json')
+		const current = await response.json()
+		return { version: current.version as string, keys: await caches.keys() }
+	})
+	expect(keys).toEqual([`kapturae-${version}`])
 })

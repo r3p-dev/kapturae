@@ -1,34 +1,25 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { existsSync, readFileSync } from 'node:fs'
 import { gzipSync } from 'node:zlib'
+import { Glob } from 'bun'
 import { INDEXED_PATHS, localizedUrl } from '$lib/seo'
+import { HEADERS, serveBuild } from '../../scripts/serve_build.ts'
 
-const PORT = 4400 + Math.floor(Math.random() * 500)
-const ORIGIN = `http://127.0.0.1:${PORT}`
-
+const CLIENT = '.svelte-kit/output/client'
 const BUDGET_KB = 96
 const CEILINGS_KB: Record<string, number> = {
 	'/session/shoot': 115,
 	'/session/edit': 125
 }
 
-let server: ReturnType<typeof Bun.spawn>
+let server: ReturnType<typeof serveBuild>
 
-async function waitForServer() {
-	for (const attempt of Array.from({ length: 50 }).keys()) {
-		try {
-			const response = await fetch(`${ORIGIN}/health`)
-			if (response.ok) {
-				return
-			}
-		} catch {}
-		await Bun.sleep(100 + attempt * 10)
-	}
-	throw new Error('server did not start')
+function url(path: string) {
+	return new URL(path, server.url).href
 }
 
 async function html(path: string) {
-	const response = await fetch(ORIGIN + path)
+	const response = await fetch(url(path))
 	expect(response.status).toBe(200)
 	return response.text()
 }
@@ -37,56 +28,125 @@ function head(markup: string) {
 	return markup.slice(0, markup.indexOf('</head>'))
 }
 
-async function javascriptKilobytes(path: string) {
-	const response = await fetch(ORIGIN + path)
-	const links = response.headers.get('link') ?? ''
-	const files = new Set([...links.matchAll(/<\.?\/?([^>]+\.js)>; rel="modulepreload"/g)].map(([, file]) => file))
+function metaPolicy(markup: string) {
+	return markup.match(/<meta http-equiv="content-security-policy" content="([^"]+)"/)?.[1] ?? ''
+}
 
-	expect(files.size).toBeGreaterThan(5)
+type Manifest = Record<string, { file: string; name?: string; imports?: string[] }>
+
+function javascriptKilobytes(route: string) {
+	const manifest: Manifest = JSON.parse(readFileSync(`${CLIENT}/.vite/manifest.json`, 'utf8'))
+	const app = readFileSync('.svelte-kit/generated/client-optimized/app.js', 'utf8')
+	const pattern = new RegExp(`"${route.replace(/[[\]]/g, '\\$&')}": \\[~?(\\d+)(?:,\\[([\\d,]*)\\])?`)
+	const [, leaf, layouts] = app.match(pattern) ?? []
+	expect(leaf).toBeDefined()
+
+	const nodes = [0, Number(leaf), ...(layouts ? layouts.split(',').map(Number) : [])]
+	const keys = new Set<string>()
+
+	function collect(key: string) {
+		if (keys.has(key) || !manifest[key]) {
+			return
+		}
+		keys.add(key)
+		for (const imported of manifest[key].imports ?? []) {
+			collect(imported)
+		}
+	}
+
+	for (const [key, chunk] of Object.entries(manifest)) {
+		if (chunk.name === 'entry/start' || chunk.name === 'entry/app') {
+			collect(key)
+		}
+	}
+	for (const node of nodes) {
+		collect(`.svelte-kit/generated/client-optimized/nodes/${node}.js`)
+	}
+
 	let bytes = 0
-	for (const file of files) {
-		bytes += gzipSync(readFileSync(`build/client/${file}`), { level: 9 }).length
+	for (const key of keys) {
+		bytes += gzipSync(readFileSync(`${CLIENT}/${manifest[key].file}`), { level: 9 }).length
 	}
 	return bytes / 1024
 }
 
-beforeAll(async () => {
-	if (!existsSync('build/index.js')) {
+beforeAll(() => {
+	if (!existsSync('build/index.html')) {
 		throw new Error('Run `bun run build` first.')
 	}
-	server = Bun.spawn(['bun', 'build/index.js'], {
-		env: { ...process.env, PORT: String(PORT), HOST: '127.0.0.1' },
-		stdout: 'ignore',
-		stderr: 'inherit'
-	})
-	await waitForServer()
+	server = serveBuild(0)
 })
 
 afterAll(() => {
-	server?.kill()
+	server?.stop(true)
+})
+
+describe('static output', () => {
+	test('contains no server', () => {
+		const scripts = [...new Glob('**/*.{js,mjs}').scanSync('build')]
+
+		expect(scripts.filter((file) => !file.startsWith('_app/') && file !== 'service-worker.js')).toEqual([])
+	})
+
+	test.each([
+		'index.html',
+		'id.html',
+		'legal/privacy.html',
+		'id/legal/terms.html',
+		'session/frame.html',
+		'id/session/edit.html',
+		'404.html',
+		'sitemap.xml'
+	])('prerenders %s', (file) => {
+		expect(existsSync(`build/${file}`)).toBe(true)
+	})
 })
 
 describe('content security policy', () => {
-	test.each(['/', '/id', '/legal/privacy', '/session/frame'])('%s sends a strict policy', async (path) => {
-		const response = await fetch(ORIGIN + path)
-		const policy = response.headers.get('content-security-policy') ?? ''
+	test.each(['/', '/id', '/legal/privacy', '/session/frame', '/session/edit', '/nope'])(
+		'%s carries a strict policy in <meta>',
+		async (path) => {
+			const response = await fetch(url(path))
+			const policy = metaPolicy(await response.text())
 
-		expect(policy).toContain("connect-src 'self'")
-		expect(policy).toContain("default-src 'self'")
-		expect(policy).toContain("frame-ancestors 'none'")
-		expect(policy).toMatch(/script-src 'self' 'nonce-/)
-		expect(policy).not.toContain('unsafe-eval')
+			expect(policy).toContain("default-src 'self'")
+			expect(policy).toContain("connect-src 'self'")
+			expect(policy).toMatch(/script-src 'self' 'sha256-[^']+'/)
+			expect(policy).not.toContain('unsafe-eval')
+			expect(policy).not.toMatch(/script-src[^;]*unsafe-inline/)
+		}
+	)
+
+	test('the server header only adds what <meta> cannot carry', async () => {
+		const response = await fetch(url('/'))
+
+		expect(response.headers.get('content-security-policy')).toBe("frame-ancestors 'none'")
+	})
+
+	test('deploy/Caddyfile sends the same headers as the test server and keeps no log', () => {
+		const caddyfile = readFileSync('deploy/Caddyfile', 'utf8')
+		const directives = caddyfile.replace(/#.*$/gm, '')
+
+		for (const [name, value] of Object.entries(HEADERS)) {
+			expect(directives).toContain(`${name} "${value}"`)
+		}
+		expect(directives).not.toMatch(/^\s*log\b/m)
+		expect(directives).not.toMatch(/script-src|default-src/)
 	})
 })
 
 describe('share feature is gone', () => {
-	test.each([
-		['GET', '/p/0123456789abcdef'],
-		['GET', '/p/0123456789abcdef/download.zip'],
-		['POST', '/api/share']
-	])('%s %s is not found', async (method, path) => {
-		const response = await fetch(ORIGIN + path, { method })
-		expect(response.status).toBe(404)
+	test.each(['/p/0123456789abcdef', '/p/0123456789abcdef/download.zip', '/api/share'])(
+		'GET %s is not found',
+		async (path) => {
+			const response = await fetch(url(path))
+			expect(response.status).toBe(404)
+		}
+	)
+
+	test('nothing accepts a POST', async () => {
+		const response = await fetch(url('/api/share'), { method: 'POST', body: 'x' })
+		expect(response.ok).toBe(false)
 	})
 })
 
@@ -106,9 +166,10 @@ describe('search', () => {
 		expect(data['@graph'][0]).toMatchObject({ '@type': 'WebSite', name: 'Kapturae' })
 	})
 
-	test('indonesian home points at itself', async () => {
+	test('indonesian pages are in Indonesian and point at themselves', async () => {
 		const markup = head(await html('/id'))
 
+		expect(markup).toContain('<html lang="id"')
 		expect(markup).toContain('<link rel="canonical" href="https://kapturae.r3p.dev/id"')
 	})
 
@@ -116,12 +177,20 @@ describe('search', () => {
 		expect(head(await html('/legal'))).toContain('<link rel="canonical" href="https://kapturae.r3p.dev/legal/privacy"')
 	})
 
-	test.each(['/session/frame', '/session/shoot', '/session/edit', '/session/done'])(
+	test.each(['/session/frame', '/session/shoot', '/session/edit', '/session/done', '/id/session/frame'])(
 		'%s is kept out of the index',
 		async (path) => {
 			expect(head(await html(path))).toContain('<meta name="robots" content="noindex"')
 		}
 	)
+
+	test('unknown pages are a 404 that is not indexed', async () => {
+		const response = await fetch(url('/nope'))
+		const markup = await response.text()
+
+		expect(response.status).toBe(404)
+		expect(head(markup)).toContain('<meta name="robots" content="noindex"')
+	})
 
 	test('no page has breadcrumbs', async () => {
 		for (const path of ['/', '/id', '/legal/privacy', '/id/legal/terms']) {
@@ -130,7 +199,7 @@ describe('search', () => {
 	})
 
 	test('sitemap lists every indexed page in both languages', async () => {
-		const response = await fetch(`${ORIGIN}/sitemap.xml`)
+		const response = await fetch(url('/sitemap.xml'))
 		const xml = await response.text()
 
 		expect(response.headers.get('content-type')).toContain('xml')
@@ -142,7 +211,7 @@ describe('search', () => {
 	})
 
 	test('robots.txt allows crawling and points at the sitemap', async () => {
-		const response = await fetch(`${ORIGIN}/robots.txt`)
+		const response = await fetch(url('/robots.txt'))
 		const text = await response.text()
 
 		expect(text).toContain('Allow: /')
@@ -150,15 +219,30 @@ describe('search', () => {
 	})
 })
 
+describe('caching', () => {
+	test('hashed assets are cached forever, everything else is revalidated', async () => {
+		const markup = await html('/')
+		const asset = markup.match(/\/_app\/immutable\/[^"]+\.js/)?.[0] ?? ''
+		const page = await fetch(url('/'))
+		const worker = await fetch(url('/service-worker.js'))
+		const immutable = await fetch(url(asset))
+
+		expect(page.headers.get('cache-control')).toBe('no-cache')
+		expect(worker.headers.get('cache-control')).toBe('no-cache')
+		expect(immutable.status).toBe(200)
+		expect(immutable.headers.get('cache-control')).toContain('immutable')
+	})
+})
+
 describe('javascript budget', () => {
-	test(`home page loads at most ${BUDGET_KB} KB of gzipped JavaScript`, async () => {
-		expect(await javascriptKilobytes('/')).toBeLessThanOrEqual(BUDGET_KB)
+	test(`home page loads at most ${BUDGET_KB} KB of gzipped JavaScript`, () => {
+		expect(javascriptKilobytes('/')).toBeLessThanOrEqual(BUDGET_KB)
 	})
 
-	test.each(['/legal/privacy', '/session/frame', '/session/done', '/session/shoot', '/session/edit'])(
+	test.each(['/legal/[[doc=legal]]', '/session/frame', '/session/done', '/session/shoot', '/session/edit'])(
 		'%s stays under its ceiling',
-		async (path) => {
-			expect(await javascriptKilobytes(path)).toBeLessThanOrEqual(CEILINGS_KB[path] ?? BUDGET_KB)
+		(route) => {
+			expect(javascriptKilobytes(route)).toBeLessThanOrEqual(CEILINGS_KB[route] ?? BUDGET_KB)
 		}
 	)
 })

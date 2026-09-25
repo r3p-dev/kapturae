@@ -78,9 +78,10 @@ async function sweepAbandoned() {
 
 	const { held = [] } = await navigator.locks.query()
 	const live = new Set(held.map((lock) => lock.name))
+	const kept = new Set([sessionId, readSaved()?.id])
 	const keys = await request(store('readonly').getAllKeys())
 	const abandoned = new Set(
-		keys.map((key) => (key as [string, string])[0]).filter((id) => id !== sessionId && !live.has(LOCK_PREFIX + id))
+		keys.map((key) => (key as [string, string])[0]).filter((id) => !kept.has(id) && !live.has(LOCK_PREFIX + id))
 	)
 
 	const writer = store('readwrite')
@@ -191,6 +192,20 @@ async function restore() {
 	await sweepAbandoned().catch(() => {})
 
 	watchShots(schedule)
+}
+
+/**
+ * Removes media that closed tabs left behind. Runs on every page, but never creates the database for a visitor who
+ * has not started a session.
+ */
+export async function removeAbandonedSessions() {
+	const existing = await indexedDB.databases?.().catch(() => [])
+	if (!existing?.some((entry) => entry.name === DATABASE_NAME)) {
+		return
+	}
+
+	database ??= await openDatabase().catch(() => null)
+	await sweepAbandoned().catch(() => {})
 }
 
 export function restoreSession() {
