@@ -26,7 +26,7 @@
 	"landing": {
 		"meta": {
 			"title": "Kapturae | Free online photobooth",
-			"description": "Free photobooth in your browser. Pick a frame, take a few shots, add stickers or filters, and save it as a photo or GIF."
+			"description": "Kapturae is a free photo booth that runs in your browser. Pick a frame, take a few shots, add stickers or filters, and save a photo strip or GIF. Nothing is uploaded."
 		},
 		"hero": {
 			"af": "AF ● LOCKED",
@@ -34,7 +34,7 @@
 			"title_2": "the",
 			"title_3": "remote.",
 			"sub": "A photobooth that runs in your browser. Pick a frame, strike a few poses, and download a strip or a GIF.",
-			"keep": "Results kept 24 hours · Reopen via QR · Then deleted",
+			"keep": "Runs in your browser · Nothing uploaded · Download or share",
 			"shutter_aria": "Try the shutter",
 			"shutter_idle": "PRESS TO TRY",
 			"free": "FREE · $0"
@@ -62,8 +62,8 @@
 				},
 				"download": {
 					"title": "Download",
-					"body": "Save it as a photo or GIF, or scan the QR to open it again. The link lasts 24 hours, then it's deleted.",
-					"short": "Photo, GIF or QR."
+					"body": "Save it as a photo or GIF, or share it straight to your apps. It is all built on your device.",
+					"short": "Photo, GIF or ZIP."
 				}
 			}
 		},
@@ -137,39 +137,39 @@
 		},
 		"data": {
 			"label": "Data & privacy",
-			"title": "Kept for 24 hours.",
-			"title_accent": "Then gone.",
-			"description": "We store your session results on our server for a while so you can reopen them with a QR code. Once 24 hours pass, every file is permanently deleted.",
-			"timeline_label": "Lifecycle of your session files",
-			"uploaded": {
-				"time": "00:00 · Session done",
-				"title": "Results uploaded",
-				"body": "Your photos and GIF are stored, and a QR code and private link are made for your session."
+			"title": "Stays on your device.",
+			"title_accent": "Nothing uploaded.",
+			"description": "Kapturae runs entirely in your browser. The camera feed, your photos and every edit are processed on this device. Our server only sends the app itself.",
+			"timeline_label": "Where your photos live",
+			"timeline_start": "Tab open",
+			"timeline_end": "Tab closed",
+			"device": {
+				"time": "Shoot & edit",
+				"title": "Made here",
+				"body": "Photos are taken, framed and edited inside this browser tab. No photo is sent anywhere."
 			},
-			"active": {
-				"time": "00:00 – 24:00 · Link active",
-				"title": "Reopen via QR",
-				"body": "Scan the QR or open the link on any device to view and download your results again.",
-				"example_before": "Example:",
-				"example_after": "left"
+			"tab": {
+				"time": "While the tab is open",
+				"title": "Survives a refresh",
+				"body": "Your session is kept in this tab's browser storage, so a reload doesn't lose your work."
 			},
-			"deleted": {
-				"time": "24:00 · Deleted",
-				"title": "Gone for good",
-				"body": "Files are deleted from the server and the link expires. They can't be recovered."
+			"cleared": {
+				"time": "New session · tab closed",
+				"title": "Cleared",
+				"body": "Starting a new session clears it. Closing the tab ends it, and anything left behind is cleared on your next visit."
 			},
 			"tips": {
-				"early": {
-					"title": "Delete sooner",
-					"body": "Don't want to wait? Press Delete now on the results page."
-				},
 				"save": {
-					"title": "Download before it ends",
-					"body": "After 24 hours no copy is left. Save anything you want to keep first."
+					"title": "Download before you go",
+					"body": "Kapturae keeps no copy. Save or share your photos before you close the tab."
 				},
-				"qr": {
-					"title": "Keep your QR safe",
-					"body": "Anyone with the QR or link can open your results while it's active."
+				"share": {
+					"title": "Share from your phone",
+					"body": "Where your browser supports it, Share hands the file straight to your apps."
+				},
+				"clear": {
+					"title": "Clear it yourself",
+					"body": "Clearing this site's data in your browser settings removes everything, any time."
 				}
 			}
 		},
@@ -186,7 +186,7 @@
 			"output": "Output",
 			"output_value": "PNG & GIF",
 			"stored": "Stored",
-			"stored_value": "24 hours · via QR"
+			"stored_value": "Your device only"
 		}
 	},
 	"error": {
@@ -206,18 +206,10 @@
 			"body": "The problem is on our side, not yours. Your current session isn't lost as long as this tab stays open. Try again in a moment.",
 			"primary": "Try again",
 			"secondary": "Report it"
-		},
-		"gone": {
-			"hud": "END OF ROLL",
-			"title": "This link has expired.",
-			"body": "Result links only last 24 hours. That time has passed, so every file has been permanently deleted and can't be recovered.",
-			"primary": "Shoot again, free",
-			"secondary": "Deletion policy"
 		}
 	},
 	"legal": {
 		"meta_title": "{doc} | Kapturae",
-		"meta_description": "Kapturae's privacy policy, terms of service, data deletion, camera permission, and contact details.",
 		"hud": "Legal center",
 		"nav_aria": "Legal documents",
 		"pick": "Legal center · Choose a document",
@@ -490,12 +482,12 @@
 				"vivid": "Vivid"
 			},
 			"intensity": "Intensity",
-			"filter_note": "The unfiltered version is kept too, so both show up on the QR page.",
+			"filter_note": "The unfiltered version is kept too, and comes with the ZIP download.",
 			"sticker_title": "Stickers",
 			"sticker_add": "Add sticker: {name}",
 			"sticker_upload": "Your sticker",
 			"sticker_upload_add": "Upload a sticker",
-			"sticker_upload_note": "Add your own image as a sticker. It stays on this device.",
+			"sticker_upload_note": "Add your own image as a sticker. You can crop it and remove the background. It stays on this device.",
 			"sticker_upload_error": "Couldn't read that image. Try a PNG or JPG.",
 			"stickers": {
 				"star": "Star",
@@ -566,11 +558,32 @@
 				"white": "White"
 			},
 			"filter_title_slot": "Filter · Slot {n}",
-			"filter_pick_slot": "Pick a slot on the frame to filter just that photo."
+			"filter_pick_slot": "Pick a slot on the frame to filter just that photo.",
+			"sticker_prep": {
+				"title": "Prepare sticker",
+				"description": "Crop it, and remove the background if you like.",
+				"queue": "Image {n} of {total}",
+				"crop_label": "Crop area. Arrow keys move it, Shift and arrow keys resize it.",
+				"handles": {
+					"nw": "Top-left corner",
+					"ne": "Top-right corner",
+					"sw": "Bottom-left corner",
+					"se": "Bottom-right corner"
+				},
+				"crop_hint": "Drag the box or its corners to crop.",
+				"remove_bg": "Remove background",
+				"strength": "Strength",
+				"remove_bg_note": "Works best when the subject sits on a plain background.",
+				"reset": "Reset crop",
+				"add": "Add sticker",
+				"skip": "Skip",
+				"cancel": "Cancel",
+				"loading": "Opening image…"
+			}
 		},
 		"done": {
 			"meta_title": "Done | Kapturae",
-			"meta_description": "Grab your photos by QR code, link, or direct download.",
+			"meta_description": "Download or share your photo booth print and GIF.",
 			"eyebrow": "Session done · {n} / {total}",
 			"title": "Done.",
 			"title_accent": "Grab your photos.",
@@ -579,34 +592,22 @@
 			"gif": "GIF",
 			"sheet_alt": "Your framed print",
 			"gif_alt": "Animated GIF of every shot in the frame",
-			"scan": "Scan with your phone",
-			"scan_short": "Scan on another device",
-			"scan_body": "Every version is there: original, original + frame, filtered, filtered + frame, and the GIF.",
-			"qr_alt": "QR code for your photos",
-			"valid": "Valid for 24 hours",
-			"valid_short": "Link valid for",
-			"expired": "Link expired",
-			"deleted_after": "Then every file is deleted automatically.",
-			"download": "Download on this device",
-			"download_short": "Download to this phone",
-			"copy": "Copy link",
-			"copied": "Link copied",
-			"share": "Share link",
+			"local_body": "Everything was put together in this browser. Nothing was uploaded, so this device has the only copy.",
+			"download_photo": "Download photo",
+			"download_gif": "Download GIF",
+			"download_all": "All files (.zip)",
+			"zipping": "Packing ZIP…",
+			"share": "Share",
+			"share_failed": "Couldn't open sharing on this device. Download the file instead.",
 			"important": "Important",
-			"note": "This is the last page of the session. Once you close it, your photos can only be opened by QR code or link for 24 hours.",
-			"note_short": "Last page of the session. Once you close it, your photos can only be opened by link for 24 hours.",
+			"note": "Kapturae keeps no copy of your photos. Download or share them before you start a new session or close this tab.",
+			"note_short": "Kapturae keeps no copy. Save your photos before you close this tab.",
 			"again": "Start a new session",
-			"open": "Open the results page",
 			"rendering": "Building your photos · {done} / {total}",
-			"uploading": "Uploading · attempt {attempt} / {total}",
-			"ready": "Your photos are ready. The QR code and link are live.",
+			"ready": "Your photos are ready.",
 			"failed": "Failed",
 			"retry": "Try again",
 			"errors": {
-				"network": "The connection dropped while uploading. Check your internet, then try again.",
-				"timeout": "The server took too long to answer. Try again in a moment.",
-				"too_large": "The files were too large for the server to accept.",
-				"server": "The server is having trouble. Try again in a moment.",
 				"render": "Your photos couldn't be put together in this browser. Try again, or use another browser."
 			},
 			"empty_title": "Nothing here yet.",
@@ -637,8 +638,8 @@
 			"max_size": "Max {n} MB / photo",
 			"min_side": "Min {n} px short side",
 			"auto_crop": "Auto-cropped to the slot",
-			"retention": "Uploaded photos are deleted automatically 24 hours after the session too.",
-			"auto_delete": "Auto-deleted in 24 hours",
+			"retention": "Photos you add stay in this browser. Nothing is uploaded.",
+			"auto_delete": "Stays on this device",
 			"uploads": "Uploads",
 			"loading": "Processing…",
 			"loading_file": "Processing {name}",
@@ -684,58 +685,5 @@
 			"gallery": "Choose from gallery",
 			"cancel": "Cancel"
 		}
-	},
-	"share": {
-		"meta_title": "Your photos | Kapturae",
-		"meta_description": "View and download your photo booth session before the link expires.",
-		"eyebrow": "Session · {code}",
-		"title": "Your",
-		"title_accent": "photos.",
-		"available": "Available for",
-		"available_inline": "Available for {time}",
-		"expiry_body": "After that every version and GIF is permanently deleted and can't be recovered.",
-		"expiry_body_short": "After that it's permanently deleted and can't be recovered.",
-		"gif_title": "Session GIF",
-		"gif_meta": "{n} frames · loop",
-		"gif_alt": "GIF cycling through every shot",
-		"download": "Download all (.zip)",
-		"zip_note": "Every version and GIF downloads together in one ZIP.",
-		"versions": "Photo versions",
-		"edited": "edited",
-		"categories": {
-			"plain": "Original",
-			"frame": "Original + Frame",
-			"filtered": "Filtered",
-			"frame_filtered": "Filtered + Frame"
-		},
-		"captions": {
-			"plain": "{n} raw photos and their GIFs, no frame and no filter.",
-			"frame": "The original photos laid out in the frame, ready to print at {size}, plus its GIF.",
-			"filtered": "Single photos and GIFs with your filters and adjustments. Here because you edited them.",
-			"frame_filtered": "The full edited version inside the frame, photo and GIF."
-		},
-		"photo_alt": "Photo {n}",
-		"sheet_alt": "Print · {version}",
-		"facts": {
-			"version": "Version",
-			"size": "Size",
-			"format": "Format",
-			"format_value": "PNG · 300 DPI, print-ready",
-			"frame": "Frame"
-		},
-		"delete": "Delete now",
-		"delete_body": "Every photo and GIF is removed from the server right away. This can't be undone.",
-		"delete_confirm": "Yes, delete everything",
-		"cancel": "Cancel",
-		"deleted_hud": "DELETED",
-		"deleted_title": "Deleted.",
-		"deleted_body": "Every file from this session is gone from the server. The QR code and link no longer work.",
-		"again": "Shoot again, free",
-		"footer_aria": "Legal links",
-		"kind_photo": "Photos",
-		"kind_gif": "GIF",
-		"gifs_heading": "GIF per photo",
-		"gif_item_alt": "Animated GIF of photo {n}",
-		"sheet_gif_alt": "Print GIF · {version}"
 	}
 }

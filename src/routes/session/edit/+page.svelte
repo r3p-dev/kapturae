@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onDestroy } from 'svelte'
 	import { browser } from '$app/environment'
 	import { page } from '$app/state'
 	import RiAddLine from 'remixicon-svelte/icons/add-line'
@@ -28,6 +27,7 @@
 	import EditorStage from '$lib/components/organisms/editor-stage.svelte'
 	import SlotCamera from '$lib/components/organisms/slot-camera.svelte'
 	import SessionHeader from '$lib/components/organisms/session-header.svelte'
+	import type StickerPrepComponent from '$lib/components/organisms/sticker-prep.svelte'
 	import { Button } from '$lib/components/ui/button'
 	import * as Sheet from '$lib/components/ui/sheet'
 	import { Slider } from '$lib/components/ui/slider'
@@ -62,7 +62,7 @@
 	import { STICKER_LABELS, UPLOAD_PROBLEMS } from '$lib/session-messages'
 	import { addPhoto, photoFor, shots, useShots, type Photo } from '$lib/shots.svelte'
 	import { UPLOAD_ACCEPT, UPLOAD_MAX_MB, UploadRejected, importPhoto, type UploadProblem } from '$lib/upload'
-	import { STICKER_IDS, importSticker, stickerSrc } from '$lib/stickers'
+	import { STICKER_IDS, stickerSrc } from '$lib/stickers'
 	import { cn } from '$lib/utils'
 
 	type Draft<T> = T extends unknown ? Omit<T, 'id'> : never
@@ -87,10 +87,8 @@
 
 	const history = new History<Edit>(shots.edit ?? blankEdit(total))
 
-	onDestroy(() => {
-		if (browser) {
-			shots.edit = $state.snapshot(history.value)
-		}
+	$effect(() => {
+		shots.edit = $state.snapshot(history.value)
 	})
 
 	const empty = history.value.order.findIndex((shot) => !shots.photos[shot])
@@ -108,6 +106,8 @@
 	let isSheetOpen = $state(false)
 	let isReplacing = $state(false)
 	let replaceProblem = $state<UploadProblem | null>(null)
+	let stickerFiles = $state<File[]>([])
+	let StickerPrep = $state<typeof StickerPrepComponent | null>(null)
 
 	const edit = $derived(history.value)
 	const shown = $derived({ ...frame, src })
@@ -304,16 +304,22 @@
 		const files = [...(event.currentTarget.files ?? [])]
 		event.currentTarget.value = ''
 		hasUploadFailed = false
-
-		for (const file of files) {
-			try {
-				const url = await importSticker(file)
-				shots.uploads.push(url)
-				addSticker(url)
-			} catch {
-				hasUploadFailed = true
-			}
+		if (!files.length) {
+			return
 		}
+
+		try {
+			const module = await import('$lib/components/organisms/sticker-prep.svelte')
+			StickerPrep = module.default
+			stickerFiles = files
+		} catch {
+			hasUploadFailed = true
+		}
+	}
+
+	function keepSticker(url: string) {
+		shots.uploads.push(url)
+		addSticker(url)
 	}
 
 	function setTextStyle(style: Partial<Pick<typeof draft, 'font' | 'color'>>) {
@@ -1233,6 +1239,15 @@
 		{/if}
 	</div>
 </div>
+
+{#if StickerPrep && stickerFiles.length}
+	<StickerPrep
+		files={stickerFiles}
+		onadd={keepSticker}
+		onfail={() => (hasUploadFailed = true)}
+		onclose={() => (stickerFiles = [])}
+	/>
+{/if}
 
 <Sheet.Root bind:open={() => isSheetOpen && slot !== null, (open) => (isSheetOpen = open)}>
 	<Sheet.Content

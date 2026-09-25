@@ -15,7 +15,6 @@
 	const start = `${home}#start`
 	const privacy = `${home}#data`
 	const contact = localizeHref('/legal/contact')
-	const deletion = localizeHref('/legal/deletion')
 
 	const bars = ['#6e6c67', '#c9962e', '#2e7d7a', '#2f6b3a', '#7a4a86', '#8e1b12', '#1b2e55']
 
@@ -29,16 +28,6 @@
 				body: m['error.not_found.body'](),
 				primary: { label: m['error.not_found.primary'](), href: home },
 				secondary: { label: m['error.not_found.secondary'](), href: start }
-			}
-		}
-
-		if (status === 410) {
-			return {
-				hud: m['error.gone.hud'](),
-				title: m['error.gone.title'](),
-				body: m['error.gone.body'](),
-				primary: { label: m['error.gone.primary'](), href: start },
-				secondary: { label: m['error.gone.secondary'](), href: deletion }
 			}
 		}
 

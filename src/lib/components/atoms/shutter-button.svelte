@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	import { tv, type VariantProps } from 'tailwind-variants'
+	import { tv, type VariantProps } from 'tailwind-variants/lite'
 
 	export const shutterVariants = tv({
 		slots: {
@@ -40,5 +40,5 @@
 </script>
 
 <Button variant="ghost" class={cn(styles.ring(), className)} {...restProps}>
-	<span class={styles.disc()}>{@render children?.()}</span>
+	<span class={cn(styles.disc())}>{@render children?.()}</span>
 </Button>

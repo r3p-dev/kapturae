@@ -6,6 +6,7 @@
 	import { localizeHref } from '$lib/paraglide/runtime'
 	import { SESSION_STEPS, type SessionStep } from '$lib/session'
 	import { STEP_LABELS } from '$lib/session-messages'
+	import { endSession } from '$lib/shots.svelte'
 	import { cn } from '$lib/utils'
 
 	let {
@@ -36,6 +37,7 @@
 	<a
 		href={home}
 		aria-label={m['session.exit']()}
+		onclick={endSession}
 		class="flex size-11 items-center justify-center text-foreground rail:hidden"
 	>
 		<RiCloseLine aria-hidden="true" class="size-5" />
@@ -86,6 +88,7 @@
 		<a
 			href={home}
 			aria-label={m['session.exit']()}
+			onclick={endSession}
 			class="hidden size-11 items-center justify-center border border-[#3a3936] text-foreground hover:border-foreground rail:flex"
 		>
 			<RiCloseLine aria-hidden="true" class="size-4.5" />

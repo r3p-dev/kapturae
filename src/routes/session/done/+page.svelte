@@ -2,10 +2,9 @@
 	import { onMount } from 'svelte'
 	import { browser } from '$app/environment'
 	import { page } from '$app/state'
+	import RiArchiveLine from 'remixicon-svelte/icons/archive-line'
 	import RiArrowRightLine from 'remixicon-svelte/icons/arrow-right-line'
-	import RiCheckLine from 'remixicon-svelte/icons/check-line'
 	import RiDownload2Line from 'remixicon-svelte/icons/download-2-line'
-	import RiLinksLine from 'remixicon-svelte/icons/links-line'
 	import RiRestartLine from 'remixicon-svelte/icons/restart-line'
 	import RiShareForwardLine from 'remixicon-svelte/icons/share-forward-line'
 	import Corners from '$lib/components/atoms/corners.svelte'
@@ -13,22 +12,20 @@
 	import SessionHeader from '$lib/components/organisms/session-header.svelte'
 	import { Button } from '$lib/components/ui/button'
 	import * as ToggleGroup from '$lib/components/ui/toggle-group'
-	import { formatDuration, useClock } from '$lib/clock.svelte'
+	import { objectUrl, revoke } from '$lib/blobs'
 	import { blankEdit } from '$lib/editor.svelte'
 	import { FRAMES } from '$lib/frames'
-	import { buildOutputs, outputCount, shareForm, type Output } from '$lib/outputs'
+	import { buildOutputs, outputCount, type Output } from '$lib/outputs'
 	import { m } from '$lib/paraglide/messages'
-	import { getLocale, localizeHref } from '$lib/paraglide/runtime'
+	import { localizeHref } from '$lib/paraglide/runtime'
 	import { recolor } from '$lib/recolor'
 	import { PRINT_SIZES, SESSION_STEPS, SIZES, pick } from '$lib/session'
-	import { MAX_ATTEMPTS, UploadError, uploadShare, type UploadFailure } from '$lib/share-upload'
-	import { clearShots, photoFor, shots, useShots, type Share } from '$lib/shots.svelte'
+	import { endSession, photoFor, shots, useShots } from '$lib/shots.svelte'
 	import { cn } from '$lib/utils'
 
-	type Stage = 'idle' | 'rendering' | 'uploading' | 'done' | 'failed' | 'empty'
-
-	const STORAGE_KEY = 'kapturae:share'
-	const COPIED_MS = 2000
+	type Stage = 'rendering' | 'done' | 'failed' | 'empty'
+	type Format = 'photo' | 'gif'
+	type Result = { output: Output; url: string; file: File }
 
 	const query = page.url.searchParams
 	const requested = pick(PRINT_SIZES, query.get('size')) ?? '2x6'
@@ -42,49 +39,30 @@
 		return String(value).padStart(2, '0')
 	}
 	const step = { n: pad(SESSION_STEPS.indexOf('done') + 1), total: pad(SESSION_STEPS.length) }
+	const baseName = `kapturae-${frame.id}`
 
 	if (browser) {
 		useShots(frame.size, frame.id)
 	}
 
-	const errors: Record<UploadFailure | 'render', () => string> = {
-		network: m['session.done.errors.network'],
-		timeout: m['session.done.errors.timeout'],
-		too_large: m['session.done.errors.too_large'],
-		server: m['session.done.errors.server'],
-		render: m['session.done.errors.render']
-	}
-
-	let stage = $state<Stage>('idle')
+	let stage = $state<Stage>('rendering')
 	let progress = $state({ done: 0, total: 0 })
-	let attempt = $state(1)
-	let failure = $state('')
-	let share = $state<Share | null>(null)
-	let local = $state<{ sheet?: string; gif?: string }>({})
-	let format = $state('photo')
-	let isCopied = $state(false)
+	let outputs: Output[] = []
+	let results = $state<Record<Format, Result | null>>({ photo: null, gif: null })
+	let format = $state<Format>('photo')
+	let canShareFiles = $state(false)
+	let isZipping = $state(false)
+	let hasShareFailed = $state(false)
 
-	const clock = useClock()
-	const remaining = $derived(share ? share.expiresAt - clock.now() : 0)
-	const isExpired = $derived(share !== null && remaining <= 0)
-	const isReady = $derived(stage === 'done' && share !== null && !isExpired)
-	const isBusy = $derived(stage === 'idle' || stage === 'rendering' || stage === 'uploading')
-	const sheet = $derived(share?.sheet ?? local.sheet)
-	const gif = $derived(share?.gif ?? local.gif)
-	const zip = $derived(share ? `/p/${share.id}/download.zip` : undefined)
+	const current = $derived(results[format])
+	const isReady = $derived(stage === 'done')
 
 	const status = $derived.by(() => {
 		if (stage === 'rendering') {
 			return m['session.done.rendering'](progress)
 		}
-		if (stage === 'uploading') {
-			return m['session.done.uploading']({ attempt, total: MAX_ATTEMPTS })
-		}
 		if (stage === 'failed') {
-			return `${m['session.done.failed']()}: ${failure}`
-		}
-		if (isExpired) {
-			return m['session.done.expired']()
+			return `${m['session.done.failed']()}: ${m['session.done.errors.render']()}`
 		}
 		if (stage === 'done') {
 			return m['session.done.ready']()
@@ -92,143 +70,109 @@
 		return ''
 	})
 
-	function sessionKey() {
-		return JSON.stringify([frame.id, shots.photos, shots.edit])
-	}
-
-	function remember(result: Share) {
-		try {
-			sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ ...result, frame: frame.id }))
-		} catch {}
-	}
-
-	function restore() {
-		try {
-			const saved = JSON.parse(sessionStorage.getItem(STORAGE_KEY) ?? 'null')
-			if (saved?.frame !== frame.id || saved.expiresAt <= Date.now()) {
-				return false
-			}
-			share = saved
-			stage = 'done'
-			return true
-		} catch {
-			return false
-		}
-	}
-
-	function forget() {
-		try {
-			sessionStorage.removeItem(STORAGE_KEY)
-		} catch {}
-	}
-
-	function assetUrl(id: string, output: Output) {
-		return `/p/${id}/${output.key}.${output.kind}`
-	}
-
-	function setLocal(next: typeof local) {
-		const owned = new Set(Object.values(shots.published?.share ?? {}))
-		for (const url of [local.sheet, local.gif]) {
-			if (url && !owned.has(url)) {
-				URL.revokeObjectURL(url)
+	function releaseResults() {
+		for (const result of Object.values(results)) {
+			if (result) {
+				revoke(result.url)
 			}
 		}
-		local = next
+		results = { photo: null, gif: null }
 	}
 
-	async function publish() {
+	function keep(output: Output) {
+		const target: Format = output.kind === 'gif' ? 'gif' : 'photo'
+		const isFramed = output.category === 'frame-filtered' || output.category === 'frame'
+		if (!isFramed || results[target]) {
+			return
+		}
+
+		const file = new File([output.blob], `${baseName}.${output.kind}`, { type: output.blob.type })
+		results[target] = { output, url: objectUrl(output.blob), file }
+	}
+
+	async function render() {
 		const edit = shots.edit ?? blankEdit(total)
 		const photos = edit.order.map((shot) => shots.photos[shot])
 		const bursts = edit.order.map((shot) => photoFor(shots.photos[shot])?.burst ?? [])
-		const key = sessionKey()
 
-		failure = ''
-		attempt = 1
+		releaseResults()
 		stage = 'rendering'
 		progress = { done: 0, total: outputCount({ photos, edit }) }
 
-		let outputs: Output[]
 		try {
 			const artwork = edit.color ? await recolor(frame, edit.color) : frame.src
-			outputs = await buildOutputs(
-				{ frame, artwork, photos, bursts, edit },
-				(done, count) => (progress = { done, total: count })
-			)
+			outputs = await buildOutputs({ frame, artwork, photos, bursts, edit }, (done, count, output) => {
+				progress = { done, total: count }
+				keep(output)
+			})
 		} catch {
-			failure = errors.render()
 			stage = 'failed'
 			return
 		}
 
-		function find(...keys: string[]) {
-			return keys.map((wanted) => outputs.find((output) => output.key === wanted)).find(Boolean)!
+		const sample = results.photo?.file
+		canShareFiles = Boolean(sample && navigator.canShare?.({ files: [sample] }))
+		stage = 'done'
+	}
+
+	async function share() {
+		if (!current) {
+			return
 		}
-		const sheetOutput = find('frame-filtered', 'frame')
-		const gifOutput = find('frame-filtered-gif', 'frame-gif')
-		setLocal({ sheet: URL.createObjectURL(sheetOutput.blob), gif: URL.createObjectURL(gifOutput.blob) })
 
-		stage = 'uploading'
+		hasShareFailed = false
 		try {
-			const result = await uploadShare(shareForm(outputs, frame, getLocale()), (current) => (attempt = current))
+			await navigator.share({ files: [current.file], title: 'Kapturae' })
+		} catch (error) {
+			if (!(error instanceof DOMException && error.name === 'AbortError')) {
+				hasShareFailed = true
+			}
+		}
+	}
 
-			const stale = shots.published?.share
-			if (stale) {
-				for (const url of [stale.sheet, stale.gif]) {
-					if (url.startsWith('blob:')) {
-						URL.revokeObjectURL(url)
-					}
-				}
+	function save(url: string, name: string) {
+		const link = document.createElement('a')
+		link.href = url
+		link.download = name
+		link.click()
+	}
+
+	async function downloadAll() {
+		if (isZipping || !isReady) {
+			return
+		}
+
+		isZipping = true
+		try {
+			const { zipSync } = await import('fflate')
+			const entries: Record<string, [Uint8Array, { level: 0 }]> = {}
+			for (const output of outputs) {
+				const buffer = await output.blob.arrayBuffer()
+				entries[`${output.key}.${output.kind}`] = [new Uint8Array(buffer), { level: 0 }]
 			}
 
-			share = { ...result, sheet: local.sheet!, gif: local.gif! }
-			shots.published = { key, share }
-			remember({ ...result, sheet: assetUrl(result.id, sheetOutput), gif: assetUrl(result.id, gifOutput) })
-			stage = 'done'
-		} catch (error) {
-			failure = errors[error instanceof UploadError ? error.reason : 'network']()
-			stage = 'failed'
+			const url = objectUrl(new Blob([zipSync(entries) as BlobPart], { type: 'application/zip' }))
+			save(url, `${baseName}.zip`)
+			setTimeout(() => revoke(url), 10_000)
+		} finally {
+			isZipping = false
 		}
-	}
-
-	async function copy() {
-		if (!share) {
-			return
-		}
-		try {
-			await navigator.clipboard.writeText(share.url)
-			isCopied = true
-			setTimeout(() => (isCopied = false), COPIED_MS)
-		} catch {}
-	}
-
-	async function send() {
-		if (!share) {
-			return
-		}
-		if (!navigator.share) {
-			return copy()
-		}
-		await navigator.share({ title: m['share.meta_title'](), url: share.url }).catch(() => {})
 	}
 
 	function startOver() {
-		forget()
-		clearShots()
+		releaseResults()
+		endSession()
 	}
 
 	onMount(() => {
-		if (shots.published?.key === sessionKey()) {
-			share = shots.published.share
-			stage = 'done'
-			return
-		}
-
 		const edit = shots.edit ?? blankEdit(total)
 		if (edit.order.every((shot) => shots.photos[shot])) {
-			publish()
-		} else if (!restore()) {
+			render()
+		} else {
 			stage = 'empty'
 		}
+
+		return releaseResults
 	})
 
 	const mono = 'font-mono tracking-[0.14em] uppercase'
@@ -242,12 +186,10 @@
 </svelte:head>
 
 {#snippet preview(className: string)}
-	{@const src = format === 'gif' ? gif : sheet}
-
 	<div class={cn('flex items-center justify-center', className)} style:--r={SIZES[frame.size].ratio}>
-		{#if src}
+		{#if current}
 			<img
-				{src}
+				src={current.url}
 				alt={format === 'gif' ? m['session.done.gif_alt']() : m['session.done.sheet_alt']()}
 				class="block h-(--h) w-auto ring-1 ring-paper/14"
 			/>
@@ -262,7 +204,7 @@
 		type="single"
 		variant="outline"
 		aria-label={m['session.done.preview_label']()}
-		bind:value={() => format, (next) => next && (format = next)}
+		bind:value={() => format, (next) => next && (format = next as Format)}
 		class="border-[1.5px] border-foreground"
 	>
 		{#each [['photo', m['session.done.photo']()], ['gif', m['session.done.gif']()]] as [value, label] (value)}
@@ -276,54 +218,25 @@
 	</ToggleGroup.Root>
 {/snippet}
 
-{#snippet qr(className: string, inset: string, size: string, weight: string)}
-	<div class={cn('relative shrink-0 bg-white', className)}>
-		<Corners {inset} {size} {weight} class="text-primary" />
-
-		{#if share && !isExpired}
-			<img src={share.qr} alt={m['session.done.qr_alt']()} class="block size-full" />
-		{:else}
-			<span aria-hidden="true" class="flex size-full items-center justify-center bg-paper-3">
-				<span
-					class={cn(
-						'size-2.5 rounded-full bg-primary',
-						isBusy && 'animate-rec-blink motion-reduce:animate-none',
-						!isBusy && 'bg-[#8c8983]'
-					)}
-				></span>
-			</span>
-		{/if}
-	</div>
-{/snippet}
-
-{#snippet timer(label: string, className: string)}
-	<div class="flex flex-col gap-0.5">
-		<span class="{mono} flex items-center gap-2 text-[11px] text-primary-text rail:justify-start">
-			<span
-				aria-hidden="true"
-				class={cn('size-2 rounded-full bg-primary', !isExpired && 'animate-rec-blink motion-reduce:animate-none')}
-			></span>
-			{isBusy || stage === 'failed' || isExpired ? status : label}
-		</span>
-
+{#snippet statusLine()}
+	<span class="{mono} flex items-center gap-2 text-[11px] text-primary-text">
 		<span
+			aria-hidden="true"
 			class={cn(
-				'font-display leading-[1.1] font-black font-stretch-118% tabular-nums',
-				!isReady && 'text-muted-foreground',
-				className
+				'size-2 rounded-full bg-primary',
+				stage === 'rendering' && 'animate-rec-blink motion-reduce:animate-none'
 			)}
-		>
-			{share ? formatDuration(remaining) : '24:00:00'}
-		</span>
-	</div>
+		></span>
+		{status}
+	</span>
 {/snippet}
 
 {#snippet failed()}
 	{#if stage === 'failed'}
 		<div class="flex flex-col items-stretch gap-3 border border-primary p-4 text-left rail:flex-row rail:items-center">
-			<p class="m-0 flex-1 text-[13px] leading-normal text-body">{failure}</p>
+			<p class="m-0 flex-1 text-[13px] leading-normal text-body">{m['session.done.errors.render']()}</p>
 
-			<Button onclick={publish} class="h-11 gap-2 font-mono font-medium">
+			<Button onclick={render} class="h-11 gap-2 font-mono font-medium">
 				<RiRestartLine aria-hidden="true" class="size-4" />
 				{m['session.done.retry']()}
 			</Button>
@@ -331,13 +244,45 @@
 	{/if}
 {/snippet}
 
-{#snippet copyLabel()}
-	{#if isCopied}
-		<RiCheckLine aria-hidden="true" class="size-4.5" />
-		{m['session.done.copied']()}
-	{:else}
-		<RiLinksLine aria-hidden="true" class="size-4.5" />
-		{m['session.done.copy']()}
+{#snippet actions(primary: string, outline: string)}
+	<Button
+		href={current?.url}
+		download={current?.file.name}
+		disabled={!current}
+		class="h-13 gap-2.5 font-mono font-medium tracking-widest {primary} {disabled}"
+	>
+		<RiDownload2Line aria-hidden="true" class="size-4.5" />
+		{format === 'gif' ? m['session.done.download_gif']() : m['session.done.download_photo']()}
+	</Button>
+
+	{#if canShareFiles}
+		<Button
+			variant="outline"
+			onclick={share}
+			disabled={!current}
+			class="h-13 gap-2.5 border-[1.5px] font-mono font-normal tracking-widest {outline}"
+		>
+			<RiShareForwardLine aria-hidden="true" class="size-4.5" />
+			{m['session.done.share']()}
+		</Button>
+	{/if}
+
+	<Button
+		variant="outline"
+		onclick={downloadAll}
+		disabled={!isReady || isZipping}
+		class="h-13 gap-2.5 border-[1.5px] font-mono font-normal tracking-widest {outline}"
+	>
+		<RiArchiveLine aria-hidden="true" class="size-4.5" />
+		{isZipping ? m['session.done.zipping']() : m['session.done.download_all']()}
+	</Button>
+{/snippet}
+
+{#snippet shareError()}
+	{#if hasShareFailed}
+		<p role="alert" class="m-0 border-l-2 border-primary pl-2.5 text-left text-xs leading-normal text-body">
+			{m['session.done.share_failed']()}
+		</p>
 	{/if}
 {/snippet}
 
@@ -368,45 +313,14 @@
 				<span class="text-primary">{m['session.done.title_accent']()}</span>
 			</h1>
 
-			<div class="flex flex-wrap items-center justify-center gap-5">
-				{@render preview('[--h:min(300px,calc(150px/var(--r)))]')}
-
-				<div class="flex flex-col items-center gap-2.5">
-					{@render qr('size-41.5 p-2', '-7px', '14px', '2px')}
-					<span class="max-w-42.5 font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
-						{m['session.done.scan_short']()}
-					</span>
-				</div>
-			</div>
-
+			{@render preview('[--h:min(360px,calc(220px/var(--r)))]')}
 			{@render formatToggle()}
-			{@render timer(m['session.done.valid_short'](), 'text-[34px]')}
+			{@render statusLine()}
 			{@render failed()}
 
 			<div class="flex flex-col gap-2.5 self-stretch">
-				<Button
-					href={zip}
-					download
-					disabled={!isReady}
-					class="h-13 gap-2.5 font-mono font-medium tracking-widest {disabled}"
-				>
-					<RiDownload2Line aria-hidden="true" class="size-4.5" />
-					{m['session.done.download_short']()}
-				</Button>
-
-				<Button
-					variant="outline"
-					onclick={send}
-					disabled={!isReady}
-					class="h-13 gap-2.5 border-[1.5px] border-foreground font-mono font-normal tracking-widest"
-				>
-					{#if isCopied}
-						{@render copyLabel()}
-					{:else}
-						<RiShareForwardLine aria-hidden="true" class="size-4.5" />
-						{m['session.done.share']()}
-					{/if}
-				</Button>
+				{@render actions('', 'border-foreground')}
+				{@render shareError()}
 			</div>
 
 			<p class="m-0 text-xs leading-normal text-muted-foreground">{m['session.done.note_short']()}</p>
@@ -443,41 +357,18 @@
 					<span class="block text-primary">{m['session.done.title_accent']()}</span>
 				</h1>
 
-				<div class="flex items-center gap-7">
-					{@render qr('size-56 p-3.5', '-10px', '22px', '3px')}
-
-					<div class="flex min-w-0 flex-col gap-2.5">
-						<span class="{mono} text-xs text-muted-foreground">{m['session.done.scan']()}</span>
-						<p class="m-0 text-base leading-normal text-body">{m['session.done.scan_body']()}</p>
-
-						<div class="mt-1.5 flex flex-col gap-0.5">
-							{@render timer(m['session.done.valid'](), 'text-[40px]')}
-							<span class="text-[13px] text-muted-foreground">{m['session.done.deleted_after']()}</span>
-						</div>
-					</div>
+				<div class="flex flex-col gap-2.5">
+					{@render statusLine()}
+					<p class="m-0 text-base leading-normal text-body">{m['session.done.local_body']()}</p>
 				</div>
 
 				{@render failed()}
 
-				<div class="flex flex-wrap gap-2.5">
-					<Button
-						href={zip}
-						download
-						disabled={!isReady}
-						class="h-13 gap-2.5 bg-paper px-5.5 font-mono font-medium tracking-widest text-ink hover:bg-paper-2 {disabled}"
-					>
-						<RiDownload2Line aria-hidden="true" class="size-4.5" />
-						{m['session.done.download']()}
-					</Button>
-
-					<Button
-						variant="outline"
-						onclick={copy}
-						disabled={!isReady}
-						class="h-13 gap-2.5 border-[1.5px] border-paper px-5.5 font-mono font-normal tracking-widest"
-					>
-						{@render copyLabel()}
-					</Button>
+				<div class="flex flex-col gap-2.5">
+					<div class="flex flex-wrap gap-2.5">
+						{@render actions('bg-paper px-5.5 text-ink hover:bg-paper-2', 'border-paper px-5.5')}
+					</div>
+					{@render shareError()}
 				</div>
 
 				<div class="flex items-start gap-3 border border-[#3a3936] px-4 py-3.5">
@@ -492,18 +383,6 @@
 						{m['session.done.again']()}
 						<RiArrowRightLine aria-hidden="true" class="size-4" />
 					</a>
-
-					{#if isReady && share}
-						<a
-							href={share.url}
-							target="_blank"
-							rel="noopener"
-							class="inline-flex min-h-11 items-center gap-2 text-muted-foreground hover:text-foreground"
-						>
-							{m['session.done.open']()}
-							<RiArrowRightLine aria-hidden="true" class="size-4" />
-						</a>
-					{/if}
 				</div>
 			</div>
 		</main>

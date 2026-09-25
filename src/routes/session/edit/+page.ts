@@ -6,10 +6,12 @@ import { PRINT_SIZES, pick } from '$lib/session'
 import { shots } from '$lib/shots.svelte'
 import type { PageLoad } from './$types'
 
-export const load: PageLoad = function ({ url }) {
+export const load: PageLoad = async function ({ url, parent }) {
 	if (!browser) {
 		return
 	}
+
+	await parent()
 
 	const size = pick(PRINT_SIZES, url.searchParams.get('size')) ?? '2x6'
 	const frame =

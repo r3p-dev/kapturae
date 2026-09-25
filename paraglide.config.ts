@@ -5,15 +5,5 @@ export const paraglideConfiguration: CompilerOptions = {
 	outdir: './src/lib/paraglide',
 	emitTsDeclarations: true,
 	strategy: ['url', 'baseLocale'],
-	trailingSlash: 'never',
-
-	urlPatterns: [
-		{
-			pattern: '/:path(.*)?',
-			localized: [
-				['id', '/id/:path(.*)?'],
-				['en', '/:path(.*)?']
-			]
-		}
-	]
+	trailingSlash: 'never'
 }

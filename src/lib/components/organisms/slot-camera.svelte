@@ -8,6 +8,7 @@
 	import ShutterButton from '$lib/components/atoms/shutter-button.svelte'
 	import CameraStatus from '$lib/components/molecules/camera-status.svelte'
 	import * as ToggleGroup from '$lib/components/ui/toggle-group'
+	import { revoke } from '$lib/blobs'
 	import { BurstRecorder } from '$lib/burst'
 	import { Camera, TIMERS } from '$lib/camera.svelte'
 	import { m } from '$lib/paraglide/messages'
@@ -64,7 +65,7 @@
 			if (isAlive) {
 				onshot(url, frames)
 			} else {
-				URL.revokeObjectURL(url)
+				revoke(url)
 			}
 		} catch {
 			burst.cancel()

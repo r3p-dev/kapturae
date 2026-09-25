@@ -1,15 +1,7 @@
+import { revoke } from '$lib/blobs'
 import type { Edit } from '$lib/editor.svelte'
 import type { FrameId } from '$lib/frames'
 import type { PrintSize } from '$lib/session'
-
-export type Share = {
-	id: string
-	url: string
-	qr: string
-	expiresAt: number
-	sheet: string
-	gif: string
-}
 
 export type PhotoSource = 'camera' | 'upload'
 
@@ -20,22 +12,22 @@ export type Photo = {
 	burst: string[]
 }
 
-export const shots = $state<{
+export type Shots = {
 	size: PrintSize | null
 	frame: FrameId | null
 	photos: string[]
 	library: Photo[]
 	uploads: string[]
 	edit: Edit | null
-	published: { key: string; share: Share } | null
-}>({
+}
+
+export const shots = $state<Shots>({
 	size: null,
 	frame: null,
 	photos: [],
 	library: [],
 	uploads: [],
-	edit: null,
-	published: null
+	edit: null
 })
 
 export function useShots(size: PrintSize, frame: FrameId) {
@@ -68,20 +60,26 @@ export function firstEmptyShot(total: number) {
 }
 
 export function clearShots() {
-	const { published } = shots
-	const urls = [
-		...shots.library.map((photo) => photo.url),
-		...shots.uploads,
-		...(published ? [published.share.sheet, published.share.gif] : [])
-	]
-
-	for (const url of urls.filter((candidate) => candidate.startsWith('blob:'))) {
-		URL.revokeObjectURL(url)
+	for (const url of [...shots.library.map((photo) => photo.url), ...shots.uploads]) {
+		revoke(url)
 	}
 
 	shots.photos = []
 	shots.library = []
 	shots.uploads = []
 	shots.edit = null
-	shots.published = null
+}
+
+export function endSession() {
+	clearShots()
+	shots.size = null
+	shots.frame = null
+}
+
+export function watchShots(onchange: (state: Shots) => void) {
+	return $effect.root(() => {
+		$effect(() => {
+			onchange($state.snapshot(shots) as Shots)
+		})
+	})
 }

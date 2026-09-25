@@ -22,4 +22,4 @@ test-results
 src/lib/paraglide
 project.inlang/cache/
 
-.uploads
+playwright-report

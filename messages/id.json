@@ -26,7 +26,7 @@
 	"landing": {
 		"meta": {
 			"title": "Kapturae | Photobooth online gratis",
-			"description": "Photobooth gratis di browser. Pilih frame, foto beberapa pose, tambah stiker atau filter, lalu simpan sebagai foto atau GIF."
+			"description": "Kapturae adalah photobooth gratis yang jalan di browser. Pilih frame, foto beberapa pose, tambah stiker atau filter, lalu simpan jadi strip foto atau GIF. Tanpa upload."
 		},
 		"hero": {
 			"af": "AF ● TERKUNCI",
@@ -34,7 +34,7 @@
 			"title_2": "pegang",
 			"title_3": "remote.",
 			"sub": "Photobooth yang jalan langsung di browser. Pilih frame, pasang pose, lalu download hasilnya jadi strip foto atau GIF.",
-			"keep": "Hasil disimpan 24 jam · Buka lagi via QR · Lalu dihapus",
+			"keep": "Jalan di browser · Tanpa upload · Unduh atau bagikan",
 			"shutter_aria": "Coba jepret",
 			"shutter_idle": "TEKAN UNTUK MENCOBA",
 			"free": "GRATIS · RP0"
@@ -62,8 +62,8 @@
 				},
 				"download": {
 					"title": "Download",
-					"body": "Simpan sebagai foto atau GIF, atau scan QR untuk membukanya lagi. Link aktif 24 jam, lalu dihapus.",
-					"short": "Foto, GIF, atau QR."
+					"body": "Simpan sebagai foto atau GIF, atau bagikan langsung ke aplikasimu. Semuanya dibuat di perangkatmu.",
+					"short": "Foto, GIF, atau ZIP."
 				}
 			}
 		},
@@ -137,39 +137,39 @@
 		},
 		"data": {
 			"label": "Data & privasi",
-			"title": "Disimpan 24 jam.",
-			"title_accent": "Lalu hilang.",
-			"description": "Hasil sesimu kami simpan sementara di server supaya bisa kamu buka lagi lewat QR. Begitu 24 jam lewat, semua file dihapus permanen.",
-			"timeline_label": "Siklus file hasil sesi",
-			"uploaded": {
-				"time": "00:00 · Sesi selesai",
-				"title": "Hasil diunggah",
-				"body": "Foto dan GIF disimpan, lalu QR dan link khusus sesimu dibuat."
+			"title": "Tetap di perangkatmu.",
+			"title_accent": "Tanpa upload.",
+			"description": "Kapturae berjalan sepenuhnya di browser. Gambar kamera, fotomu, dan semua editan diproses di perangkat ini. Server kami hanya mengirim aplikasinya.",
+			"timeline_label": "Di mana fotomu berada",
+			"timeline_start": "Tab dibuka",
+			"timeline_end": "Tab ditutup",
+			"device": {
+				"time": "Foto & edit",
+				"title": "Dibuat di sini",
+				"body": "Foto diambil, dipasang di frame, dan diedit di dalam tab browser ini. Tidak ada foto yang dikirim ke mana pun."
 			},
-			"active": {
-				"time": "00:00 – 24:00 · Link aktif",
-				"title": "Buka lagi lewat QR",
-				"body": "Scan QR atau buka link dari perangkat mana pun untuk melihat dan mengunduh ulang hasilmu.",
-				"example_before": "Contoh: tersedia",
-				"example_after": "lagi"
+			"tab": {
+				"time": "Selama tab terbuka",
+				"title": "Aman saat refresh",
+				"body": "Sesimu disimpan di penyimpanan browser tab ini, jadi hasil kerjamu tidak hilang saat halaman dimuat ulang."
 			},
-			"deleted": {
-				"time": "24:00 · Dihapus",
-				"title": "Hilang permanen",
-				"body": "File dihapus dari server dan link kedaluwarsa. Tidak bisa dipulihkan."
+			"cleared": {
+				"time": "Sesi baru · tab ditutup",
+				"title": "Dibersihkan",
+				"body": "Memulai sesi baru akan menghapusnya. Menutup tab mengakhiri sesi, dan sisa datanya dibersihkan saat kamu berkunjung lagi."
 			},
 			"tips": {
-				"early": {
-					"title": "Hapus lebih cepat",
-					"body": "Tidak mau menunggu? Tekan Hapus sekarang di halaman hasil."
-				},
 				"save": {
-					"title": "Unduh sebelum habis",
-					"body": "Setelah 24 jam tidak ada salinan tersisa. Simpan dulu yang ingin kamu pertahankan."
+					"title": "Unduh sebelum pergi",
+					"body": "Kapturae tidak menyimpan salinan. Simpan atau bagikan fotomu sebelum menutup tab."
 				},
-				"qr": {
-					"title": "Jaga QR-mu",
-					"body": "Siapa pun yang memegang QR atau link bisa membuka hasilmu selama masih aktif."
+				"share": {
+					"title": "Bagikan dari HP",
+					"body": "Kalau browsermu mendukung, tombol Bagikan langsung mengirim file ke aplikasimu."
+				},
+				"clear": {
+					"title": "Hapus sendiri",
+					"body": "Menghapus data situs ini lewat pengaturan browser akan menghapus semuanya, kapan saja."
 				}
 			}
 		},
@@ -186,7 +186,7 @@
 			"output": "Hasil",
 			"output_value": "PNG & GIF",
 			"stored": "Tersimpan",
-			"stored_value": "24 jam · via QR"
+			"stored_value": "Hanya di perangkatmu"
 		}
 	},
 	"error": {
@@ -206,18 +206,10 @@
 			"body": "Gangguan dari sisi kami, bukan dari kamu. Sesi yang sedang berjalan tidak hilang selama tab ini belum ditutup. Coba lagi sebentar lagi.",
 			"primary": "Coba lagi",
 			"secondary": "Lapor ke kami"
-		},
-		"gone": {
-			"hud": "ROL HABIS",
-			"title": "Tautannya sudah kedaluwarsa.",
-			"body": "Tautan hasil hanya berlaku 24 jam. Waktunya sudah lewat, jadi semua file sudah dihapus permanen dan tidak bisa dipulihkan.",
-			"primary": "Foto lagi, gratis",
-			"secondary": "Kebijakan penghapusan"
 		}
 	},
 	"legal": {
 		"meta_title": "{doc} | Kapturae",
-		"meta_description": "Kebijakan privasi, ketentuan layanan, penghapusan data, izin kamera, dan kontak Kapturae.",
 		"hud": "Pusat legal",
 		"nav_aria": "Dokumen legal",
 		"pick": "Pusat legal · Pilih dokumen",
@@ -490,12 +482,12 @@
 				"vivid": "Cerah"
 			},
 			"intensity": "Intensitas",
-			"filter_note": "Versi tanpa filter tetap tersimpan, jadi keduanya muncul di halaman QR.",
+			"filter_note": "Versi tanpa filter tetap disimpan dan ikut di unduhan ZIP.",
 			"sticker_title": "Stiker",
 			"sticker_add": "Tambah stiker: {name}",
 			"sticker_upload": "Stiker kamu",
 			"sticker_upload_add": "Unggah stiker",
-			"sticker_upload_note": "Pakai gambarmu sendiri sebagai stiker. Gambarnya tetap di perangkat ini.",
+			"sticker_upload_note": "Pakai gambarmu sendiri sebagai stiker. Kamu bisa memotongnya dan menghapus latarnya. Gambarnya tetap di perangkat ini.",
 			"sticker_upload_error": "Gambar itu tidak bisa dibaca. Coba PNG atau JPG.",
 			"stickers": {
 				"star": "Bintang",
@@ -566,11 +558,32 @@
 				"white": "Putih"
 			},
 			"filter_title_slot": "Filter · Slot {n}",
-			"filter_pick_slot": "Pilih slot di frame untuk memberi filter ke satu foto saja."
+			"filter_pick_slot": "Pilih slot di frame untuk memberi filter ke satu foto saja.",
+			"sticker_prep": {
+				"title": "Siapkan stiker",
+				"description": "Potong gambarnya, dan hapus latarnya kalau mau.",
+				"queue": "Gambar {n} dari {total}",
+				"crop_label": "Area potong. Tombol panah untuk menggeser, Shift dan panah untuk mengubah ukuran.",
+				"handles": {
+					"nw": "Sudut kiri atas",
+					"ne": "Sudut kanan atas",
+					"sw": "Sudut kiri bawah",
+					"se": "Sudut kanan bawah"
+				},
+				"crop_hint": "Seret kotak atau sudutnya untuk memotong.",
+				"remove_bg": "Hapus latar",
+				"strength": "Kekuatan",
+				"remove_bg_note": "Paling bagus kalau objeknya ada di latar polos.",
+				"reset": "Atur ulang potongan",
+				"add": "Tambah stiker",
+				"skip": "Lewati",
+				"cancel": "Batal",
+				"loading": "Membuka gambar…"
+			}
 		},
 		"done": {
 			"meta_title": "Selesai | Kapturae",
-			"meta_description": "Ambil hasil sesimu lewat QR, tautan, atau unduh langsung.",
+			"meta_description": "Unduh atau bagikan hasil cetak dan GIF photobooth-mu.",
 			"eyebrow": "Sesi selesai · {n} / {total}",
 			"title": "Jadi.",
 			"title_accent": "Ambil hasilmu.",
@@ -579,34 +592,22 @@
 			"gif": "GIF",
 			"sheet_alt": "Hasil cetak dengan frame",
 			"gif_alt": "GIF bergerak dari semua jepretan di dalam frame",
-			"scan": "Scan pakai HP",
-			"scan_short": "Scan di perangkat lain",
-			"scan_body": "Di sana ada semua versi: asli, asli + frame, filter, filter + frame, dan GIF-nya.",
-			"qr_alt": "Kode QR hasil sesi",
-			"valid": "Berlaku 24 jam",
-			"valid_short": "Tautan berlaku",
-			"expired": "Tautan kedaluwarsa",
-			"deleted_after": "Lalu semua file dihapus otomatis.",
-			"download": "Unduh di perangkat ini",
-			"download_short": "Unduh ke HP ini",
-			"copy": "Salin tautan",
-			"copied": "Tautan tersalin",
-			"share": "Bagikan tautan",
+			"local_body": "Semuanya disusun di browser ini. Tidak ada yang diunggah, jadi satu-satunya salinan ada di perangkat ini.",
+			"download_photo": "Unduh foto",
+			"download_gif": "Unduh GIF",
+			"download_all": "Semua file (.zip)",
+			"zipping": "Menyiapkan ZIP…",
+			"share": "Bagikan",
+			"share_failed": "Tidak bisa membuka menu berbagi di perangkat ini. Unduh filenya saja.",
 			"important": "Penting",
-			"note": "Ini halaman terakhir sesi. Setelah ditutup, hasil hanya bisa dibuka lewat QR atau tautan selama 24 jam.",
-			"note_short": "Halaman terakhir sesi. Setelah ditutup, hasil hanya bisa dibuka lewat tautan selama 24 jam.",
+			"note": "Kapturae tidak menyimpan salinan fotomu. Unduh atau bagikan dulu sebelum memulai sesi baru atau menutup tab ini.",
+			"note_short": "Kapturae tidak menyimpan salinan. Simpan fotomu sebelum menutup tab ini.",
 			"again": "Mulai sesi baru",
-			"open": "Buka halaman hasil",
 			"rendering": "Menyusun hasil · {done} / {total}",
-			"uploading": "Mengunggah · percobaan {attempt} / {total}",
-			"ready": "Hasil siap. QR dan tautan sudah aktif.",
+			"ready": "Hasil siap.",
 			"failed": "Gagal",
 			"retry": "Coba lagi",
 			"errors": {
-				"network": "Koneksi terputus saat mengunggah. Periksa internet, lalu coba lagi.",
-				"timeout": "Server terlalu lama menjawab. Coba lagi sebentar lagi.",
-				"too_large": "Filenya terlalu besar untuk diterima server.",
-				"server": "Server sedang bermasalah. Coba lagi sebentar lagi.",
 				"render": "Hasil gagal disusun di browser ini. Coba lagi, atau pakai browser lain."
 			},
 			"empty_title": "Belum ada hasil.",
@@ -637,8 +638,8 @@
 			"max_size": "Maks {n} MB / foto",
 			"min_side": "Min {n} px sisi pendek",
 			"auto_crop": "Dipotong otomatis ke rasio slot",
-			"retention": "Foto yang kamu upload ikut dihapus otomatis 24 jam setelah sesi.",
-			"auto_delete": "Hapus otomatis 24 jam",
+			"retention": "Foto yang kamu tambahkan tetap di browser ini. Tidak ada yang diunggah.",
+			"auto_delete": "Tetap di perangkat ini",
 			"uploads": "Unggahan",
 			"loading": "Memproses…",
 			"loading_file": "Memproses {name}",
@@ -684,58 +685,5 @@
 			"gallery": "Pilih dari galeri",
 			"cancel": "Batal"
 		}
-	},
-	"share": {
-		"meta_title": "Hasil sesimu | Kapturae",
-		"meta_description": "Lihat dan unduh hasil sesi photobooth-mu sebelum tautannya kedaluwarsa.",
-		"eyebrow": "Hasil sesi · {code}",
-		"title": "Hasil",
-		"title_accent": "fotomu.",
-		"available": "Tersedia selama",
-		"available_inline": "Tersedia {time} lagi",
-		"expiry_body": "Setelah itu semua versi dan GIF dihapus permanen, tidak bisa dipulihkan.",
-		"expiry_body_short": "Setelah itu dihapus permanen dan tidak bisa dipulihkan.",
-		"gif_title": "GIF sesi",
-		"gif_meta": "{n} frame · loop",
-		"gif_alt": "GIF dari semua jepretanmu, bergantian",
-		"download": "Unduh semua (.zip)",
-		"zip_note": "Semua versi dan GIF diunduh sekaligus dalam satu ZIP.",
-		"versions": "Versi foto",
-		"edited": "diedit",
-		"categories": {
-			"plain": "Asli",
-			"frame": "Asli + Frame",
-			"filtered": "Filter",
-			"frame_filtered": "Filter + Frame"
-		},
-		"captions": {
-			"plain": "{n} foto mentah beserta GIF-nya, tanpa frame dan tanpa filter.",
-			"frame": "Foto asli yang sudah tersusun di frame, siap cetak {size}, plus versi GIF-nya.",
-			"filtered": "Foto satuan dan GIF dengan filter dan penyesuaianmu. Muncul karena kamu mengedit.",
-			"frame_filtered": "Versi editan lengkap di dalam frame, foto dan GIF."
-		},
-		"photo_alt": "Foto {n}",
-		"sheet_alt": "Cetakan · {version}",
-		"facts": {
-			"version": "Versi",
-			"size": "Ukuran",
-			"format": "Format",
-			"format_value": "PNG · 300 DPI, siap cetak",
-			"frame": "Frame"
-		},
-		"delete": "Hapus sekarang",
-		"delete_body": "Semua versi foto dan GIF langsung dihapus dari server. Tidak bisa dibatalkan.",
-		"delete_confirm": "Ya, hapus semua",
-		"cancel": "Batal",
-		"deleted_hud": "DIHAPUS",
-		"deleted_title": "Sudah dihapus.",
-		"deleted_body": "Semua file sesi ini sudah dihapus dari server. QR dan tautannya tidak berlaku lagi.",
-		"again": "Foto lagi, gratis",
-		"footer_aria": "Tautan legal",
-		"kind_photo": "Foto",
-		"kind_gif": "GIF",
-		"gifs_heading": "GIF per foto",
-		"gif_item_alt": "GIF bergerak foto {n}",
-		"sheet_gif_alt": "GIF cetakan · {version}"
 	}
 }

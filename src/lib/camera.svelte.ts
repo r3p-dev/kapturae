@@ -1,3 +1,5 @@
+import { objectUrl } from '$lib/blobs'
+
 export type CameraStatus = 'idle' | 'pending' | 'live' | 'denied' | 'unavailable' | 'error'
 export type Facing = 'user' | 'environment'
 
@@ -96,6 +98,6 @@ export class Camera {
 			throw new Error('Capture failed')
 		}
 
-		return URL.createObjectURL(blob)
+		return objectUrl(blob)
 	}
 }

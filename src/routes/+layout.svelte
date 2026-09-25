@@ -1,23 +1,26 @@
 <script lang="ts">
-	import type { Pathname } from '$app/types'
-	import { resolve } from '$app/paths'
-	import { page } from '$app/state'
 	import { m } from '$lib/paraglide/messages'
-	import { getLocale, locales, localizeHref } from '$lib/paraglide/runtime'
+	import { getLocale, locales } from '$lib/paraglide/runtime'
+	import { SITE, absoluteUrl } from '$lib/seo'
 	import './layout.css'
 
 	let { children } = $props()
 
 	const locale = getLocale()
-	const ogImage = $derived(new URL(`/og-${locale}.png`, page.url.origin).href)
-	const ogAlt = `${m['common.brand']()}: ${[m['landing.hero.title_1'](), m['landing.hero.title_2'](), m['landing.hero.title_3']()].join(' ')}`
+	const ogLocale = { en: 'en_US', id: 'id_ID' }
+	const ogAlt = `${SITE.name}: ${[m['landing.hero.title_1'](), m['landing.hero.title_2'](), m['landing.hero.title_3']()].join(' ')}`
 </script>
 
 <svelte:head>
+	<meta name="application-name" content={SITE.name} />
+	<link rel="manifest" href="/manifest.webmanifest" />
 	<meta property="og:type" content="website" />
-	<meta property="og:site_name" content={m['common.brand']()} />
-	<meta property="og:locale" content={locale === 'id' ? 'id_ID' : 'en_US'} />
-	<meta property="og:image" content={ogImage} />
+	<meta property="og:site_name" content={SITE.name} />
+	<meta property="og:locale" content={ogLocale[locale]} />
+	{#each locales.filter((alternate) => alternate !== locale) as alternate (alternate)}
+		<meta property="og:locale:alternate" content={ogLocale[alternate]} />
+	{/each}
+	<meta property="og:image" content={absoluteUrl(`/og-${locale}.png`)} />
 	<meta property="og:image:width" content="1200" />
 	<meta property="og:image:height" content="630" />
 	<meta property="og:image:alt" content={ogAlt} />
@@ -25,9 +28,3 @@
 </svelte:head>
 
 {@render children()}
-
-<div style="display:none">
-	{#each locales as alternate (alternate)}
-		<a href={resolve(localizeHref(page.url.pathname, { locale: alternate }) as Pathname)}>{alternate}</a>
-	{/each}
-</div>

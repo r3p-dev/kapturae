@@ -1,10 +1,11 @@
 <script lang="ts">
 	import type { Pathname } from '$app/types'
 	import { goto } from '$app/navigation'
+	import RiArrowDownSLine from 'remixicon-svelte/icons/arrow-down-s-line'
 	import { resolve } from '$app/paths'
 	import LangSwitch from '$lib/components/molecules/lang-switch.svelte'
 	import Logo from '$lib/components/atoms/logo.svelte'
-	import * as Select from '$lib/components/ui/select'
+	import Seo from '$lib/components/atoms/seo.svelte'
 	import { LEGAL_DOCUMENTS, type LegalDocument } from '$lib/legal'
 	import { m } from '$lib/paraglide/messages'
 	import { localizeHref } from '$lib/paraglide/runtime'
@@ -121,10 +122,7 @@
 	const stamp = 'font-mono text-[11px] tracking-widest text-muted-foreground uppercase'
 </script>
 
-<svelte:head>
-	<title>{m['legal.meta_title']({ doc: current.title() })}</title>
-	<meta name="description" content={m['legal.meta_description']()} />
-</svelte:head>
+<Seo title={m['legal.meta_title']({ doc: current.title() })} description={current.summary()} path="/legal/{slug}" />
 
 <div class="flex min-h-svh flex-col bg-background text-foreground">
 	<header class="flex h-15 shrink-0 items-center justify-between border-b-2 border-ink pr-2 pl-4 rail:h-18 rail:px-10">
@@ -168,23 +166,22 @@
 					{m['legal.pick']()}
 				</span>
 
-				<Select.Root type="single" value={slug} onValueChange={pick}>
-					<Select.Trigger
+				<div class="relative">
+					<select
 						aria-labelledby="legal-doc"
-						class="h-12! w-full border-2 border-ink bg-paper px-3 text-base text-foreground focus-visible:border-ink focus-visible:ring-2 focus-visible:ring-ring [&_svg]:size-5! [&_svg]:text-foreground"
+						value={slug}
+						onchange={(event) => pick(event.currentTarget.value)}
+						class="h-12 w-full appearance-none rounded-none border-2 border-ink bg-paper pr-11 pl-3 text-base text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
 					>
-						{current.title()}
-					</Select.Trigger>
-
-					<Select.Content class="border-2 border-ink ring-0">
 						{#each LEGAL_DOCUMENTS as key, index (key)}
-							<Select.Item value={key} label={pages[key].title()} class="min-h-11 gap-3 text-base">
-								<span class="font-mono text-xs tracking-widest text-muted-foreground">{pad(index + 1)}</span>
-								{pages[key].title()}
-							</Select.Item>
+							<option value={key}>{pad(index + 1)} · {pages[key].title()}</option>
 						{/each}
-					</Select.Content>
-				</Select.Root>
+					</select>
+					<RiArrowDownSLine
+						aria-hidden="true"
+						class="pointer-events-none absolute top-1/2 right-3 size-5 -translate-y-1/2 text-foreground"
+					/>
+				</div>
 			</div>
 
 			<p class="m-0 flex items-center gap-2.5 font-mono text-[11px] tracking-[0.16em] uppercase rail:text-xs">

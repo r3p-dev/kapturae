@@ -7,13 +7,15 @@
 	import Hero from '$lib/components/landing/hero.svelte'
 	import SiteFooter from '$lib/components/landing/site-footer.svelte'
 	import Start from '$lib/components/landing/start.svelte'
+	import Seo from '$lib/components/atoms/seo.svelte'
 	import { m } from '$lib/paraglide/messages'
+	import { getLocale } from '$lib/paraglide/runtime'
+	import { structuredData } from '$lib/seo'
+
+	const description = m['landing.meta.description']()
 </script>
 
-<svelte:head>
-	<title>{m['landing.meta.title']()}</title>
-	<meta name="description" content={m['landing.meta.description']()} />
-</svelte:head>
+<Seo title={m['landing.meta.title']()} {description} path="/" structured={structuredData(getLocale(), description)} />
 
 <main>
 	<Hero />

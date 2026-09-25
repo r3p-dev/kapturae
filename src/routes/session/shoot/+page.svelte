@@ -30,6 +30,7 @@
 	import * as ToggleGroup from '$lib/components/ui/toggle-group'
 	import SessionHeader from '$lib/components/organisms/session-header.svelte'
 	import FrameImage from '$lib/components/atoms/frame-image.svelte'
+	import { revoke } from '$lib/blobs'
 	import { BurstRecorder } from '$lib/burst'
 	import { Camera, TIMERS } from '$lib/camera.svelte'
 	import { m } from '$lib/paraglide/messages'
@@ -198,7 +199,7 @@
 			const frames = burst.stop()
 			const url = await camera.capture(video)
 			if (!isAlive) {
-				URL.revokeObjectURL(url)
+				revoke(url)
 			} else {
 				place(shot, addPhoto({ url, source: 'camera', burst: frames }))
 			}
@@ -234,7 +235,7 @@
 			try {
 				const url = await importPhoto(file)
 				if (!isAlive) {
-					return URL.revokeObjectURL(url)
+					return revoke(url)
 				}
 
 				addPhoto({ url, source: 'upload', name: file.name, burst: [] })

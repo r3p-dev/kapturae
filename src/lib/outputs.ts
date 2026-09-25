@@ -1,3 +1,4 @@
+import { blobEntry } from '$lib/blobs'
 import { GRAIN, filterCss, filterTint, isFiltered, type Edit, type SlotEdit } from '$lib/editor.svelte'
 import { LOOP_DELAY, LOOP_FRAMES, sampleIndexes } from '$lib/burst'
 import { SIZES, type Frame, type FrameSlot } from '$lib/session'
@@ -243,7 +244,7 @@ async function sheet(spec: OutputSpec, shouldFilter: boolean) {
 	return toBlob(element)
 }
 
-async function still(src: string, slot: SlotEdit) {
+async function still(src: string, slot: SlotEdit | null) {
 	const image = await loadImage(src)
 	const { element, context } = canvas(image.naturalWidth, image.naturalHeight)
 	await drawPhoto(context, src, { x: 0, y: 0, width: element.width, height: element.height }, slot, null)
@@ -336,7 +337,10 @@ export function outputCount({ photos, edit }: Pick<OutputSpec, 'photos' | 'edit'
 	return (photos.length * 2 + 3) * (hasFilters ? 2 : 1)
 }
 
-export async function buildOutputs(spec: OutputSpec, onProgress?: (done: number, total: number) => void) {
+export async function buildOutputs(
+	spec: OutputSpec,
+	onProgress?: (done: number, total: number, output: Output) => void
+) {
 	const { photos, bursts, edit } = spec
 	const hasFilters = edit.slots.some(isFiltered)
 	const total = outputCount(spec)
@@ -344,7 +348,7 @@ export async function buildOutputs(spec: OutputSpec, onProgress?: (done: number,
 
 	function add(output: Output) {
 		outputs.push(output)
-		onProgress?.(outputs.length, total)
+		onProgress?.(outputs.length, total, output)
 	}
 
 	await document.fonts?.ready
@@ -376,9 +380,9 @@ export async function buildOutputs(spec: OutputSpec, onProgress?: (done: number,
 		for (const [position, src] of photos.entries()) {
 			const index = position + 1
 			const reel = footage(bursts[position], src)
-			const response = await fetch(src)
+			const original = blobEntry(src)?.blob ?? (await still(src, null))
 
-			add({ key: `plain-${index}`, kind: 'jpg', category: 'plain', index, blob: await response.blob() })
+			add({ key: `plain-${index}`, kind: 'jpg', category: 'plain', index, blob: original })
 			add({ key: `plain-${index}-gif`, kind: 'gif', category: 'plain', index, blob: await slotGif(reel, null) })
 
 			if (!hasFilters) {
@@ -394,21 +398,4 @@ export async function buildOutputs(spec: OutputSpec, onProgress?: (done: number,
 	}
 
 	return outputs
-}
-
-export function shareForm(outputs: Output[], frame: Frame, locale: string) {
-	const form = new FormData()
-	form.append('frame', frame.id)
-	form.append('slots', String(frame.slots.length))
-	form.append('locale', locale)
-	form.append(
-		'manifest',
-		JSON.stringify(outputs.map(({ key, kind, category, index }) => ({ key, kind, category, index })))
-	)
-
-	for (const { key, kind, blob } of outputs) {
-		form.append(`${key}.${kind}`, blob, `${key}.${kind}`)
-	}
-
-	return form
 }

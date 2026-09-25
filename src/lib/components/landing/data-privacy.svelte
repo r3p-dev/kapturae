@@ -1,28 +1,15 @@
 <script lang="ts">
-	import { onMount } from 'svelte'
-	import RiDeleteBinLine from 'remixicon-svelte/icons/delete-bin-line'
-	import RiQrCodeLine from 'remixicon-svelte/icons/qr-code-line'
-	import RiUpload2Line from 'remixicon-svelte/icons/upload-2-line'
+	import RiBrushLine from 'remixicon-svelte/icons/brush-line'
+	import RiEraserLine from 'remixicon-svelte/icons/eraser-line'
+	import RiRefreshLine from 'remixicon-svelte/icons/refresh-line'
 	import { m } from '$lib/paraglide/messages'
 	import SectionHeading from './section-heading.svelte'
 
 	const tips = [
-		{ title: m['landing.data.tips.early.title'], body: m['landing.data.tips.early.body'] },
 		{ title: m['landing.data.tips.save.title'], body: m['landing.data.tips.save.body'] },
-		{ title: m['landing.data.tips.qr.title'], body: m['landing.data.tips.qr.body'] }
+		{ title: m['landing.data.tips.share.title'], body: m['landing.data.tips.share.body'] },
+		{ title: m['landing.data.tips.clear.title'], body: m['landing.data.tips.clear.body'] }
 	]
-
-	let remaining = $state(23 * 3600 + 41 * 60 + 7)
-	const countdown = $derived(
-		[remaining / 3600, (remaining % 3600) / 60, remaining % 60]
-			.map((part) => String(Math.floor(part)).padStart(2, '0'))
-			.join(':')
-	)
-
-	onMount(() => {
-		const timer = setInterval(() => (remaining = Math.max(0, remaining - 1)), 1000)
-		return () => clearInterval(timer)
-	})
 
 	const card = 'flex min-h-65 flex-col gap-3.5 p-7'
 	const time = 'font-mono text-xs tracking-[0.14em] uppercase'
@@ -45,10 +32,10 @@
 
 	<div class="flex w-full max-w-300 flex-col gap-3.5">
 		<div aria-hidden="true" class="flex items-center gap-4 font-mono text-xs tracking-[0.14em]">
-			<span>T+00:00</span>
+			<span>{m['landing.data.timeline_start']()}</span>
 			<span class="h-2.5 grow bg-[repeating-linear-gradient(90deg,var(--ink)_0_1px,transparent_1px_12px)] opacity-50"
 			></span>
-			<span class="text-primary-text">T+24:00</span>
+			<span class="text-primary-text">{m['landing.data.timeline_end']()}</span>
 		</div>
 
 		<ol
@@ -57,11 +44,11 @@
 		>
 			<li class="{card} border-2 border-ink">
 				<div class="flex items-center justify-between gap-3">
-					<span class={time}>{m['landing.data.uploaded.time']()}</span>
-					<RiUpload2Line aria-hidden="true" class="size-7 shrink-0" />
+					<span class={time}>{m['landing.data.device.time']()}</span>
+					<RiBrushLine aria-hidden="true" class="size-7 shrink-0" />
 				</div>
-				<h3 class={heading}>{m['landing.data.uploaded.title']()}</h3>
-				<p class={body}>{m['landing.data.uploaded.body']()}</p>
+				<h3 class={heading}>{m['landing.data.device.title']()}</h3>
+				<p class={body}>{m['landing.data.device.body']()}</p>
 			</li>
 
 			<li class="{card} dark bg-background px-8 text-foreground">
@@ -71,26 +58,21 @@
 							aria-hidden="true"
 							class="size-2 shrink-0 animate-rec-blink rounded-full bg-primary motion-reduce:animate-none"
 						></span>
-						{m['landing.data.active.time']()}
+						{m['landing.data.tab.time']()}
 					</span>
-					<RiQrCodeLine aria-hidden="true" class="size-7 shrink-0" />
+					<RiRefreshLine aria-hidden="true" class="size-7 shrink-0" />
 				</div>
-				<h3 class={heading}>{m['landing.data.active.title']()}</h3>
-				<p class="{body} max-w-115">{m['landing.data.active.body']()}</p>
-				<span class="font-mono text-xs tracking-[0.12em] text-muted-foreground uppercase">
-					{m['landing.data.active.example_before']()}
-					<span class="text-foreground tabular-nums">{countdown}</span>
-					{m['landing.data.active.example_after']()}
-				</span>
+				<h3 class={heading}>{m['landing.data.tab.title']()}</h3>
+				<p class="{body} max-w-115">{m['landing.data.tab.body']()}</p>
 			</li>
 
 			<li class="{card} border-2 border-dashed border-ink">
 				<div class="flex items-center justify-between gap-3">
-					<span class="{time} text-primary-text">{m['landing.data.deleted.time']()}</span>
-					<RiDeleteBinLine aria-hidden="true" class="size-7 shrink-0" />
+					<span class="{time} text-primary-text">{m['landing.data.cleared.time']()}</span>
+					<RiEraserLine aria-hidden="true" class="size-7 shrink-0" />
 				</div>
-				<h3 class={heading}>{m['landing.data.deleted.title']()}</h3>
-				<p class={body}>{m['landing.data.deleted.body']()}</p>
+				<h3 class={heading}>{m['landing.data.cleared.title']()}</h3>
+				<p class={body}>{m['landing.data.cleared.body']()}</p>
 			</li>
 		</ol>
 	</div>

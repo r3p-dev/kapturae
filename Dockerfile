@@ -20,19 +20,14 @@ RUN bun run build
 
 FROM base AS release
 
-ENV BODY_SIZE_LIMIT=128M
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=3000
-ENV SHARE_STORAGE_DIR=/app/uploads
 
 COPY --from=install /temp/prod/node_modules node_modules
 COPY --from=install /temp/prod/package.json ./package.json
 COPY --from=build /usr/src/app/build ./build
 COPY --from=build /usr/src/app/scripts/healthcheck.ts ./healthcheck.ts
-
-RUN mkdir -p /app/uploads && chown -R bun:bun /app/uploads
-VOLUME /app/uploads
 
 USER bun
 EXPOSE 3000/tcp

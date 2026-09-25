@@ -49,29 +49,3 @@ export function stickerSrc(sticker: string, pixels?: number) {
 		? `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg"${size} viewBox="0 0 24 24">${SVG[sticker]}</svg>`)}`
 		: sticker
 }
-
-const UPLOAD_MAX = 600
-
-export async function importSticker(file: File) {
-	const bitmap = await createImageBitmap(file)
-	const scale = Math.min(1, UPLOAD_MAX / Math.max(bitmap.width, bitmap.height))
-
-	const canvas = document.createElement('canvas')
-	canvas.width = Math.round(bitmap.width * scale)
-	canvas.height = Math.round(bitmap.height * scale)
-
-	const context = canvas.getContext('2d')
-	if (!context) {
-		throw new Error('2D canvas unavailable')
-	}
-
-	context.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
-	bitmap.close()
-
-	const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'))
-	if (!blob) {
-		throw new Error('Sticker import failed')
-	}
-
-	return URL.createObjectURL(blob)
-}

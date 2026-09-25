@@ -1,3 +1,5 @@
+import { objectUrl } from '$lib/blobs'
+
 export const UPLOAD_ACCEPT = 'image/jpeg,image/png,image/heic,image/heif,.jpg,.jpeg,.png,.heic,.heif'
 export const UPLOAD_MAX_MB = 20
 export const UPLOAD_MIN_SIDE = 600
@@ -66,7 +68,7 @@ export async function importPhoto(file: File) {
 			throw new UploadRejected('unreadable')
 		}
 
-		return URL.createObjectURL(blob)
+		return objectUrl(blob)
 	} finally {
 		bitmap.close()
 	}
