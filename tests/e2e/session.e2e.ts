@@ -32,6 +32,7 @@ async function shootAll(page: Page) {
 			{ timeout: 15_000 }
 		)
 	}
+
 	await expect(page.getByRole('button', { name: 'Slot 1', exact: true })).toBeVisible()
 }
 
@@ -40,12 +41,14 @@ function mediaCount(page: Page) {
 		() =>
 			new Promise<number>((resolve) => {
 				const opening = indexedDB.open('kapturae')
+
 				opening.onsuccess = () => {
 					const database = opening.result
 					if (!database.objectStoreNames.contains('media')) {
 						resolve(0)
 						return
 					}
+
 					const counting = database.transaction('media').objectStore('media').count()
 					counting.onsuccess = () => resolve(counting.result)
 				}
@@ -61,14 +64,13 @@ async function waitForServiceWorker(page: Page) {
 test('a full session works offline and sends nothing', async ({ page, context }) => {
 	await page.goto('/session/frame')
 	await waitForServiceWorker(page)
-
 	await context.setOffline(true)
+
 	const requests: Request[] = []
 	page.on('request', (request) => requests.push(request))
 
 	await pickFrame(page)
 	await shootAll(page)
-
 	await visible(page, 'radio', text.edit.tools.sticker).click()
 	await page.locator(`input[aria-label="${text.edit.sticker_upload_add}"]`).setInputFiles({
 		name: 'sticker.png',
@@ -84,6 +86,7 @@ test('a full session works offline and sends nothing', async ({ page, context })
 
 	const sticker = page.getByRole('button', { name: text.edit.sticker_upload, exact: true }).locator('img')
 	await expect(sticker).toBeVisible()
+
 	const [width, height] = await sticker.evaluate(async (image: HTMLImageElement) => {
 		await image.decode()
 		return [image.naturalWidth, image.naturalHeight]

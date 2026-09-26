@@ -4,9 +4,9 @@
 	import Logo from '$lib/components/atoms/logo.svelte'
 	import { m } from '$lib/paraglide/messages'
 	import { localizeHref } from '$lib/paraglide/runtime'
-	import { SESSION_STEPS, type SessionStep } from '$lib/session'
-	import { STEP_LABELS } from '$lib/session-messages'
-	import { endSession } from '$lib/shots.svelte'
+	import { SESSION_STEPS, type SessionStep } from '$lib/session/session'
+	import { STEP_LABELS } from '$lib/i18n/messages'
+	import { endSession } from '$lib/session/shots.svelte'
 	import { cn } from '$lib/utils'
 
 	let {

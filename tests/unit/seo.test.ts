@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { INDEXED_PATHS, alternates, jsonLdScript, localizedUrl, structuredData } from '$lib/seo'
+import { INDEXED_PATHS, alternates, jsonLdScript, localizedUrl, structuredData } from '$lib/site/seo'
 
 describe('localizedUrl', () => {
 	test('uses the production origin and no trailing slash', () => {

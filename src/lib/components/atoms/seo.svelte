@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state'
 	import { deLocalizeUrl, getLocale } from '$lib/paraglide/runtime'
-	import { alternates, jsonLdScript, localizedUrl } from '$lib/seo'
+	import { alternates, jsonLdScript, localizedUrl } from '$lib/site/seo'
 
 	let {
 		title,

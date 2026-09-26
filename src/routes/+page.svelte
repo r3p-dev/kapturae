@@ -10,7 +10,7 @@
 	import Seo from '$lib/components/atoms/seo.svelte'
 	import { m } from '$lib/paraglide/messages'
 	import { getLocale } from '$lib/paraglide/runtime'
-	import { structuredData } from '$lib/seo'
+	import { structuredData } from '$lib/site/seo'
 
 	const description = m['landing.meta.description']()
 </script>

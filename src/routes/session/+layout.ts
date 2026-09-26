@@ -1,5 +1,5 @@
 import { browser } from '$app/environment'
-import { restoreSession } from '$lib/session-store'
+import { restoreSession } from '$lib/storage/store'
 import type { LayoutLoad } from './$types'
 
 export const ssr = false

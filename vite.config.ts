@@ -6,7 +6,7 @@ import { defineConfig } from 'vite'
 import { paraglideConfiguration } from './paraglide.config.ts'
 import { frames } from './scripts/frames.ts'
 import { legalUpdated } from './scripts/legal_updated.ts'
-import { LEGAL_DOCUMENTS } from './src/lib/legal.ts'
+import { LEGAL_DOCUMENTS } from './src/lib/site/legal.ts'
 
 type Path = `/${string}`
 
@@ -25,14 +25,10 @@ export default defineConfig({
 		__LEGAL_UPDATED__: JSON.stringify(legalUpdated() ?? null)
 	},
 
-	server: {
-		host: true,
-		allowedHosts: ['kapturae-tes.r3p.dev']
-	},
-
 	plugins: [
 		frames(),
 		tailwindcss(),
+
 		sveltekit({
 			compilerOptions: {
 				runes: ({ filename }) => (filename.split(/[/\\]/).includes('node_modules') ? undefined : true)
@@ -41,6 +37,7 @@ export default defineConfig({
 			typescript: {
 				config: (tsconfig) => {
 					tsconfig.include.push('../eslint.config.ts')
+					tsconfig.include.push('../playwright.config.ts')
 				}
 			},
 

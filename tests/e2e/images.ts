@@ -9,6 +9,7 @@ export function png(width: number, height: number, paint: (x: number, y: number)
 		const y = (index - x) / width
 		image.data.set([...paint(x, y), 255], index * 4)
 	}
+
 	return PNG.sync.write(image)
 }
 

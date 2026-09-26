@@ -4,7 +4,7 @@
 	import * as Sheet from '$lib/components/ui/sheet'
 	import { Button } from '$lib/components/ui/button'
 	import { Slider } from '$lib/components/ui/slider'
-	import { objectUrl } from '$lib/blobs'
+	import { objectUrl } from '$lib/storage/blobs'
 	import { m } from '$lib/paraglide/messages'
 	import {
 		FULL_CROP,
@@ -17,7 +17,7 @@
 		resizeCrop,
 		type Crop,
 		type Handle
-	} from '$lib/sticker-cutout'
+	} from '$lib/stickers/cutout'
 	import { cn } from '$lib/utils'
 
 	let {

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
-import { REFERENCE, dropMissing, isBlankSession, packMedia, unpackMedia } from '$lib/session-media'
-import type { Shots } from '$lib/shots.svelte'
+import { REFERENCE, dropMissing, isBlankSession, packMedia, unpackMedia } from '$lib/storage/media'
+import type { Shots } from '$lib/session/shots.svelte'
 
 const BURST_FRAME = `data:image/jpeg;base64,${'A'.repeat(2000)}`
 

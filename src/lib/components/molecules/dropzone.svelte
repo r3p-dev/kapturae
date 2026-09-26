@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
-	import { droppedFiles } from '$lib/upload'
+	import { droppedFiles } from '$lib/capture/upload'
 	import { cn } from '$lib/utils'
 
 	let {

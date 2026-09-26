@@ -9,8 +9,8 @@
 	import { Button } from '$lib/components/ui/button'
 	import { m } from '$lib/paraglide/messages'
 	import { localizeHref } from '$lib/paraglide/runtime'
-	import { FRAMES, type FrameId } from '$lib/frames'
-	import { PRINT_SIZES, SESSION_STEPS, SIZES, pick, type PrintSize } from '$lib/session'
+	import { FRAMES, type FrameId } from '$lib/frames/frames'
+	import { PRINT_SIZES, SESSION_STEPS, SIZES, pick, type PrintSize } from '$lib/session/session'
 
 	type Selection = { size: PrintSize; frame: FrameId }
 

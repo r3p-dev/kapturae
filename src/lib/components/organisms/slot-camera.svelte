@@ -8,9 +8,9 @@
 	import ShutterButton from '$lib/components/atoms/shutter-button.svelte'
 	import CameraStatus from '$lib/components/molecules/camera-status.svelte'
 	import * as ToggleGroup from '$lib/components/ui/toggle-group'
-	import { revoke } from '$lib/blobs'
-	import { BurstRecorder } from '$lib/burst'
-	import { Camera, TIMERS } from '$lib/camera.svelte'
+	import { revoke } from '$lib/storage/blobs'
+	import { BurstRecorder } from '$lib/capture/burst'
+	import { Camera, TIMERS } from '$lib/capture/camera.svelte'
 	import { m } from '$lib/paraglide/messages'
 
 	let { label, onshot }: { label: string; onshot: (url: string, burst: string[]) => void } = $props()
@@ -77,7 +77,7 @@
 	}
 
 	onMount(() => {
-		sound = new Audio(asset('/shutter.mp3'))
+		sound = new Audio(asset('/audio/shutter.mp3'))
 		camera.start()
 
 		return () => {

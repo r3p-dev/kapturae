@@ -1,5 +1,5 @@
 import { locales } from '$lib/paraglide/runtime'
-import { INDEXED_PATHS, alternates, localizedUrl } from '$lib/seo'
+import { INDEXED_PATHS, alternates, localizedUrl } from '$lib/site/seo'
 import type { RequestHandler } from './$types'
 
 export const prerender = true

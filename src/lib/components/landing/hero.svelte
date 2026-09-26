@@ -1,5 +1,6 @@
 <script lang="ts">
 	import RiBatteryFill from 'remixicon-svelte/icons/battery-fill'
+	import InstallButton from '$lib/components/atoms/install-button.svelte'
 	import LangSwitch from '$lib/components/molecules/lang-switch.svelte'
 	import Logo from '$lib/components/atoms/logo.svelte'
 	import SessionShutter from '$lib/components/organisms/session-shutter.svelte'
@@ -40,11 +41,13 @@
 			{m['common.brand']()}
 		</span>
 
-		<span class="flex items-center gap-3.5">
+		<span class="group/tools flex items-center gap-3.5">
 			<span class="hidden rail:inline">ISO 100 · f/5.6</span>
 
+			<InstallButton />
+
 			<LangSwitch>
-				<span class="mr-2 text-[11px] text-muted-foreground">LANG</span>
+				<span class="mr-2 text-[11px] text-muted-foreground mobile:group-has-[[data-install]]/tools:hidden">LANG</span>
 			</LangSwitch>
 
 			<RiBatteryFill aria-hidden="true" class="size-6 mobile:hidden" />

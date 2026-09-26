@@ -12,27 +12,22 @@
 	import SessionHeader from '$lib/components/organisms/session-header.svelte'
 	import { Button } from '$lib/components/ui/button'
 	import * as ToggleGroup from '$lib/components/ui/toggle-group'
-	import { objectUrl, revoke } from '$lib/blobs'
-	import { blankEdit } from '$lib/editor.svelte'
-	import { FRAMES } from '$lib/frames'
-	import { buildOutputs, outputCount, type Output } from '$lib/outputs'
+	import { objectUrl, revoke } from '$lib/storage/blobs'
+	import { blankEdit } from '$lib/editor/editor.svelte'
+	import { frameFor } from '$lib/frames/requested'
+	import { buildOutputs, outputCount, type Output } from '$lib/export/outputs'
 	import { m } from '$lib/paraglide/messages'
 	import { localizeHref } from '$lib/paraglide/runtime'
-	import { recolor } from '$lib/recolor'
-	import { PRINT_SIZES, SESSION_STEPS, SIZES, pick } from '$lib/session'
-	import { endSession, photoFor, shots, useShots } from '$lib/shots.svelte'
+	import { recolor } from '$lib/frames/recolor'
+	import { SESSION_STEPS, SIZES } from '$lib/session/session'
+	import { endSession, photoFor, shots, useShots } from '$lib/session/shots.svelte'
 	import { cn } from '$lib/utils'
 
 	type Stage = 'rendering' | 'done' | 'failed' | 'empty'
 	type Format = 'photo' | 'gif'
 	type Result = { output: Output; url: string; file: File }
 
-	const query = page.url.searchParams
-	const requested = pick(PRINT_SIZES, query.get('size')) ?? '2x6'
-	const frame =
-		FRAMES.find((candidate) => candidate.id === query.get('frame')) ??
-		FRAMES.find((candidate) => candidate.size === requested) ??
-		FRAMES[0]
+	const frame = frameFor(page.url.searchParams)
 	const total = frame.slots.length
 	const again = localizeHref('/session/frame')
 	function pad(value: number) {

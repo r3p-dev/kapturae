@@ -6,10 +6,8 @@ import { build, files, prerendered, version } from '$service-worker'
 
 const worker = self as unknown as ServiceWorkerGlobalScope
 
-// `version` changes with every build, so each deploy gets a cache of its own and the previous one is deleted on
-// activate. Nothing from an older build is ever served once a new worker takes over.
 const CACHE = `kapturae-${version}`
-const SKIPPED = /\.woff$|-(cyrillic|cyrillic-ext|greek|vietnamese)-|\/og-|\.(br|gz)$/
+const SKIPPED = /\.woff$|-(cyrillic|cyrillic-ext|greek|vietnamese)-|\/og\/|\.(br|gz)$/
 
 const ASSETS = new Set([...build, ...files].filter((path) => !SKIPPED.test(path)))
 const PAGES = new Set(prerendered)
@@ -34,17 +32,20 @@ worker.addEventListener('activate', (event) => {
 
 async function networkFirst(request: Request, fallback: string) {
 	const cache = await caches.open(CACHE)
+
 	try {
 		const response = await fetch(request)
 		if (response.ok) {
 			cache.put(request, response.clone())
 		}
+
 		return response
 	} catch (error) {
 		const cached = (await cache.match(request)) ?? (await cache.match(fallback))
 		if (cached) {
 			return cached
 		}
+
 		throw error
 	}
 }
@@ -52,6 +53,7 @@ async function networkFirst(request: Request, fallback: string) {
 async function cacheFirst(request: Request, path: string) {
 	const cache = await caches.open(CACHE)
 	const cached = await cache.match(path)
+
 	return cached ?? fetch(request)
 }
 

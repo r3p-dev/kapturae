@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { SIZES, type PrintSize } from '$lib/session'
+	import { SIZES, type PrintSize } from '$lib/session/session'
 	import { cn } from '$lib/utils'
 
 	let { size, class: className }: { size: PrintSize; class?: string } = $props()

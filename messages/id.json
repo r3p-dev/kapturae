@@ -4,6 +4,8 @@
 		"brand": "Kapturae",
 		"logo_label": "Logo Kapturae",
 		"lang_label": "Pilih bahasa",
+		"install": "Pasang aplikasi",
+		"install_short": "Pasang",
 		"nav": {
 			"aria": "Navigasi utama",
 			"flow": "Alur",
@@ -480,8 +482,6 @@
 			"zoom_out": "Perkecil",
 			"zoom_in": "Perbesar",
 			"no_crop": "Tidak ada crop — cukup zoom dan geser foto di dalam slot.",
-			"retake": "Retake slot ini",
-			"retake_short": "Retake",
 			"take": "Ambil foto",
 			"adjust_title": "Penyesuaian · Slot {n}",
 			"brightness": "Kecerahan",

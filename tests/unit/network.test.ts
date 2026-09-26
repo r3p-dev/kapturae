@@ -19,26 +19,24 @@ describe('network surface', () => {
 
 	test('the service worker only fetches same-origin GET requests', () => {
 		const worker = readFileSync('src/service-worker.ts', 'utf8')
-
 		expect(worker).toContain("request.method !== 'GET' || url.origin !== worker.location.origin")
 		expect(worker).not.toMatch(/indexedDB|blob:|postMessage/)
 	})
 
 	test('no absolute urls outside links to the author', () => {
 		const urls = SOURCES.flatMap((file) => readFileSync(file, 'utf8').match(/https?:\/\/[^\s"'`)<>]+/g) ?? [])
+
 		const external = urls.filter(
 			(url) =>
 				!/^https:\/\/(kapturae\.r3p\.dev|r3p\.dev|github\.com\/r3p-dev|schema\.org)|^http:\/\/www\.(w3|sitemaps)\.org/.test(
 					url
 				)
 		)
-
 		expect(external).toEqual([])
 	})
 
 	test('the only endpoint is the sitemap, rendered at build time', () => {
 		const endpoints = [...new Glob('src/routes/**/+{server,page.server,layout.server}.ts').scanSync()]
-
 		expect(endpoints).toEqual(['src/routes/sitemap.xml/+server.ts'])
 		expect(readFileSync(endpoints[0], 'utf8')).toContain('export const prerender = true')
 	})

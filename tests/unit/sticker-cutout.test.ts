@@ -7,7 +7,7 @@ import {
 	removeBackground,
 	resizeCrop,
 	strengthToThreshold
-} from '$lib/sticker-cutout'
+} from '$lib/stickers/cutout'
 
 type Rgb = [number, number, number]
 

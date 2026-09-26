@@ -1,9 +1,9 @@
 import { redirect } from '@sveltejs/kit'
 import { browser } from '$app/environment'
-import { FRAMES } from '$lib/frames'
+import { FRAMES } from '$lib/frames/frames'
 import { localizeHref } from '$lib/paraglide/runtime'
-import { PRINT_SIZES, pick } from '$lib/session'
-import { shots } from '$lib/shots.svelte'
+import { PRINT_SIZES, pick } from '$lib/session/session'
+import { shots } from '$lib/session/shots.svelte'
 import type { PageLoad } from './$types'
 
 export const load: PageLoad = async function ({ url, parent }) {

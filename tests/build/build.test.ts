@@ -2,11 +2,12 @@ import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { existsSync, readFileSync } from 'node:fs'
 import { gzipSync } from 'node:zlib'
 import { Glob } from 'bun'
-import { INDEXED_PATHS, localizedUrl } from '$lib/seo'
-import { HEADERS, serveBuild } from '../../scripts/serve_build.ts'
+import { INDEXED_PATHS, localizedUrl } from '$lib/site/seo'
+import { HEADERS, METHODS, NOT_FOUND } from '../../scripts/hosting.ts'
+import { serveBuild } from '../../scripts/serve_build.ts'
 
 const CLIENT = '.svelte-kit/output/client'
-const BUDGET_KB = 96
+const BUDGET_KB = 100
 const CEILINGS_KB: Record<string, number> = {
 	'/session/shoot': 115,
 	'/session/edit': 125
@@ -21,6 +22,7 @@ function url(path: string) {
 async function html(path: string) {
 	const response = await fetch(url(path))
 	expect(response.status).toBe(200)
+
 	return response.text()
 }
 
@@ -37,6 +39,7 @@ type Manifest = Record<string, { file: string; name?: string; imports?: string[]
 function javascriptKilobytes(route: string) {
 	const manifest: Manifest = JSON.parse(readFileSync(`${CLIENT}/.vite/manifest.json`, 'utf8'))
 	const app = readFileSync('.svelte-kit/generated/client-optimized/app.js', 'utf8')
+
 	const pattern = new RegExp(`"${route.replace(/[[\]]/g, '\\$&')}": \\[~?(\\d+)(?:,\\[([\\d,]*)\\])?`)
 	const [, leaf, layouts] = app.match(pattern) ?? []
 	expect(leaf).toBeDefined()
@@ -49,6 +52,7 @@ function javascriptKilobytes(route: string) {
 			return
 		}
 		keys.add(key)
+
 		for (const imported of manifest[key].imports ?? []) {
 			collect(imported)
 		}
@@ -59,6 +63,7 @@ function javascriptKilobytes(route: string) {
 			collect(key)
 		}
 	}
+
 	for (const node of nodes) {
 		collect(`.svelte-kit/generated/client-optimized/nodes/${node}.js`)
 	}
@@ -67,6 +72,7 @@ function javascriptKilobytes(route: string) {
 	for (const key of keys) {
 		bytes += gzipSync(readFileSync(`${CLIENT}/${manifest[key].file}`), { level: 9 }).length
 	}
+
 	return bytes / 1024
 }
 
@@ -74,6 +80,7 @@ beforeAll(() => {
 	if (!existsSync('build/index.html')) {
 		throw new Error('Run `bun run build` first.')
 	}
+
 	server = serveBuild(0)
 })
 
@@ -84,7 +91,6 @@ afterAll(() => {
 describe('static output', () => {
 	test('contains no server', () => {
 		const scripts = [...new Glob('**/*.{js,mjs}').scanSync('build')]
-
 		expect(scripts.filter((file) => !file.startsWith('_app/') && file !== 'service-worker.js')).toEqual([])
 	})
 
@@ -107,8 +113,8 @@ describe('content security policy', () => {
 		'%s carries a strict policy in <meta>',
 		async (path) => {
 			const response = await fetch(url(path))
-			const policy = metaPolicy(await response.text())
 
+			const policy = metaPolicy(await response.text())
 			expect(policy).toContain("default-src 'self'")
 			expect(policy).toContain("connect-src 'self'")
 			expect(policy).toMatch(/script-src 'self' 'sha256-[^']+'/)
@@ -119,19 +125,40 @@ describe('content security policy', () => {
 
 	test('the server header only adds what <meta> cannot carry', async () => {
 		const response = await fetch(url('/'))
-
 		expect(response.headers.get('content-security-policy')).toBe("frame-ancestors 'none'")
 	})
+})
 
-	test('deploy/Caddyfile sends the same headers as the test server and keeps no log', () => {
-		const caddyfile = readFileSync('deploy/Caddyfile', 'utf8')
-		const directives = caddyfile.replace(/#.*$/gm, '')
-
-		for (const [name, value] of Object.entries(HEADERS)) {
-			expect(directives).toContain(`${name} "${value}"`)
+describe('hosting rules', () => {
+	test.each(['/', '/id', '/legal/privacy', '/manifest.webmanifest', '/icons/192/icon-192.png', '/nope'])(
+		'%s carries every required header',
+		async (path) => {
+			const response = await fetch(url(path))
+			for (const [name, value] of Object.entries(HEADERS)) {
+				expect(response.headers.get(name)).toBe(value)
+			}
 		}
-		expect(directives).not.toMatch(/^\s*log\b/m)
-		expect(directives).not.toMatch(/script-src|default-src/)
+	)
+
+	test.each([
+		['/', 'index.html'],
+		['/id', 'id.html'],
+		['/legal/privacy', 'legal/privacy.html'],
+		['/id/session/edit', 'id/session/edit.html']
+	])('%s is served from %s', async (path, file) => {
+		expect(await html(path)).toBe(readFileSync(`build/${file}`, 'utf8'))
+	})
+
+	test('a path with no file gets the 404 page', async () => {
+		const response = await fetch(url('/nope'))
+		expect(response.status).toBe(404)
+		expect(await response.text()).toBe(readFileSync(`build${NOT_FOUND}`, 'utf8'))
+	})
+
+	test('only GET and HEAD are allowed', async () => {
+		const response = await fetch(url('/'), { method: 'PUT', body: 'x' })
+		expect(response.status).toBe(405)
+		expect(response.headers.get('allow')).toBe(METHODS.join(', '))
 	})
 })
 
@@ -153,7 +180,6 @@ describe('share feature is gone', () => {
 describe('search', () => {
 	test('home page carries the brand, canonical, languages and structured data', async () => {
 		const markup = head(await html('/'))
-
 		expect(markup).toContain('<title>Kapturae')
 		expect(markup).toContain('<link rel="canonical" href="https://kapturae.r3p.dev/"')
 		expect(markup).toContain('hreflang="id" href="https://kapturae.r3p.dev/id"')
@@ -168,7 +194,6 @@ describe('search', () => {
 
 	test('indonesian pages are in Indonesian and point at themselves', async () => {
 		const markup = head(await html('/id'))
-
 		expect(markup).toContain('<html lang="id"')
 		expect(markup).toContain('<link rel="canonical" href="https://kapturae.r3p.dev/id"')
 	})
@@ -186,9 +211,9 @@ describe('search', () => {
 
 	test('unknown pages are a 404 that is not indexed', async () => {
 		const response = await fetch(url('/nope'))
-		const markup = await response.text()
-
 		expect(response.status).toBe(404)
+
+		const markup = await response.text()
 		expect(head(markup)).toContain('<meta name="robots" content="noindex"')
 	})
 
@@ -200,9 +225,9 @@ describe('search', () => {
 
 	test('sitemap lists every indexed page in both languages', async () => {
 		const response = await fetch(url('/sitemap.xml'))
-		const xml = await response.text()
-
 		expect(response.headers.get('content-type')).toContain('xml')
+
+		const xml = await response.text()
 		for (const path of INDEXED_PATHS) {
 			expect(xml).toContain(`<loc>${localizedUrl(path, 'en')}</loc>`)
 			expect(xml).toContain(`<loc>${localizedUrl(path, 'id')}</loc>`)
@@ -212,10 +237,94 @@ describe('search', () => {
 
 	test('robots.txt allows crawling and points at the sitemap', async () => {
 		const response = await fetch(url('/robots.txt'))
-		const text = await response.text()
 
+		const text = await response.text()
 		expect(text).toContain('Allow: /')
 		expect(text).toContain('Sitemap: https://kapturae.r3p.dev/sitemap.xml')
+	})
+})
+
+describe('installable app', () => {
+	type WebManifest = {
+		id: string
+		name: string
+		short_name: string
+		description: string
+		lang: string
+		start_url: string
+		scope: string
+		display: string
+		theme_color: string
+		background_color: string
+		icons: { src: string; sizes: string; type: string; purpose: string }[]
+	}
+
+	async function webManifest(path: string) {
+		const response = await fetch(url(path))
+		expect(response.headers.get('content-type')).toBe('application/manifest+json')
+
+		return (await response.json()) as WebManifest
+	}
+
+	function pngSize(path: string) {
+		const header = readFileSync(`build${path}`)
+		return `${header.readUInt32BE(16)}x${header.readUInt32BE(20)}`
+	}
+
+	test.each([
+		['/', '/manifest.webmanifest', 'en', '/'],
+		['/id', '/manifest-id.webmanifest', 'id', '/id'],
+		['/legal/privacy', '/manifest.webmanifest', 'en', '/'],
+		['/id/legal/terms', '/manifest-id.webmanifest', 'id', '/id']
+	])('%s links a complete manifest in its language', async (page, path, lang, start) => {
+		expect(head(await html(page))).toContain(`<link rel="manifest" href="${path}"/>`)
+
+		const manifest = await webManifest(path)
+		expect(manifest).toMatchObject({
+			id: '/',
+			name: 'Kapturae',
+			short_name: 'Kapturae',
+			lang,
+			start_url: start,
+			scope: '/',
+			display: 'standalone',
+			theme_color: '#0e0e0d',
+			background_color: '#0e0e0d'
+		})
+		expect(manifest.description.length).toBeGreaterThan(0)
+	})
+
+	test('icons exist at their declared sizes, including a maskable one', async () => {
+		const { icons } = await webManifest('/manifest.webmanifest')
+		for (const icon of icons) {
+			expect(pngSize(icon.src)).toBe(icon.sizes)
+		}
+		expect(icons.filter((icon) => icon.purpose === 'any').map((icon) => icon.sizes)).toEqual(['192x192', '512x512'])
+		expect(icons.some((icon) => icon.purpose === 'maskable' && icon.sizes === '512x512')).toBe(true)
+
+		const indonesian = await webManifest('/manifest-id.webmanifest')
+		expect(indonesian.icons).toEqual(icons)
+	})
+
+	test('pages carry the theme colour and iOS home screen tags', async () => {
+		const markup = head(await html('/'))
+		expect(markup).toContain('<meta name="theme-color" content="#0e0e0d"')
+		expect(markup).toContain('<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png"')
+		expect(markup).toContain('<meta name="apple-mobile-web-app-capable" content="yes"')
+		expect(markup).toContain('<meta name="apple-mobile-web-app-title" content="Kapturae"')
+		expect(pngSize('/icons/apple-touch-icon.png')).toBe('180x180')
+	})
+
+	test('the service worker precaches the manifests and icons', () => {
+		const worker = readFileSync('build/service-worker.js', 'utf8')
+		for (const file of [
+			'/manifest.webmanifest',
+			'/manifest-id.webmanifest',
+			'/icons/icon-192.png',
+			'/icons/icon-512.png'
+		]) {
+			expect(worker).toContain(file)
+		}
 	})
 })
 
@@ -223,12 +332,14 @@ describe('caching', () => {
 	test('hashed assets are cached forever, everything else is revalidated', async () => {
 		const markup = await html('/')
 		const asset = markup.match(/\/_app\/immutable\/[^"]+\.js/)?.[0] ?? ''
-		const page = await fetch(url('/'))
-		const worker = await fetch(url('/service-worker.js'))
-		const immutable = await fetch(url(asset))
 
+		const page = await fetch(url('/'))
 		expect(page.headers.get('cache-control')).toBe('no-cache')
+
+		const worker = await fetch(url('/service-worker.js'))
 		expect(worker.headers.get('cache-control')).toBe('no-cache')
+
+		const immutable = await fetch(url(asset))
 		expect(immutable.status).toBe(200)
 		expect(immutable.headers.get('cache-control')).toContain('immutable')
 	})

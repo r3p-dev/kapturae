@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
-	import { SIZES, type Frame } from '$lib/session'
+	import { SIZES, type Frame } from '$lib/session/session'
 	import { cn } from '$lib/utils'
 
 	let {

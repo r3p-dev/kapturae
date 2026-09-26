@@ -4,6 +4,8 @@
 		"brand": "Kapturae",
 		"logo_label": "Kapturae logo",
 		"lang_label": "Choose language",
+		"install": "Install app",
+		"install_short": "Install",
 		"nav": {
 			"aria": "Main navigation",
 			"flow": "Flow",
@@ -480,8 +482,6 @@
 			"zoom_out": "Zoom out",
 			"zoom_in": "Zoom in",
 			"no_crop": "No cropping — just zoom and move the photo inside its slot.",
-			"retake": "Retake this slot",
-			"retake_short": "Retake",
 			"take": "Take photo",
 			"adjust_title": "Adjustments · Slot {n}",
 			"brightness": "Brightness",

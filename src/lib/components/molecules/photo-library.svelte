@@ -2,7 +2,7 @@
 	import RiCameraLine from 'remixicon-svelte/icons/camera-line'
 	import RiUploadLine from 'remixicon-svelte/icons/upload-2-line'
 	import { m } from '$lib/paraglide/messages'
-	import { shots } from '$lib/shots.svelte'
+	import { shots } from '$lib/session/shots.svelte'
 	import { cn } from '$lib/utils'
 
 	let {

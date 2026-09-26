@@ -1,13 +1,18 @@
 {
+	"id": "/",
 	"name": "Kapturae",
 	"short_name": "Kapturae",
-	"description": "A free photo booth that runs in your browser.",
+	"description": "A free photo booth that runs in your browser. Nothing is uploaded.",
+	"lang": "en",
+	"dir": "ltr",
 	"start_url": "/",
+	"scope": "/",
 	"display": "standalone",
-	"background_color": "#f4f2ee",
+	"background_color": "#0e0e0d",
 	"theme_color": "#0e0e0d",
 	"icons": [
-		{ "src": "/logo.png", "sizes": "512x512", "type": "image/png" },
-		{ "src": "/logo.svg", "sizes": "any", "type": "image/svg+xml" }
+		{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+		{ "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+		{ "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
 	]
 }

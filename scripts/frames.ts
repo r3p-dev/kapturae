@@ -2,7 +2,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { PNG } from 'pngjs'
 import type { Plugin } from 'vite'
-import { PRINT_SIZES, inkOn, type Frame, type FrameSlot, type PrintSize } from '../src/lib/session.ts'
+import { PRINT_SIZES, inkOn, type Frame, type FrameSlot, type PrintSize } from '../src/lib/session/session.ts'
 
 const FRAMES_DIRECTORY = resolve('static/frames')
 const ID = 'virtual:frames'

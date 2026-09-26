@@ -6,93 +6,13 @@
 	import LangSwitch from '$lib/components/molecules/lang-switch.svelte'
 	import Logo from '$lib/components/atoms/logo.svelte'
 	import Seo from '$lib/components/atoms/seo.svelte'
-	import { LEGAL_DOCUMENTS, type LegalDocument } from '$lib/legal'
+	import { LEGAL_DOCUMENTS, type LegalDocument } from '$lib/site/legal'
 	import { m } from '$lib/paraglide/messages'
 	import { localizeHref } from '$lib/paraglide/runtime'
 	import type { PageProps } from './$types'
-
-	type Message = () => string
-	type Page = {
-		title: Message
-		summary: Message
-		sections: [title: Message, body: Message, href?: string][]
-	}
+	import { LEGAL_PAGES } from '$lib/i18n/messages'
 
 	let { params }: PageProps = $props()
-
-	const pages: Record<LegalDocument, Page> = {
-		privacy: {
-			title: m['legal.privacy.title'],
-			summary: m['legal.privacy.summary'],
-			sections: [
-				[m['legal.privacy.device.title'], m['legal.privacy.device.body']],
-				[m['legal.privacy.camera.title'], m['legal.privacy.camera.body']],
-				[m['legal.privacy.storage.title'], m['legal.privacy.storage.body']],
-				[m['legal.privacy.clearing.title'], m['legal.privacy.clearing.body']],
-				[m['legal.privacy.server.title'], m['legal.privacy.server.body']],
-				[m['legal.privacy.third_parties.title'], m['legal.privacy.third_parties.body']],
-				[m['legal.privacy.rights.title'], m['legal.privacy.rights.body']],
-				[m['legal.privacy.changes.title'], m['legal.privacy.changes.body']]
-			]
-		},
-		terms: {
-			title: m['legal.terms.title'],
-			summary: m['legal.terms.summary'],
-			sections: [
-				[m['legal.terms.service.title'], m['legal.terms.service.body']],
-				[m['legal.terms.responsibility.title'], m['legal.terms.responsibility.body']],
-				[m['legal.terms.access.title'], m['legal.terms.access.body']],
-				[m['legal.terms.watermark.title'], m['legal.terms.watermark.body']],
-				[m['legal.terms.prohibited.title'], m['legal.terms.prohibited.body']],
-				[m['legal.terms.designs.title'], m['legal.terms.designs.body']],
-				[m['legal.terms.warranty.title'], m['legal.terms.warranty.body']],
-				[m['legal.terms.law.title'], m['legal.terms.law.body']]
-			]
-		},
-		deletion: {
-			title: m['legal.deletion.title'],
-			summary: m['legal.deletion.summary'],
-			sections: [
-				[m['legal.deletion.cleared.title'], m['legal.deletion.cleared.body']],
-				[m['legal.deletion.yourself.title'], m['legal.deletion.yourself.body']],
-				[m['legal.deletion.elsewhere.title'], m['legal.deletion.elsewhere.body']],
-				[m['legal.deletion.requests.title'], m['legal.deletion.requests.body']]
-			]
-		},
-		camera: {
-			title: m['legal.camera.title'],
-			summary: m['legal.camera.summary'],
-			sections: [
-				[m['legal.camera.why.title'], m['legal.camera.why.body']],
-				[m['legal.camera.when.title'], m['legal.camera.when.body']],
-				[m['legal.camera.recording.title'], m['legal.camera.recording.body']],
-				[m['legal.camera.manage.title'], m['legal.camera.manage.body']],
-				[m['legal.camera.denied.title'], m['legal.camera.denied.body']]
-			]
-		},
-		data: {
-			title: m['legal.data.title'],
-			summary: m['legal.data.summary'],
-			sections: [
-				[m['legal.data.capture.title'], m['legal.data.capture.body']],
-				[m['legal.data.edit.title'], m['legal.data.edit.body']],
-				[m['legal.data.finish.title'], m['legal.data.finish.body']],
-				[m['legal.data.storage.title'], m['legal.data.storage.body']],
-				[m['legal.data.cookies.title'], m['legal.data.cookies.body']]
-			]
-		},
-		contact: {
-			title: m['legal.contact.title'],
-			summary: m['legal.contact.summary'],
-			sections: [
-				[m['legal.contact.email.title'], m['legal.contact.email.body'], `mailto:${m['legal.contact.email.body']()}`],
-				[m['legal.contact.website.title'], m['legal.contact.website.body'], 'https://r3p.dev'],
-				[m['legal.contact.shared.title'], m['legal.contact.shared.body']],
-				[m['legal.contact.response.title'], m['legal.contact.response.body']],
-				[m['legal.contact.operator.title'], m['legal.contact.operator.body']]
-			]
-		}
-	}
 
 	const home = localizeHref('/').replace(/(.)\/$/, '$1')
 	function href(name: LegalDocument) {
@@ -103,7 +23,7 @@
 	}
 
 	const slug = $derived<LegalDocument>(params.doc ?? 'privacy')
-	const current = $derived(pages[slug])
+	const current = $derived(LEGAL_PAGES[slug])
 	const count = $derived(
 		m['legal.count']({ n: pad(LEGAL_DOCUMENTS.indexOf(slug) + 1), total: pad(LEGAL_DOCUMENTS.length) })
 	)
@@ -156,7 +76,7 @@
 						class="flex h-13 items-center gap-3.5 px-4 text-foreground no-underline hover:bg-paper-2 aria-[current=page]:bg-ink aria-[current=page]:text-paper"
 					>
 						<span class="font-mono text-xs tracking-widest">{pad(index + 1)}</span>
-						<span class="text-[15px] font-medium">{pages[key].title()}</span>
+						<span class="text-[15px] font-medium">{LEGAL_PAGES[key].title()}</span>
 					</a>
 				{/each}
 
@@ -180,7 +100,7 @@
 						class="h-12 w-full appearance-none rounded-none border-2 border-ink bg-paper pr-11 pl-3 text-base text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
 					>
 						{#each LEGAL_DOCUMENTS as key, index (key)}
-							<option value={key}>{pad(index + 1)} · {pages[key].title()}</option>
+							<option value={key}>{pad(index + 1)} · {LEGAL_PAGES[key].title()}</option>
 						{/each}
 					</select>
 					<RiArrowDownSLine

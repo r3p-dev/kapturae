@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button'
-	import type { CameraStatus } from '$lib/camera.svelte'
+	import type { CameraStatus } from '$lib/capture/camera.svelte'
 	import { m } from '$lib/paraglide/messages'
 	import { localizeHref } from '$lib/paraglide/runtime'
 	import { cn } from '$lib/utils'
