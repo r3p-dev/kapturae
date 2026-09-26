@@ -257,6 +257,12 @@ export class History<T> {
 		this.#base = current
 	}
 
+	revert() {
+		if (JSON.stringify(this.value) !== this.#base) {
+			this.value = JSON.parse(this.#base)
+		}
+	}
+
 	undo() {
 		this.commit()
 		this.#step(this.#past, this.#future)

@@ -6,14 +6,23 @@
 	import { m } from '$lib/paraglide/messages'
 	import { cn } from '$lib/utils'
 
-	const DRAG_SLOP = 4
+	const MOUSE_SLOP = 4
+	const TOUCH_SLOP = 8
 	const WHEEL_SENSITIVITY = 0.008
 	const LINE_HEIGHT_PX = 16
+
+	type TrackedPointer = {
+		x: number
+		y: number
+		target: Element
+	}
 
 	type PanSession = {
 		id: number
 		startX: number
 		startY: number
+		slop: number
+		target: Element
 		isPanning: boolean
 		isChildDrag: boolean
 	}
@@ -36,10 +45,11 @@
 	let zoom = $state<ZoomState>({ scale: FRAME_ZOOM.min, x: 0, y: 0 })
 	let isDragging = $state(false)
 
-	const pointers = new SvelteMap<number, Point>()
+	const pointers = new SvelteMap<number, TrackedPointer>()
 	let pinch: { distance: number; midpoint: Point } | null = null
 	let panSession: PanSession | null = null
 	let suppressClick = false
+	let isCancellingChild = false
 
 	const transform = $derived(
 		zoom.scale === FRAME_ZOOM.min && zoom.x === 0 && zoom.y === 0
@@ -51,12 +61,29 @@
 		isZoomed = zoom.scale > FRAME_ZOOM.min
 	})
 
-	export function reset() {
-		zoom = { scale: FRAME_ZOOM.min, x: 0, y: 0 }
+	function clearPointers() {
 		pointers.clear()
 		pinch = null
 		panSession = null
 		isDragging = false
+	}
+
+	function cancelChild(target: Element, pointerId: number) {
+		if (target === viewport || !viewport?.contains(target)) {
+			return
+		}
+
+		isCancellingChild = true
+		try {
+			target.dispatchEvent(new PointerEvent('pointercancel', { pointerId, bubbles: true }))
+		} finally {
+			isCancellingChild = false
+		}
+	}
+
+	export function reset() {
+		zoom = { scale: FRAME_ZOOM.min, x: 0, y: 0 }
+		clearPointers()
 		suppressClick = false
 	}
 
@@ -149,11 +176,19 @@
 			return
 		}
 
+		if (event.pointerType === 'mouse' || (event.pointerType === 'touch' && event.isPrimary)) {
+			for (const [id, entry] of pointers) {
+				cancelChild(entry.target, id)
+			}
+			clearPointers()
+		}
+
 		suppressClick = false
-		pointers.set(event.pointerId, { x: event.clientX, y: event.clientY })
+		pointers.set(event.pointerId, { x: event.clientX, y: event.clientY, target })
 
 		if (pointers.size >= 2) {
-			for (const id of pointers.keys()) {
+			for (const [id, entry] of pointers) {
+				cancelChild(entry.target, id)
 				try {
 					viewport?.setPointerCapture(id)
 				} catch {}
@@ -162,6 +197,7 @@
 			pinch = { distance: spread(), midpoint: midpoint() }
 			panSession = null
 			isDragging = true
+			suppressClick = true
 			event.stopPropagation()
 			return
 		}
@@ -172,6 +208,8 @@
 			id: event.pointerId,
 			startX: event.clientX,
 			startY: event.clientY,
+			slop: event.pointerType === 'touch' ? TOUCH_SLOP : MOUSE_SLOP,
+			target,
 			isPanning: false,
 			isChildDrag
 		}
@@ -185,7 +223,7 @@
 
 		const deltaX = event.clientX - previous.x
 		const deltaY = event.clientY - previous.y
-		pointers.set(event.pointerId, { x: event.clientX, y: event.clientY })
+		pointers.set(event.pointerId, { x: event.clientX, y: event.clientY, target: previous.target })
 
 		if (pinch && pointers.size >= 2) {
 			const nextDistance = spread()
@@ -208,10 +246,11 @@
 
 		if (panSession?.id === event.pointerId && !panSession.isChildDrag && zoom.scale > FRAME_ZOOM.min) {
 			if (!panSession.isPanning) {
-				if (Math.hypot(event.clientX - panSession.startX, event.clientY - panSession.startY) < DRAG_SLOP) {
+				if (Math.hypot(event.clientX - panSession.startX, event.clientY - panSession.startY) < panSession.slop) {
 					return
 				}
 
+				cancelChild(panSession.target, event.pointerId)
 				panSession.isPanning = true
 				isDragging = true
 				suppressClick = true
@@ -227,7 +266,10 @@
 	}
 
 	function onPointerEndCapture(event: PointerEvent) {
-		pointers.delete(event.pointerId)
+		if (isCancellingChild || !pointers.delete(event.pointerId)) {
+			return
+		}
+
 		if (pointers.size < 2) {
 			pinch = null
 		}
@@ -285,6 +327,8 @@
 	}
 </script>
 
+<svelte:window onpointerup={onPointerEndCapture} onpointercancel={onPointerEndCapture} onblur={clearPointers} />
+
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
@@ -296,6 +340,7 @@
 	onpointermovecapture={onPointerMoveCapture}
 	onpointerupcapture={onPointerEndCapture}
 	onpointercancelcapture={onPointerEndCapture}
+	onlostpointercapture={onPointerEndCapture}
 	onclickcapture={onClickCapture}
 	ondblclick={onDoubleClick}
 	onkeydown={onKeyDown}

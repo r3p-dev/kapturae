@@ -97,13 +97,7 @@
 	{/if}
 {/snippet}
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<div
-	bind:this={gestures.stage}
-	bind:clientWidth={gestures.width}
-	onpointerdown={(event) => gestures.stageDown(event)}
-	class={cn('relative select-none', className)}
->
+<div bind:this={gestures.stage} bind:clientWidth={gestures.width} class={cn('relative select-none', className)}>
 	<FrameImage {frame} {photo} />
 
 	<svg
@@ -128,7 +122,7 @@
 			onpointerdown={(event) => gestures.slotDown(event, index)}
 			onpointermove={(event) => gestures.slotMove(event)}
 			onpointerup={(event) => gestures.release(event)}
-			onpointercancel={(event) => gestures.release(event)}
+			onpointercancel={() => gestures.cancel()}
 			onlostpointercapture={(event) => gestures.release(event)}
 			onkeydown={(event) => gestures.slotKey(event, index)}
 			class={cn(
@@ -171,7 +165,7 @@
 				onpointerdown={(event) => gestures.itemDown(event, entry)}
 				onpointermove={(event) => gestures.itemMove(event, entry)}
 				onpointerup={(event) => gestures.release(event)}
-				onpointercancel={(event) => gestures.release(event)}
+				onpointercancel={() => gestures.cancel()}
 				onlostpointercapture={(event) => gestures.release(event)}
 				onkeydown={(event) => gestures.itemKey(event, entry)}
 				class="block w-full cursor-move touch-none outline-offset-2 focus-visible:outline-2 focus-visible:outline-primary aria-pressed:shadow-[0_0_0_1px_rgba(14,14,13,0.55)] aria-pressed:outline-2 aria-pressed:outline-paper aria-pressed:outline-dashed"
@@ -207,7 +201,7 @@
 					onpointerdown={(event) => gestures.resizeDown(event, entry)}
 					onpointermove={(event) => gestures.resizeMove(event, entry)}
 					onpointerup={(event) => gestures.resizeUp(event)}
-					onpointercancel={(event) => gestures.resizeUp(event)}
+					onpointercancel={() => gestures.cancel()}
 					onlostpointercapture={(event) => gestures.resizeUp(event)}
 					class="{handle} -bottom-3.5 -left-3.5 cursor-nesw-resize touch-none bg-paper text-ink"
 				>
@@ -264,7 +258,7 @@
 			onpointerdown={(event) => gestures.brushDown(event)}
 			onpointermove={(event) => gestures.brushMove(event)}
 			onpointerup={(event) => gestures.release(event)}
-			onpointercancel={(event) => gestures.release(event)}
+			onpointercancel={() => gestures.cancel()}
 			onlostpointercapture={(event) => gestures.release(event)}
 			class="absolute inset-0 cursor-crosshair touch-none"
 		></div>

@@ -34,9 +34,10 @@
 		<FinishButton {editor} class="px-5" />
 	</div>
 
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
-		onpointerdown={(event) => {
+		onclick={(event) => {
 			if ((event.target as Element).closest('button, .cursor-crosshair')) {
 				return
 			}
@@ -76,8 +77,14 @@
 			</div>
 		{/if}
 
-		{#if editor.slot !== null && editor.current && !editor.tool}
+		{#if editor.slot !== null && editor.current && editor.tool !== 'brush'}
 			<SlotActions {editor} current={editor.current} />
 		{/if}
+
+		<span
+			class="{mono} pointer-events-none absolute inset-x-0 bottom-2.5 z-10 text-center text-[10px] tracking-widest text-muted-foreground rail:hidden"
+		>
+			{editor.hint ?? m['session.edit.hint_touch']()}
+		</span>
 	</div>
 </section>

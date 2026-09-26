@@ -1,10 +1,26 @@
 import { SvelteMap } from 'svelte/reactivity'
-import type { EditState } from '$lib/editor/edit-state.svelte'
+import type { EditState, Move } from '$lib/editor/edit-state.svelte'
 import { ITEM_SIZE, ZOOM, clamp, panReach, type Item, type Stroke } from '$lib/editor/editor.svelte'
 
 const PAN_STEP = 0.1
 const MIN_STEP = 0.4
 const DRAG_SLOP = 4
+const TOUCH_SLOP = 8
+
+type PointerEntry = {
+	x: number
+	y: number
+	startX: number
+	startY: number
+	slop: number
+	hasMoved: boolean
+}
+
+type Snapshot = {
+	slot: number | null
+	item: number | null
+	move: Move | null
+}
 
 type Carry = { id: number; x: number; y: number; hasTravelled: boolean; isPicking: boolean }
 type Resize = { id: number; centerX: number; centerY: number; distance: number; size: number }
@@ -18,8 +34,8 @@ export class StageGestures {
 
 	percentPerPixel = $derived(this.width ? 100 / this.width : 0)
 
-	#pointers = new SvelteMap<number, { x: number; y: number }>()
-	#pinch: { distance: number; zoom: number } | null = null
+	#pointers = new SvelteMap<number, PointerEntry>()
+	#before: Snapshot | null = null
 	#stroke: Stroke | null = null
 	#isErasing = false
 	#carry: Carry | null = null
@@ -29,28 +45,40 @@ export class StageGestures {
 		this.editor = editor
 	}
 
-	stageDown(event: PointerEvent) {
-		if ((event.target as Element).closest('button')) {
-			return
-		}
-
-		this.editor.slot = null
-		this.editor.item = null
-		this.editor.move = null
-	}
-
 	release(event: PointerEvent) {
 		if (!this.#pointers.delete(event.pointerId)) {
 			return
 		}
 
-		this.#pinch = null
 		this.#stroke = null
 		this.#isErasing = false
+		this.#before = null
 
 		if (!this.#pointers.size) {
 			this.editor.commit()
 		}
+	}
+
+	cancel() {
+		if (!this.#pointers.size && !this.#carry && !this.#resize) {
+			return
+		}
+
+		this.#pointers.clear()
+		this.#stroke = null
+		this.#isErasing = false
+		this.#carry = null
+		this.#resize = null
+		this.ghost = null
+
+		if (this.#before) {
+			this.editor.slot = this.#before.slot
+			this.editor.item = this.#before.item
+			this.editor.move = this.#before.move
+			this.#before = null
+		}
+
+		this.editor.history.revert()
 	}
 
 	pannable(index: number) {
@@ -59,45 +87,49 @@ export class StageGestures {
 	}
 
 	slotDown(event: PointerEvent, index: number) {
+		if (event.pointerType === 'mouse' || (event.pointerType === 'touch' && event.isPrimary)) {
+			this.#pointers.clear()
+		}
+
+		if (this.#pointers.size) {
+			return
+		}
+
 		const { editor } = this
-		if (editor.move && !this.#pointers.size) {
+		this.#before = {
+			slot: editor.slot,
+			item: editor.item,
+			move: editor.move ? { ...editor.move } : null
+		}
+
+		if (editor.move) {
 			if (index !== editor.move.from && editor.photos[index]) {
-				return this.#swap(editor.move.from, index)
+				this.#grab(event)
+				this.#swap(editor.move.from, index, false)
+				return
 			}
 
 			editor.move = null
 		}
 
-		if (!this.#pointers.size) {
-			editor.slot = index
-			editor.item = null
-		}
+		editor.slot = index
+		editor.item = null
 
-		if (editor.slot === null || !editor.photos[editor.slot]) {
+		if (!editor.photos[index]) {
 			return
 		}
 
 		this.#grab(event)
-
-		if (this.#pointers.size === 2) {
-			this.#pinch = { distance: this.#spread(), zoom: editor.edit.slots[editor.slot].zoom }
-		}
 	}
 
 	slotMove(event: PointerEvent) {
-		const movement = this.#delta(event)
+		const movement = this.#delta(event, true)
 		const { slot } = this.editor
 		if (!movement || !this.stage || slot === null) {
 			return
 		}
 
 		const slotEdit = this.editor.edit.slots[slot]
-
-		if (this.#pinch && this.#pointers.size === 2) {
-			slotEdit.zoom = clamp(Math.round((this.#pinch.zoom * this.#spread()) / this.#pinch.distance), ZOOM.min, ZOOM.max)
-			return
-		}
-
 		const reach = this.#reachOf(slot)
 		if (reach.x > 0.5) {
 			slotEdit.x = clamp(slotEdit.x + movement.x / reach.x, -1, 1)
@@ -224,6 +256,15 @@ export class StageGestures {
 	}
 
 	itemDown(event: PointerEvent, entry: Item) {
+		if (event.pointerType === 'mouse' || (event.pointerType === 'touch' && event.isPrimary)) {
+			this.#pointers.clear()
+		}
+
+		this.#before = {
+			slot: this.editor.slot,
+			item: this.editor.item,
+			move: this.editor.move ? { ...this.editor.move } : null
+		}
 		this.editor.item = entry.id
 		this.editor.move = null
 		this.editor.tool = entry.kind
@@ -305,10 +346,19 @@ export class StageGestures {
 	}
 
 	brushDown(event: PointerEvent) {
+		if (event.pointerType === 'mouse' || (event.pointerType === 'touch' && event.isPrimary)) {
+			this.#pointers.clear()
+		}
+
 		if (this.#pointers.size) {
 			return
 		}
 
+		this.#before = {
+			slot: this.editor.slot,
+			item: this.editor.item,
+			move: this.editor.move ? { ...this.editor.move } : null
+		}
 		this.#grab(event)
 		const [x, y] = this.#point(event)
 		const { brush, edit } = this.editor
@@ -345,20 +395,29 @@ export class StageGestures {
 		}
 	}
 
-	#spread() {
-		const [first, second] = [...this.#pointers.values()]
-		return Math.hypot(first.x - second.x, first.y - second.y)
-	}
-
 	#grab(event: PointerEvent) {
 		;(event.currentTarget as Element).setPointerCapture(event.pointerId)
-		this.#pointers.set(event.pointerId, { x: event.clientX, y: event.clientY })
+		this.#pointers.set(event.pointerId, {
+			x: event.clientX,
+			y: event.clientY,
+			startX: event.clientX,
+			startY: event.clientY,
+			slop: event.pointerType === 'touch' ? TOUCH_SLOP : DRAG_SLOP,
+			hasMoved: false
+		})
 	}
 
-	#delta(event: PointerEvent) {
+	#delta(event: PointerEvent, hasSlop = false) {
 		const last = this.#pointers.get(event.pointerId)
 		if (!last) {
 			return null
+		}
+
+		if (hasSlop && !last.hasMoved) {
+			if (Math.hypot(event.clientX - last.startX, event.clientY - last.startY) < last.slop) {
+				return null
+			}
+			last.hasMoved = true
 		}
 
 		const movement = { x: event.clientX - last.x, y: event.clientY - last.y }
@@ -381,14 +440,16 @@ export class StageGestures {
 		)
 	}
 
-	#swap(from: number, to: number) {
+	#swap(from: number, to: number, shouldCommit = true) {
 		const { order, slots } = this.editor.edit
 		;[order[from], order[to]] = [order[to], order[from]]
 		;[slots[from], slots[to]] = [slots[to], slots[from]]
 		this.editor.slot = to
 		this.editor.item = null
 		this.editor.move = null
-		this.editor.commit()
+		if (shouldCommit) {
+			this.editor.commit()
+		}
 	}
 
 	#slotAt(event: PointerEvent) {
