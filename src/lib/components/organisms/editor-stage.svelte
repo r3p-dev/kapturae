@@ -129,6 +129,7 @@
 			onpointermove={(event) => gestures.slotMove(event)}
 			onpointerup={(event) => gestures.release(event)}
 			onpointercancel={(event) => gestures.release(event)}
+			onlostpointercapture={(event) => gestures.release(event)}
 			onkeydown={(event) => gestures.slotKey(event, index)}
 			class={cn(
 				'absolute touch-none outline-offset-3 outline-primary focus-visible:outline-3 data-active:outline-3',
@@ -160,6 +161,7 @@
 		>
 			<button
 				type="button"
+				data-stage-drag=""
 				aria-label={entry.kind === 'text'
 					? entry.text
 					: isStickerId(entry.sticker)
@@ -170,6 +172,7 @@
 				onpointermove={(event) => gestures.itemMove(event, entry)}
 				onpointerup={(event) => gestures.release(event)}
 				onpointercancel={(event) => gestures.release(event)}
+				onlostpointercapture={(event) => gestures.release(event)}
 				onkeydown={(event) => gestures.itemKey(event, entry)}
 				class="block w-full cursor-move touch-none outline-offset-2 focus-visible:outline-2 focus-visible:outline-primary aria-pressed:shadow-[0_0_0_1px_rgba(14,14,13,0.55)] aria-pressed:outline-2 aria-pressed:outline-paper aria-pressed:outline-dashed"
 			>
@@ -179,7 +182,7 @@
 					<span
 						class={cn('block leading-none whitespace-pre', fonts[entry.font])}
 						style:color={entry.color}
-						style:font-size="{(entry.size * gestures.width) / 100}percentPerPixel"
+						style:font-size="{(entry.size * gestures.width) / 100}px"
 					>
 						{entry.text}
 					</span>
@@ -198,12 +201,14 @@
 
 				<button
 					type="button"
+					data-stage-drag=""
 					aria-label={m['session.edit.resize']()}
 					tabindex={-1}
 					onpointerdown={(event) => gestures.resizeDown(event, entry)}
 					onpointermove={(event) => gestures.resizeMove(event, entry)}
 					onpointerup={(event) => gestures.resizeUp(event)}
 					onpointercancel={(event) => gestures.resizeUp(event)}
+					onlostpointercapture={(event) => gestures.resizeUp(event)}
 					class="{handle} -bottom-3.5 -left-3.5 cursor-nesw-resize touch-none bg-paper text-ink"
 				>
 					<RiExpandDiagonalSLine aria-hidden="true" class="size-3.5" />
@@ -218,12 +223,14 @@
 
 		<button
 			type="button"
+			data-stage-drag=""
 			aria-label={m['session.edit.move']({ n: selected + 1 })}
 			aria-pressed={editor.move?.from === selected}
 			onpointerdown={(event) => gestures.handleDown(event, selected)}
 			onpointermove={(event) => gestures.handleMove(event)}
 			onpointerup={(event) => gestures.handleUp(event)}
 			onpointercancel={() => gestures.handleCancel()}
+			onlostpointercapture={() => gestures.handleCancel()}
 			onclick={(event) => gestures.handleClick(event, selected)}
 			onkeydown={(event) => gestures.handleKey(event)}
 			class="absolute m-1.5 flex size-9 cursor-grab touch-none items-center justify-center bg-paper text-ink outline-offset-2 outline-primary focus-visible:outline-3 active:cursor-grabbing aria-pressed:bg-primary aria-pressed:text-primary-foreground"
@@ -253,10 +260,12 @@
 	{#if editor.tool === 'brush'}
 		<div
 			aria-hidden="true"
+			data-stage-drag=""
 			onpointerdown={(event) => gestures.brushDown(event)}
 			onpointermove={(event) => gestures.brushMove(event)}
 			onpointerup={(event) => gestures.release(event)}
 			onpointercancel={(event) => gestures.release(event)}
+			onlostpointercapture={(event) => gestures.release(event)}
 			class="absolute inset-0 cursor-crosshair touch-none"
 		></div>
 	{/if}

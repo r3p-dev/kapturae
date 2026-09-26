@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { ShootState } from '$lib/capture/shoot-state.svelte'
+	import FrameZoom from '$lib/components/atoms/frame-zoom.svelte'
 	import { m } from '$lib/paraglide/messages'
 	import FramePreview from './frame-preview.svelte'
 	import { mono } from './styles'
@@ -17,10 +18,12 @@
 	</span>
 
 	<div
-		class="flex min-h-0 flex-1 items-center"
+		class="flex min-h-0 flex-1 items-center self-stretch"
 		style:--h="min(588px, calc(100svh - 250px), calc(var(--w) / {shooter.spec.ratio}))"
 	>
-		<FramePreview {shooter} />
+		<FrameZoom resetKey={shooter.frame.id}>
+			<FramePreview {shooter} />
+		</FrameZoom>
 	</div>
 
 	<p class="m-0 self-stretch text-center text-[13px] leading-normal text-muted-foreground">

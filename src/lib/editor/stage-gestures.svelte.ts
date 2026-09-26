@@ -236,8 +236,13 @@ export class StageGestures {
 			return
 		}
 
-		entry.x = clamp(entry.x + movement.x * this.percentPerPixel, 0, 100)
-		entry.y = clamp(entry.y + (movement.y / this.stage.clientHeight) * 100, 0, 100)
+		const box = this.stage.getBoundingClientRect()
+		if (!box.width || !box.height) {
+			return
+		}
+
+		entry.x = clamp(entry.x + (movement.x / box.width) * 100, 0, 100)
+		entry.y = clamp(entry.y + (movement.y / box.height) * 100, 0, 100)
 	}
 
 	remove(entry: Item) {
@@ -364,8 +369,11 @@ export class StageGestures {
 
 	#reachOf(index: number) {
 		const box = this.editor.frame.slots[index]
-		const boxWidth = (box.width / 100) * (this.stage?.clientWidth ?? 0)
-		const boxHeight = (box.height / 100) * (this.stage?.clientHeight ?? 0)
+		const rect = this.stage?.getBoundingClientRect()
+		const stageWidth = rect?.width || this.stage?.clientWidth || 0
+		const stageHeight = rect?.height || this.stage?.clientHeight || 0
+		const boxWidth = (box.width / 100) * stageWidth
+		const boxHeight = (box.height / 100) * stageHeight
 		return panReach(
 			this.editor.edit.slots[index],
 			{ width: boxWidth, height: boxHeight },
@@ -400,7 +408,8 @@ export class StageGestures {
 
 	#point(event: PointerEvent) {
 		const box = this.stage!.getBoundingClientRect()
-		return [(event.clientX - box.left) * this.percentPerPixel, (event.clientY - box.top) * this.percentPerPixel]
+		const scale = box.width ? 100 / box.width : this.percentPerPixel
+		return [(event.clientX - box.left) * scale, (event.clientY - box.top) * scale]
 	}
 
 	#erase([x, y]: number[]) {

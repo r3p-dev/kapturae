@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Corners from '$lib/components/atoms/corners.svelte'
+	import FrameZoom from '$lib/components/atoms/frame-zoom.svelte'
 	import EditorStage from '$lib/components/organisms/editor-stage.svelte'
 	import type { EditState } from '$lib/editor/edit-state.svelte'
 	import { m } from '$lib/paraglide/messages'
@@ -12,6 +13,10 @@
 	import { edge, mono } from './styles'
 
 	let { editor }: { editor: EditState } = $props()
+	let isZoomed = $state(false)
+
+	const stageHeight =
+		'[--h:min(calc(100cqh-50px),calc((100cqw-220px)*var(--r)))] desktop:[--h:min(calc(100cqh-148px),calc((100cqw-380px)*var(--r)))]'
 </script>
 
 <section
@@ -32,7 +37,7 @@
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		onpointerdown={(event) => {
-			if (event.target !== event.currentTarget) {
+			if ((event.target as Element).closest('button, .cursor-crosshair')) {
 				return
 			}
 			editor.slot = null
@@ -40,30 +45,39 @@
 			editor.move = null
 		}}
 		class={cn(
-			'@container-size relative flex h-[min(470px,56svh)] items-center justify-center rail:h-auto rail:flex-1 desktop:gap-7',
+			'@container-size relative flex h-[min(470px,56svh)] items-center justify-center overflow-hidden rail:h-auto rail:flex-1',
 			!editor.tool && 'h-auto flex-1'
 		)}
 		style:--r={1 / SIZES[editor.frame.size].ratio}
 	>
-		<Corners inset="18px" size="24px" weight="2px" class="hidden text-[#3a3936] rail:block" />
+		<Corners inset="18px" size="24px" weight="2px" class="pointer-events-none z-10 hidden text-[#3a3936] rail:block" />
 
-		<div class="absolute top-2.5 left-2.5 flex gap-1.5 rail:hidden"><HistoryButtons history={editor.history} /></div>
+		<div class={cn('absolute top-2.5 z-10 flex gap-1.5 rail:hidden', isZoomed ? 'left-22' : 'left-2.5')}>
+			<HistoryButtons history={editor.history} />
+		</div>
 
-		<EditorStage
-			{editor}
-			class="[--h:min(calc(100cqh-50px),calc((100cqw-220px)*var(--r)))] desktop:[--h:min(calc(100cqh-148px),calc((100cqw-380px)*var(--r)))]"
-		/>
+		<FrameZoom bind:isZoomed resetKey={editor.frame.id} class="absolute inset-0">
+			<div class="flex items-center justify-center desktop:gap-7">
+				<EditorStage {editor} class={stageHeight} />
+				<div aria-hidden="true" class="pointer-events-none hidden w-59 shrink-0 desktop:block"></div>
+			</div>
+		</FrameZoom>
 
-		<SlotCard {editor} />
-
-		{#if editor.slot !== null && editor.current}
-			<SlotActions {editor} current={editor.current} />
+		{#if !isZoomed || editor.current}
+			<div class="pointer-events-none relative z-10 hidden items-center justify-center desktop:flex desktop:gap-7">
+				<div
+					aria-hidden="true"
+					class="pointer-events-none h-(--h) shrink-0 {stageHeight}"
+					style:width="calc(var(--h) * {SIZES[editor.frame.size].ratio})"
+				></div>
+				<div class="pointer-events-auto">
+					<SlotCard {editor} />
+				</div>
+			</div>
 		{/if}
 
-		<span
-			class="{mono} absolute inset-x-0 bottom-2.5 text-center text-[10px] tracking-widest text-muted-foreground rail:hidden"
-		>
-			{editor.hint ?? m['session.edit.hint_touch']()}
-		</span>
+		{#if editor.slot !== null && editor.current && !editor.tool}
+			<SlotActions {editor} current={editor.current} />
+		{/if}
 	</div>
 </section>

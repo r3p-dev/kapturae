@@ -481,6 +481,7 @@
 			"zoom_value": "Zoom {n}%",
 			"zoom_out": "Zoom out",
 			"zoom_in": "Zoom in",
+			"zoom_reset": "Reset zoom",
 			"no_crop": "No cropping — just zoom and move the photo inside its slot.",
 			"take": "Take photo",
 			"adjust_title": "Adjustments · Slot {n}",

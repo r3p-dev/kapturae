@@ -9,6 +9,7 @@
 	import RiShareForwardLine from 'remixicon-svelte/icons/share-forward-line'
 	import Corners from '$lib/components/atoms/corners.svelte'
 	import FramePlaceholder from '$lib/components/atoms/frame-placeholder.svelte'
+	import FrameZoom from '$lib/components/atoms/frame-zoom.svelte'
 	import SessionHeader from '$lib/components/organisms/session-header.svelte'
 	import { Button } from '$lib/components/ui/button'
 	import * as ToggleGroup from '$lib/components/ui/toggle-group'
@@ -183,11 +184,14 @@
 {#snippet preview(className: string)}
 	<div class={cn('flex items-center justify-center', className)} style:--r={SIZES[frame.size].ratio}>
 		{#if current}
-			<img
-				src={current.url}
-				alt={format === 'gif' ? m['session.done.gif_alt']() : m['session.done.sheet_alt']()}
-				class="block h-(--h) w-auto ring-1 ring-paper/14"
-			/>
+			<FrameZoom resetKey={`${frame.id}:${format}`}>
+				<img
+					src={current.url}
+					alt={format === 'gif' ? m['session.done.gif_alt']() : m['session.done.sheet_alt']()}
+					draggable="false"
+					class="block h-(--h) w-auto ring-1 ring-paper/14"
+				/>
+			</FrameZoom>
 		{:else}
 			<FramePlaceholder size={frame.size} class="animate-pulse motion-reduce:animate-none" />
 		{/if}
@@ -308,7 +312,7 @@
 				<span class="text-primary">{m['session.done.title_accent']()}</span>
 			</h1>
 
-			{@render preview('[--h:min(360px,calc(220px/var(--r)))]')}
+			{@render preview('h-95 w-full [--h:min(360px,calc(220px/var(--r)))]')}
 			{@render formatToggle()}
 			{@render statusLine()}
 			{@render failed()}
@@ -332,9 +336,9 @@
 
 		<main class="hidden flex-1 items-center justify-center gap-12 px-8 py-6 rail:flex desktop:gap-27.5 desktop:px-16">
 			<div class="flex shrink-0 flex-col items-center gap-5.5">
-				<div class="relative p-6.5">
-					<Corners size="26px" weight="2px" class="text-paper" />
-					{@render preview('[--h:min(570px,calc(100svh-250px))]')}
+				<div class="relative w-105 p-6.5">
+					<Corners size="26px" weight="2px" class="pointer-events-none z-10 text-paper" />
+					{@render preview('h-[min(570px,calc(100svh-250px))] [--h:min(570px,calc(100svh-250px))]')}
 				</div>
 
 				{@render formatToggle()}

@@ -24,6 +24,6 @@
 
 	<span class="font-mono text-xs tracking-[0.14em] text-muted-foreground uppercase">
 		{m['common.footer.roll']({ year })} · {m['common.footer.made_by']()}
-		<a href="https://r3p.dev" class={link}>R3P</a>
+		<a href="https://r3p.dev" class={link}>R3P</a> · v{__APP_VERSION__}
 	</span>
 </footer>

@@ -3,6 +3,7 @@ import tailwindcss from '@tailwindcss/vite'
 import adapter from '@sveltejs/adapter-static'
 import { sveltekit } from '@sveltejs/kit/vite'
 import { defineConfig } from 'vite'
+import pkg from './package.json' with { type: 'json' }
 import { paraglideConfiguration } from './paraglide.config.ts'
 import { frames } from './scripts/frames.ts'
 import { legalUpdated } from './scripts/legal_updated.ts'
@@ -22,6 +23,7 @@ const PAGES: Path[] = [
 
 export default defineConfig({
 	define: {
+		__APP_VERSION__: JSON.stringify(pkg.version),
 		__LEGAL_UPDATED__: JSON.stringify(legalUpdated() ?? null)
 	},
 

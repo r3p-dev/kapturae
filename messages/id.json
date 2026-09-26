@@ -481,6 +481,7 @@
 			"zoom_value": "Zoom {n}%",
 			"zoom_out": "Perkecil",
 			"zoom_in": "Perbesar",
+			"zoom_reset": "Atur ulang zoom",
 			"no_crop": "Tidak ada crop — cukup zoom dan geser foto di dalam slot.",
 			"take": "Ambil foto",
 			"adjust_title": "Penyesuaian · Slot {n}",

@@ -11,7 +11,7 @@
 	let { editor, current }: { editor: EditState; current: SlotEdit } = $props()
 </script>
 
-<div class="absolute top-1/2 right-3.5 flex flex-col items-end gap-2 desktop:hidden">
+<div class="absolute top-1/2 right-3.5 z-10 flex flex-col items-end gap-2 desktop:hidden">
 	{#if editor.hasPhoto}
 		<div class="flex items-center gap-1.5">
 			<button

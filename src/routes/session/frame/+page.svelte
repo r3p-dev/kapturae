@@ -3,9 +3,10 @@
 	import { page } from '$app/state'
 	import RiArrowRightLine from 'remixicon-svelte/icons/arrow-right-line'
 	import Corners from '$lib/components/atoms/corners.svelte'
-	import SessionHeader from '$lib/components/organisms/session-header.svelte'
 	import FrameImage from '$lib/components/atoms/frame-image.svelte'
 	import FramePlaceholder from '$lib/components/atoms/frame-placeholder.svelte'
+	import FrameZoom from '$lib/components/atoms/frame-zoom.svelte'
+	import SessionHeader from '$lib/components/organisms/session-header.svelte'
 	import { Button } from '$lib/components/ui/button'
 	import { m } from '$lib/paraglide/messages'
 	import { localizeHref } from '$lib/paraglide/runtime'
@@ -62,7 +63,9 @@
 
 {#snippet preview(className: string)}
 	{#if chosen}
-		<FrameImage frame={chosen} class={className} />
+		<FrameZoom resetKey={chosen.id}>
+			<FrameImage frame={chosen} class={className} />
+		</FrameZoom>
 	{:else}
 		<FramePlaceholder size={shown} class={className} />
 	{/if}
@@ -133,9 +136,11 @@
 			</fieldset>
 
 			<div class="relative flex h-72.5 shrink-0 items-center justify-center bg-[#151514] rail:hidden">
-				<Corners inset="10px" size="18px" weight="2px" class="text-[#5e5c57]" />
+				<Corners inset="10px" size="18px" weight="2px" class="pointer-events-none z-10 text-[#5e5c57]" />
 				{@render preview('[--h:250px]')}
-				<span class="absolute bottom-2.5 left-10 font-mono text-[10px] tracking-widest text-muted-foreground">
+				<span
+					class="pointer-events-none absolute bottom-2.5 left-10 z-10 font-mono text-[10px] tracking-widest text-muted-foreground"
+				>
 					{spec.cm}
 				</span>
 			</div>
@@ -188,7 +193,7 @@
 			</span>
 
 			<div class="relative flex h-[min(420px,48svh)] shrink-0 items-center justify-center">
-				<Corners size="22px" weight="2px" class="text-[#5e5c57]" />
+				<Corners size="22px" weight="2px" class="pointer-events-none z-10 text-[#5e5c57]" />
 				{@render preview('[--h:min(320px,calc(48svh_-_20px))] desktop:[--h:min(400px,calc(48svh_-_20px))]')}
 			</div>
 
