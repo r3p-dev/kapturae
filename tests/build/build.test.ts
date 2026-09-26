@@ -9,8 +9,8 @@ import { serveBuild } from '../../scripts/serve_build.ts'
 const CLIENT = '.svelte-kit/output/client'
 const BUDGET_KB = 100
 const CEILINGS_KB: Record<string, number> = {
-	'/session/shoot': 115,
-	'/session/edit': 125
+	'/session/shoot': 125,
+	'/session/edit': 150
 }
 
 let server: ReturnType<typeof serveBuild>

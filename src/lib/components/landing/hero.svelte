@@ -47,7 +47,7 @@
 			<InstallButton />
 
 			<LangSwitch>
-				<span class="mr-2 text-[11px] text-muted-foreground mobile:group-has-[[data-install]]/tools:hidden">LANG</span>
+				<span class="mr-2 text-[11px] text-muted-foreground mobile:group-has-data-install/tools:hidden">LANG</span>
 			</LangSwitch>
 
 			<RiBatteryFill aria-hidden="true" class="size-6 mobile:hidden" />
