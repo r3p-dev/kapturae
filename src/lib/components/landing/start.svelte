@@ -22,7 +22,7 @@
 		frame={7}
 		label={m['landing.cta.label']()}
 		title={[m['landing.cta.title_1'](), m['landing.cta.title_2']()]}
-		titleClass="leading-[0.9] rail:text-[96px]"
+		titleClass="leading-[0.9] rail:[--title-size:96px]"
 	/>
 
 	<SessionShutter size="lg" label={m['landing.cta.aria']()} isStatusHidden>

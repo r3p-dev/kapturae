@@ -11,9 +11,10 @@
 		{ title: m['landing.data.tips.clear.title'], body: m['landing.data.tips.clear.body'] }
 	]
 
-	const card = 'flex min-h-65 flex-col gap-3.5 p-7'
+	const card = 'row-span-3 grid grid-rows-subgrid gap-3.5 p-7'
+	const header = 'flex items-center justify-between gap-3 self-start'
 	const time = 'font-mono text-xs tracking-[0.14em] uppercase'
-	const heading = 'm-0 mt-auto font-display text-[26px] leading-none font-extrabold uppercase font-stretch-112%'
+	const heading = 'm-0 mt-5 self-end font-display text-[26px] leading-none font-extrabold uppercase font-stretch-112%'
 	const body = 'm-0 text-[15px] leading-[1.55] text-body'
 </script>
 
@@ -27,7 +28,7 @@
 		title={m['landing.data.title']()}
 		accent={m['landing.data.title_accent']()}
 		description={m['landing.data.description']()}
-		titleClass="mobile:text-[44px]"
+		titleClass="mobile:[--title-size:44px]"
 	/>
 
 	<div class="flex w-full max-w-300 flex-col gap-3.5">
@@ -43,7 +44,7 @@
 			class="grid gap-4 text-left rail:grid-cols-[1fr_1.4fr_1fr] desktop:grid-cols-[300px_minmax(0,1fr)_300px]"
 		>
 			<li class="{card} border-2 border-ink">
-				<div class="flex items-center justify-between gap-3">
+				<div class={header}>
 					<span class={time}>{m['landing.data.device.time']()}</span>
 					<RiBrushLine aria-hidden="true" class="size-7 shrink-0" />
 				</div>
@@ -52,7 +53,7 @@
 			</li>
 
 			<li class="{card} dark bg-background px-8 text-foreground">
-				<div class="flex items-center justify-between gap-3">
+				<div class={header}>
 					<span class="{time} flex items-center gap-2.5">
 						<span
 							aria-hidden="true"
@@ -67,7 +68,7 @@
 			</li>
 
 			<li class="{card} border-2 border-dashed border-ink">
-				<div class="flex items-center justify-between gap-3">
+				<div class={header}>
 					<span class="{time} text-primary-text">{m['landing.data.cleared.time']()}</span>
 					<RiEraserLine aria-hidden="true" class="size-7 shrink-0" />
 				</div>

@@ -76,7 +76,7 @@
 		title={m['landing.editor.title']()}
 		accent={m['landing.editor.title_accent']()}
 		description={m['landing.editor.description']()}
-		titleClass="mobile:text-[40px]"
+		titleClass="mobile:[--title-size:40px]"
 	/>
 
 	<div class="dark flex w-full max-w-87.5 flex-col bg-card text-left text-foreground tablet:max-w-290 rail:h-160">

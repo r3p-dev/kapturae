@@ -45,7 +45,7 @@
 		title={m['landing.flow.title']()}
 		accent={m['landing.flow.title_accent']()}
 		description={m['landing.flow.description']()}
-		titleClass="mobile:text-[44px]"
+		titleClass="mobile:[--title-size:44px]"
 	/>
 
 	<ol class="grid w-full max-w-270 grid-cols-2 gap-3 tablet:gap-5 rail:grid-cols-4">
@@ -53,7 +53,7 @@
 			{@const last = index === steps.length - 1}
 			<li
 				class={cn(
-					'relative flex h-52.5 flex-col items-center justify-center gap-2.5 px-3 py-4 tablet:h-72 tablet:gap-3.5 tablet:p-6',
+					'relative row-span-3 grid grid-rows-subgrid justify-items-center gap-2.5 px-3 pt-10 pb-6 tablet:gap-3.5 tablet:px-6 tablet:pt-14 tablet:pb-10',
 					last ? 'dark bg-background text-foreground' : 'border-2 border-ink'
 				)}
 			>
@@ -69,7 +69,7 @@
 				<step.icon aria-hidden="true" class="size-8.5 tablet:size-11" />
 
 				<h3
-					class="m-0 font-display text-[17px] font-extrabold uppercase font-stretch-110% tablet:text-2xl tablet:font-stretch-112%"
+					class="m-0 self-center font-display text-[17px] font-extrabold uppercase font-stretch-110% tablet:text-2xl tablet:font-stretch-112%"
 				>
 					{step.title()}
 				</h3>

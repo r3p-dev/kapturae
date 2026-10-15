@@ -1,6 +1,7 @@
 <script lang="ts" module>
-	/** Number of landing sections, shown as "FRAME nn / 07". */
 	export const FRAME_COUNT = 7
+
+	const DISPLAY_EM_PER_CHAR = 0.9
 </script>
 
 <script lang="ts">
@@ -25,9 +26,13 @@
 	} = $props()
 
 	const lines = $derived(Array.isArray(title) ? title : [title])
+
+	const longestWord = $derived(
+		Math.max(...[...lines, accent ?? ''].flatMap((line) => line.split(/\s+/)).map((word) => word.length))
+	)
 </script>
 
-<div class={cn('flex flex-col items-center gap-4.5 text-center', className)}>
+<div class={cn('@container flex w-full flex-col items-center gap-4.5 text-center', className)}>
 	<p class="flex items-center gap-3 font-mono text-[13px] tracking-[0.16em] uppercase">
 		<span aria-hidden="true" class="h-4 w-2 border-2 border-r-0 border-current"></span>
 		FRAME {String(frame).padStart(2, '0')} / {String(FRAME_COUNT).padStart(2, '0')} · {label}
@@ -35,8 +40,9 @@
 	</p>
 
 	<h2
+		style:--title-fit={longestWord * DISPLAY_EM_PER_CHAR}
 		class={cn(
-			'm-0 font-display text-5xl leading-[0.92] font-black text-balance uppercase font-stretch-118% tablet:text-6xl rail:text-[80px]',
+			'm-0 font-display text-[min(var(--title-size),100cqi/var(--title-fit))] leading-[0.92] font-black text-balance uppercase font-stretch-118% [--title-size:3rem] tablet:[--title-size:3.75rem] rail:[--title-size:80px]',
 			titleClass
 		)}
 	>

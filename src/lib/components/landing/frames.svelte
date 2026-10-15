@@ -26,7 +26,7 @@
 		title={m['landing.frames.title']()}
 		description={m['landing.frames.description']()}
 		class="px-6"
-		titleClass="mobile:text-[44px]"
+		titleClass="mobile:[--title-size:44px]"
 	/>
 
 	<div
