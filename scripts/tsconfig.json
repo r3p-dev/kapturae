@@ -4,5 +4,12 @@
 		"noEmit": true,
 		"types": ["bun"]
 	},
-	"include": ["./**/*.ts", "../paraglide.config.ts", "../eslint.config.ts", "../prettier.config.ts"]
+	"include": [
+		"./**/*.ts",
+		"../server.ts",
+		"../healthcheck.ts",
+		"../paraglide.config.ts",
+		"../eslint.config.ts",
+		"../prettier.config.ts"
+	]
 }

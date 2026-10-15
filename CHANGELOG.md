@@ -20,8 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Full English (`/`) and Indonesian (`/id`) localisation via Paraglide JS, including localized web app manifests, SEO metadata, structured data, and build-time `sitemap.xml`.
 - Offline-capable Progressive Web App service worker with versioned cache eviction and install prompt support.
 - Comprehensive privacy and legal documentation (`privacy`, `terms`, `deletion`, `camera`, `data`, `contact`) with automated git-based last-updated timestamps.
-- Automated unit, build (CSP, headers, routing, and gzipped JS bundle budgets), and Playwright offline end-to-end test suites in CI, plus Tailscale + rsync continuous deployment.
+- Automated unit, build (CSP, headers, routing, and gzipped JS bundle budgets), and Playwright offline end-to-end test suites in CI.
+- Container deployment: CI builds a non-root Bun image with Podman (`Containerfile`), pushes it to GHCR by digest, and deploys `compose.yaml` over SSH to a rootless Podman + Quadlet host behind Traefik (automatic HTTPS, health-checked releases with automatic rollback). `server.ts` serves the static build with the headers and routing in `scripts/hosting.ts`, without access logs.
 
 ### Removed
 
-- Legacy server-side share routes (`/p/[id]`, `/api/share`), upload endpoints, and container deployment artifacts in favour of a zero-server, local-only architecture (`sessionStorage` + IndexedDB with Web Locks tab cleanup).
+- Legacy server-side share routes (`/p/[id]`, `/api/share`), and upload endpoints in favour of a zero-server, local-only architecture (`sessionStorage` + IndexedDB with Web Locks tab cleanup).

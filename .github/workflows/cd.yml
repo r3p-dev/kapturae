@@ -2,7 +2,7 @@ name: CD
 
 on:
   workflow_run:
-    workflows: [CI]
+    workflows: ['CI']
     types: [completed]
     branches: [main]
   workflow_dispatch:
@@ -11,63 +11,95 @@ concurrency:
   group: deploy-production
   cancel-in-progress: false
 
+env:
+  APP_NAME: ${{ github.event.repository.name }}
+  COMPOSE_FILE: compose.yaml
+  REF: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+
 jobs:
-  deploy:
+  build:
+    name: Build & push image
     if: >
       github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+      (
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push'
+      )
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    environment: production
-
     permissions:
       contents: read
-
-    env:
-      TARGET: apps/kapturae
-
+      packages: write
+    outputs:
+      image: ${{ steps.push.outputs.image }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ env.REF }}
           fetch-depth: 0
+
+      - id: name
+        run: echo "image=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
 
       - uses: oven-sh/setup-bun@v2
 
-      - name: Install
-        run: bun install --frozen-lockfile
+      - id: legal
+        run: echo "updated=$(bun scripts/legal_updated.ts)" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        env:
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: printf '%s\n' "$REGISTRY_TOKEN" | podman login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
 
       - name: Build
-        run: bun run build
-
-      - name: Join tailnet
-        uses: tailscale/github-action@v4
-        with:
-          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
-          tags: tag:ci
-          ping: ${{ secrets.VPS_HOST }}
-
-      - name: Set up SSH
         env:
-          HOST: ${{ secrets.VPS_HOST }}
+          IMAGE: ${{ steps.name.outputs.image }}
+          SOURCE: ${{ github.server_url }}/${{ github.repository }}
+          LEGAL_UPDATED: ${{ steps.legal.outputs.updated }}
         run: |
+          podman build --platform linux/amd64 \
+            --build-arg "LEGAL_UPDATED=$LEGAL_UPDATED" \
+            --label "org.opencontainers.image.source=$SOURCE" \
+            -t "$IMAGE:$REF" -t "$IMAGE:latest" .
+
+      - id: push
+        name: Push
+        env:
+          IMAGE: ${{ steps.name.outputs.image }}
+        run: |
+          podman push --digestfile digest "$IMAGE:$REF"
+          podman push "$IMAGE:latest"
+          echo "image=${IMAGE}@$(cat digest)" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    name: Deploy to the server
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.REF }}
+          sparse-checkout: ${{ env.COMPOSE_FILE }}
+          sparse-checkout-cone-mode: false
+
+      - name: Deploy
+        env:
+          IMAGE: ${{ needs.build.outputs.image }}
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          test -f "$COMPOSE_FILE" || { echo "::error::$COMPOSE_FILE not found in the repo"; exit 1; }
           install -m 700 -d ~/.ssh
-          cat > ~/.ssh/config <<EOF
-          Host vps
-            HostName $HOST
-            User deploy
-            StrictHostKeyChecking accept-new
-            ServerAliveInterval 15
-          EOF
-
-      - name: Upload hashed assets
-        run: |
-          ssh vps "mkdir -p ~/$TARGET/_app"
-          rsync -rtz --chmod=D755,F644 build/_app/immutable vps:$TARGET/_app/
-
-      - name: Upload pages and service worker
-        run: rsync -rtz --chmod=D755,F644 --delete --exclude '/_app/immutable/' build/ vps:$TARGET/
-
-      - name: Prune assets from old builds
-        run: ssh vps "find ~/$TARGET/_app/immutable -type f -mtime +30 -delete"
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          { printf '%s\n' "$REGISTRY_TOKEN"; cat "$COMPOSE_FILE"; } |
+            ssh -i ~/.ssh/deploy_key -p "$VPS_PORT" -o BatchMode=yes -o IdentitiesOnly=yes \
+              -o StrictHostKeyChecking=yes "$VPS_USER@$VPS_HOST" \
+              deploy "$APP_NAME" "$IMAGE" "$GITHUB_ACTOR"

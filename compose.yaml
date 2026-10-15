@@ -1,0 +1,14 @@
+services:
+  web:
+    image: ${IMAGE}
+    labels:
+      vps.domain: kapturae.r3p.dev
+      vps.port: '4173'
+      vps.headers.Permissions-Policy: camera=(self), microphone=(), geolocation=(), payment=(), usb=()
+    cap_drop: [ALL]
+    healthcheck:
+      test: ['CMD', 'bun', 'healthcheck.ts']
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3

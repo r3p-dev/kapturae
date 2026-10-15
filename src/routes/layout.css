@@ -173,4 +173,11 @@
 			scroll-behavior: auto;
 		}
 	}
+	html {
+		scrollbar-width: none;
+	}
+
+	html::-webkit-scrollbar {
+		display: none;
+	}
 }

@@ -31,10 +31,10 @@ function respond(path: string, status: number, pathname: string) {
 	return new Response(Bun.file(path), { status, headers })
 }
 
-export function serveBuild(port: number) {
+export function serveBuild(port: number, hostname = '127.0.0.1') {
 	return Bun.serve({
 		port,
-		hostname: '127.0.0.1',
+		hostname,
 		fetch(request) {
 			const { pathname } = new URL(request.url)
 
