@@ -68,3 +68,13 @@ I am open to interesting work and conversations.
 - Email: [repiyan@r3p.dev](mailto:repiyan@r3p.dev)
 - GitHub: [r3p-dev](https://github.com/r3p-dev)
 - LinkedIn: [Muhamad Repiyan](https://linkedin.com/in/muhamad-repiyan)
+
+## License & Attribution
+
+This project is licensed under the **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)**.
+
+- 👤 **Attribution (BY):** You must give appropriate credit to **Muhamad Repiyan Riski (`r3p-dev`)** and link back to this repository.
+- 🚫 **Non-Commercial (NC):** You may not use this material, code, or derived applications for commercial purposes, monetization, or resale.
+- 🔁 **Share-Alike (SA):** Any modifications, community tools added, or derived forks must be distributed under the same license terms.
+
+Read the full [`LICENSE`](./LICENSE) file for legal details.
